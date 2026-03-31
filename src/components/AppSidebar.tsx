@@ -41,7 +41,6 @@ export default function AppSidebar() {
       <div className="flex items-center justify-center px-4 h-16 border-b border-sidebar-border">
         <img src={huntersLogo} alt="HUNTERS" className={cn("object-contain", collapsed ? "w-10 h-10" : "h-12")} />
       </div>
-      </div>
 
       {/* Nav */}
       <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">

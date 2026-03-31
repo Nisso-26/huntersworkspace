@@ -13,22 +13,37 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useState } from 'react';
-import { currentUser } from '@/data/mock-data';
+import { useAuth } from '@/contexts/AuthContext';
 import huntersLogo from '@/assets/hunters-logo.jpg';
 
-const navItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, href: '/' },
-  { label: 'Pipeline', icon: FolderKanban, href: '/pipeline' },
-  { label: 'Dossiers', icon: FileText, href: '/dossiers' },
-  { label: 'Mandataires', icon: Users, href: '/mandataires' },
-  { label: 'Facturation', icon: CreditCard, href: '/facturation' },
-  { label: 'Alertes', icon: Bell, href: '/alertes' },
-  { label: 'Paramètres', icon: Settings, href: '/parametres' },
+const allNavItems = [
+  { label: 'Dashboard', icon: LayoutDashboard, href: '/', roles: ['super_admin', 'mandataire', 'decoratrice'] },
+  { label: 'Pipeline', icon: FolderKanban, href: '/pipeline', roles: ['super_admin', 'mandataire', 'decoratrice'] },
+  { label: 'Dossiers', icon: FileText, href: '/dossiers', roles: ['super_admin', 'mandataire', 'decoratrice'] },
+  { label: 'Mandataires', icon: Users, href: '/mandataires', roles: ['super_admin'] },
+  { label: 'Facturation', icon: CreditCard, href: '/facturation', roles: ['super_admin'] },
+  { label: 'Alertes', icon: Bell, href: '/alertes', roles: ['super_admin', 'mandataire', 'decoratrice'] },
+  { label: 'Paramètres', icon: Settings, href: '/parametres', roles: ['super_admin'] },
 ];
 
 export default function AppSidebar() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const { user, role, signOut } = useAuth();
+
+  const navItems = allNavItems.filter(item => !role || item.roles.includes(role));
+
+  const initials = user?.user_metadata?.full_name
+    ? user.user_metadata.full_name.split(' ').map((n: string) => n[0]).join('')
+    : user?.email?.[0]?.toUpperCase() ?? '?';
+
+  const displayName = user?.user_metadata?.full_name || user?.email || '';
+
+  const roleLabels: Record<string, string> = {
+    super_admin: 'Super Admin',
+    mandataire: 'Mandataire',
+    decoratrice: 'Décoratrice',
+  };
 
   return (
     <aside
@@ -37,12 +52,10 @@ export default function AppSidebar() {
         collapsed ? 'w-[72px]' : 'w-[260px]'
       )}
     >
-      {/* Logo */}
       <div className="flex items-center justify-center px-4 h-16 border-b border-sidebar-border">
         <img src={huntersLogo} alt="HUNTERS" className={cn("object-contain", collapsed ? "w-10 h-10" : "h-12")} />
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = location.pathname === item.href;
@@ -65,7 +78,6 @@ export default function AppSidebar() {
         })}
       </nav>
 
-      {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="mx-3 mb-2 flex items-center justify-center p-2 rounded-sm text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
@@ -73,20 +85,24 @@ export default function AppSidebar() {
         {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
       </button>
 
-      {/* User */}
       <div className="border-t border-sidebar-border px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-sm bg-sidebar-accent flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-bold text-sidebar-primary">
-              {currentUser.name.split(' ').map(n => n[0]).join('')}
-            </span>
+            <span className="text-xs font-bold text-sidebar-primary">{initials}</span>
           </div>
           {!collapsed && (
-            <div className="min-w-0 animate-slide-in">
-              <p className="text-sm font-semibold text-sidebar-accent-foreground truncate">{currentUser.name}</p>
-              <p className="text-xs text-sidebar-foreground truncate">Super Admin</p>
+            <div className="min-w-0 flex-1 animate-slide-in">
+              <p className="text-sm font-semibold text-sidebar-accent-foreground truncate">{displayName}</p>
+              <p className="text-xs text-sidebar-foreground truncate">{role ? roleLabels[role] : ''}</p>
             </div>
           )}
+          <button
+            onClick={signOut}
+            className="text-sidebar-foreground hover:text-destructive transition-colors flex-shrink-0"
+            title="Déconnexion"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </aside>

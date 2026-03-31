@@ -14,8 +14,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { currentUser } from '@/data/mock-data';
-import huntersLogo from '@/assets/hunters-logo.png';
-import huntersIcon from '@/assets/hunters-icon.png';
+import huntersLogo from '@/assets/hunters-logo.jpg';
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/' },

@@ -9,12 +9,13 @@ import {
   Bell,
   Settings,
   LogOut,
-  Target,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 import { useState } from 'react';
 import { currentUser } from '@/data/mock-data';
+import huntersLogo from '@/assets/hunters-logo.png';
+import huntersIcon from '@/assets/hunters-icon.png';
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/' },
@@ -38,14 +39,11 @@ export default function AppSidebar() {
       )}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 h-16 border-b border-sidebar-border">
-        <div className="w-8 h-8 rounded-lg bg-gradient-gold flex items-center justify-center flex-shrink-0">
-          <Target className="w-4 h-4 text-primary" />
-        </div>
-        {!collapsed && (
-          <div className="animate-slide-in">
-            <span className="font-heading text-lg font-bold text-gradient-gold">HUNTERS</span>
-          </div>
+      <div className="flex items-center justify-center px-4 h-16 border-b border-sidebar-border">
+        {collapsed ? (
+          <img src={huntersIcon} alt="HUNTERS" className="w-9 h-9 object-contain" />
+        ) : (
+          <img src={huntersLogo} alt="HUNTERS" className="h-9 object-contain animate-slide-in" />
         )}
       </div>
 
@@ -58,14 +56,15 @@ export default function AppSidebar() {
               key={item.href}
               to={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                'flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-semibold tracking-wide transition-all duration-200 uppercase',
                 isActive
                   ? 'bg-sidebar-accent text-sidebar-primary shadow-gold'
-                  : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
+                  : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground',
+                collapsed && 'justify-center'
               )}
             >
               <item.icon className={cn('w-5 h-5 flex-shrink-0', isActive && 'text-sidebar-primary')} />
-              {!collapsed && <span>{item.label}</span>}
+              {!collapsed && <span className="text-xs">{item.label}</span>}
             </Link>
           );
         })}
@@ -74,7 +73,7 @@ export default function AppSidebar() {
       {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="mx-3 mb-2 flex items-center justify-center p-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+        className="mx-3 mb-2 flex items-center justify-center p-2 rounded-sm text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
       >
         {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
       </button>
@@ -82,14 +81,14 @@ export default function AppSidebar() {
       {/* User */}
       <div className="border-t border-sidebar-border px-4 py-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-semibold text-sidebar-primary">
+          <div className="w-8 h-8 rounded-sm bg-sidebar-accent flex items-center justify-center flex-shrink-0">
+            <span className="text-xs font-bold text-sidebar-primary">
               {currentUser.name.split(' ').map(n => n[0]).join('')}
             </span>
           </div>
           {!collapsed && (
             <div className="min-w-0 animate-slide-in">
-              <p className="text-sm font-medium text-sidebar-accent-foreground truncate">{currentUser.name}</p>
+              <p className="text-sm font-semibold text-sidebar-accent-foreground truncate">{currentUser.name}</p>
               <p className="text-xs text-sidebar-foreground truncate">Super Admin</p>
             </div>
           )}

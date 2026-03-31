@@ -14,8 +14,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { currentUser } from '@/data/mock-data';
-import huntersLogo from '@/assets/hunters-logo.png';
-import huntersIcon from '@/assets/hunters-icon.png';
+import huntersLogo from '@/assets/hunters-logo.jpg';
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/' },
@@ -40,11 +39,7 @@ export default function AppSidebar() {
     >
       {/* Logo */}
       <div className="flex items-center justify-center px-4 h-16 border-b border-sidebar-border">
-        {collapsed ? (
-          <img src={huntersIcon} alt="HUNTERS" className="w-9 h-9 object-contain" />
-        ) : (
-          <img src={huntersLogo} alt="HUNTERS" className="h-9 object-contain animate-slide-in" />
-        )}
+        <img src={huntersLogo} alt="HUNTERS" className={cn("object-contain", collapsed ? "w-10 h-10" : "h-12")} />
       </div>
 
       {/* Nav */}

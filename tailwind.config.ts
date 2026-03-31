@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ['Playfair Display', 'serif'],
-        body: ['Inter', 'sans-serif'],
+        heading: ['Montserrat', 'sans-serif'],
+        body: ['Montserrat', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -62,10 +62,10 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         hunters: {
-          navy: "hsl(var(--hunters-navy))",
-          "navy-light": "hsl(var(--hunters-navy-light))",
-          gold: "hsl(var(--hunters-gold))",
-          "gold-light": "hsl(var(--hunters-gold-light))",
+          vert: "hsl(var(--hunters-vert))",
+          "vert-clair": "hsl(var(--hunters-vert-clair))",
+          or: "hsl(var(--hunters-or))",
+          anthracite: "hsl(var(--hunters-anthracite))",
           success: "hsl(var(--hunters-success))",
           warning: "hsl(var(--hunters-warning))",
           info: "hsl(var(--hunters-info))",

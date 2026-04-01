@@ -14,6 +14,148 @@ export type Database = {
   }
   public: {
     Tables: {
+      alertes: {
+        Row: {
+          created_at: string
+          detail: string | null
+          dossier_id: string | null
+          id: string
+          is_read: boolean
+          target_date: string | null
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          dossier_id?: string | null
+          id?: string
+          is_read?: boolean
+          target_date?: string | null
+          title: string
+          type?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          dossier_id?: string | null
+          id?: string
+          is_read?: boolean
+          target_date?: string | null
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alertes_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dossiers: {
+        Row: {
+          budget: number | null
+          client_name: string
+          created_at: string
+          email: string | null
+          etape: number | null
+          honoraires: number | null
+          id: string
+          mandataire_id: string | null
+          notes: string | null
+          phone: string | null
+          status: string
+          strategie: string | null
+          updated_at: string
+          ville: string | null
+        }
+        Insert: {
+          budget?: number | null
+          client_name: string
+          created_at?: string
+          email?: string | null
+          etape?: number | null
+          honoraires?: number | null
+          id?: string
+          mandataire_id?: string | null
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          strategie?: string | null
+          updated_at?: string
+          ville?: string | null
+        }
+        Update: {
+          budget?: number | null
+          client_name?: string
+          created_at?: string
+          email?: string | null
+          etape?: number | null
+          honoraires?: number | null
+          id?: string
+          mandataire_id?: string | null
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          strategie?: string | null
+          updated_at?: string
+          ville?: string | null
+        }
+        Relationships: []
+      }
+      factures: {
+        Row: {
+          created_at: string
+          date_emission: string
+          date_paiement: string | null
+          dossier_id: string | null
+          id: string
+          mandataire_id: string | null
+          montant: number
+          reference: string | null
+          statut: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          date_emission?: string
+          date_paiement?: string | null
+          dossier_id?: string | null
+          id?: string
+          mandataire_id?: string | null
+          montant?: number
+          reference?: string | null
+          statut?: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          date_emission?: string
+          date_paiement?: string | null
+          dossier_id?: string | null
+          id?: string
+          mandataire_id?: string | null
+          montant?: number
+          reference?: string | null
+          statut?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "factures_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

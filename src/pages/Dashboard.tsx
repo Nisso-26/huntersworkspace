@@ -1,25 +1,13 @@
 import AppLayout from '@/components/AppLayout';
 import StatCard from '@/components/StatCard';
 import StatusBadge from '@/components/StatusBadge';
-import { dossiers, mandataires } from '@/data/mock-data';
+import { useDossiers } from '@/hooks/use-dossiers';
+import { useMandataires } from '@/hooks/use-mandataires';
 import {
-  FolderOpen,
-  TrendingUp,
-  Users,
-  Target,
-  Eye,
-  FileCheck,
-  ArrowUpRight,
+  FolderOpen, TrendingUp, Users, Target, FileCheck, ArrowUpRight,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const caReseau = mandataires.reduce((sum, m) => sum + (m.caTotal || 0), 0);
-const commissionsTotal = mandataires.reduce((sum, m) => sum + (m.commissionsTotal || 0), 0);
-const dossiersActifs = dossiers.filter(d => !['cloture', 'signe'].includes(d.status)).length;
-const dossiersSigne = dossiers.filter(d => d.status === 'signe').length;
-
-const recentDossiers = [...dossiers].sort((a, b) => b.dateMaj.localeCompare(a.dateMaj)).slice(0, 5);
-const topMandataires = [...mandataires].sort((a, b) => (b.caTotal || 0) - (a.caTotal || 0)).slice(0, 5);
+import { Skeleton } from '@/components/ui/skeleton';
 
 const container = {
   hidden: {},
@@ -31,25 +19,41 @@ const item = {
 };
 
 export default function Dashboard() {
+  const { data: dossiers = [], isLoading: loadingD } = useDossiers();
+  const { data: mandataires = [], isLoading: loadingM } = useMandataires();
+
+  const caReseau = mandataires.reduce((sum, m) => sum + (m.ca_total || 0), 0);
+  const dossiersActifs = dossiers.filter(d => !['cloture', 'signe'].includes(d.status)).length;
+  const dossiersSigne = dossiers.filter(d => d.status === 'signe').length;
+  const mandatairesActifs = mandataires.filter(m => m.status === 'actif').length;
+
+  const recentDossiers = [...dossiers].slice(0, 5);
+  const topMandataires = [...mandataires].sort((a, b) => b.ca_total - a.ca_total).slice(0, 5);
+
+  const isLoading = loadingD || loadingM;
+
   return (
     <AppLayout>
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
-        {/* Header */}
         <motion.div variants={item}>
           <h1 className="text-3xl font-heading font-bold text-foreground">Tableau de bord</h1>
           <p className="text-muted-foreground mt-1">Vue d'ensemble du réseau HUNTERS</p>
         </motion.div>
 
-        {/* KPIs */}
         <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="CA Réseau" value={`${(caReseau / 1000).toFixed(1)}k €`} change={12} icon={TrendingUp} variant="gold" />
-          <StatCard label="Dossiers actifs" value={dossiersActifs} change={8} icon={FolderOpen} />
-          <StatCard label="Mandataires actifs" value={mandataires.filter(m => m.status === 'actif').length} icon={Users} variant="info" />
-          <StatCard label="Dossiers signés" value={dossiersSigne} change={25} icon={FileCheck} variant="success" />
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)
+          ) : (
+            <>
+              <StatCard label="CA Réseau" value={`${(caReseau / 1000).toFixed(1)}k €`} icon={TrendingUp} variant="gold" />
+              <StatCard label="Dossiers actifs" value={dossiersActifs} icon={FolderOpen} />
+              <StatCard label="Mandataires actifs" value={mandatairesActifs} icon={Users} variant="info" />
+              <StatCard label="Dossiers signés" value={dossiersSigne} icon={FileCheck} variant="success" />
+            </>
+          )}
         </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Recent dossiers */}
           <motion.div variants={item} className="lg:col-span-2 bg-card rounded-xl border shadow-card">
             <div className="flex items-center justify-between p-5 border-b">
               <h2 className="font-heading text-lg font-semibold text-foreground">Derniers dossiers mis à jour</h2>
@@ -58,73 +62,62 @@ export default function Dashboard() {
               </a>
             </div>
             <div className="divide-y">
-              {recentDossiers.map((d) => (
-                <div key={d.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-secondary/50 transition-colors">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-                      <Target className="w-4 h-4 text-accent" />
+              {isLoading ? (
+                Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 mx-5 my-2 rounded" />)
+              ) : recentDossiers.length === 0 ? (
+                <p className="text-sm text-muted-foreground p-5 text-center">Aucun dossier pour le moment</p>
+              ) : (
+                recentDossiers.map((d) => (
+                  <div key={d.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-secondary/50 transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+                        <Target className="w-4 h-4 text-accent" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{d.client_name}</p>
+                        <p className="text-xs text-muted-foreground">{d.mandataire_name} · {d.ville}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{d.clientName}</p>
-                      <p className="text-xs text-muted-foreground">{d.mandataireName} · {d.ville}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-foreground hidden sm:block">
+                        {d.budget.toLocaleString('fr-FR')} €
+                      </span>
+                      <StatusBadge status={d.status as any} />
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-foreground hidden sm:block">
-                      {d.budget.toLocaleString('fr-FR')} €
-                    </span>
-                    <StatusBadge status={d.status} />
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </motion.div>
 
-          {/* Top mandataires */}
           <motion.div variants={item} className="bg-card rounded-xl border shadow-card">
             <div className="p-5 border-b">
               <h2 className="font-heading text-lg font-semibold text-foreground">Top Mandataires</h2>
               <p className="text-xs text-muted-foreground mt-0.5">Par chiffre d'affaires généré</p>
             </div>
             <div className="divide-y">
-              {topMandataires.map((m, idx) => (
-                <div key={m.id} className="flex items-center gap-3 px-5 py-3.5">
-                  <span className="text-xs font-bold text-accent w-5">{idx + 1}</span>
-                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-semibold text-foreground">{m.name.split(' ').map(n => n[0]).join('')}</span>
+              {isLoading ? (
+                Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 mx-5 my-2 rounded" />)
+              ) : topMandataires.length === 0 ? (
+                <p className="text-sm text-muted-foreground p-5 text-center">Aucun mandataire</p>
+              ) : (
+                topMandataires.map((m, idx) => (
+                  <div key={m.id} className="flex items-center gap-3 px-5 py-3.5">
+                    <span className="text-xs font-bold text-accent w-5">{idx + 1}</span>
+                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-semibold text-foreground">{(m.full_name || '?').split(' ').map(n => n[0]).join('')}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{m.full_name}</p>
+                      <p className="text-xs text-muted-foreground">{m.zone}</p>
+                    </div>
+                    <span className="text-sm font-semibold text-foreground">{(m.ca_total / 1000).toFixed(1)}k €</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{m.name}</p>
-                    <p className="text-xs text-muted-foreground">{m.zone}</p>
-                  </div>
-                  <span className="text-sm font-semibold text-foreground">{((m.caTotal || 0) / 1000).toFixed(1)}k €</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </motion.div>
         </div>
-
-        {/* Commissions summary */}
-        <motion.div variants={item} className="bg-gradient-navy rounded-xl p-6 text-sidebar-accent-foreground">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <p className="text-sm text-sidebar-foreground">Commissions réseau dues au siège ce mois</p>
-              <p className="text-3xl font-heading font-bold text-gradient-gold mt-1">
-                {commissionsTotal.toLocaleString('fr-FR')} €
-              </p>
-            </div>
-            <div className="flex items-center gap-6">
-              <div>
-                <p className="text-xs text-sidebar-foreground">Mandataires à jour</p>
-                <p className="text-lg font-semibold">{mandataires.filter(m => m.abonnementStatus === 'actif').length}/{mandataires.length}</p>
-              </div>
-              <div>
-                <p className="text-xs text-sidebar-foreground">Impayés</p>
-                <p className="text-lg font-semibold text-destructive">{mandataires.filter(m => m.abonnementStatus === 'impaye').length}</p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
       </motion.div>
     </AppLayout>
   );

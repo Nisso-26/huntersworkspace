@@ -1,51 +1,85 @@
 import AppLayout from '@/components/AppLayout';
 import { useMandataires, useUpdateProfile } from '@/hooks/use-mandataires';
+import SearchFilter from '@/components/SearchFilter';
+import ExportButton, { exportToCSV } from '@/components/ExportButton';
 import { motion } from 'framer-motion';
 import { MapPin, TrendingUp, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 
 const statusBadge: Record<string, string> = {
   actif: 'bg-hunters-success/10 text-hunters-success',
   suspendu: 'bg-hunters-warning/10 text-hunters-warning',
   résilie: 'bg-destructive/10 text-destructive',
 };
-
 const statusLabel: Record<string, string> = {
-  actif: 'Actif',
-  suspendu: 'Suspendu',
-  résilie: 'Résilié',
+  actif: 'Actif', suspendu: 'Suspendu', résilie: 'Résilié',
 };
+const statusOptions = [
+  { label: 'Actif', value: 'actif' },
+  { label: 'Suspendu', value: 'suspendu' },
+  { label: 'Résilié', value: 'résilie' },
+];
 
 export default function Mandataires() {
   const { data: mandataires = [], isLoading } = useMandataires();
   const updateProfile = useUpdateProfile();
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+
+  const filtered = mandataires.filter(m => {
+    const matchSearch = (m.full_name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (m.email || '').toLowerCase().includes(search.toLowerCase()) ||
+      (m.zone || '').toLowerCase().includes(search.toLowerCase());
+    const matchStatus = !statusFilter || (m.status || 'actif') === statusFilter;
+    return matchSearch && matchStatus;
+  });
 
   const toggleStatus = (id: string, currentStatus: string | null) => {
     const newStatus = currentStatus === 'actif' ? 'suspendu' : 'actif';
     updateProfile.mutate({ id, status: newStatus });
   };
 
+  const handleExport = () => {
+    exportToCSV(
+      ['Nom', 'Email', 'Zone', 'Statut', 'CA Total', 'Dossiers actifs'],
+      filtered.map(m => [m.full_name || '', m.email || '', m.zone || '', statusLabel[m.status || 'actif'], m.ca_total.toLocaleString('fr-FR'), String(m.dossiers_count)]),
+      'mandataires_hunters'
+    );
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-foreground">Mandataires</h1>
-          <p className="text-muted-foreground mt-1">Gestion du réseau — {mandataires.length} mandataire{mandataires.length > 1 ? 's' : ''}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-heading font-bold text-foreground">Mandataires</h1>
+            <p className="text-muted-foreground mt-1">Gestion du réseau — {mandataires.length} mandataire{mandataires.length > 1 ? 's' : ''}</p>
+          </div>
+          <ExportButton onExportCSV={handleExport} />
         </div>
+
+        <SearchFilter
+          search={search}
+          onSearchChange={setSearch}
+          placeholder="Rechercher un mandataire..."
+          filters={[
+            { label: 'Tous les statuts', value: statusFilter, options: statusOptions, onChange: setStatusFilter },
+          ]}
+        />
 
         {isLoading ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-48 rounded-xl" />)}
           </div>
-        ) : mandataires.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="bg-card rounded-xl border shadow-card p-8 text-center">
-            <p className="text-muted-foreground">Aucun mandataire inscrit pour le moment</p>
+            <p className="text-muted-foreground">Aucun mandataire trouvé</p>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {mandataires.map((m, idx) => (
+            {filtered.map((m, idx) => (
               <motion.div
                 key={m.id}
                 initial={{ opacity: 0, y: 12 }}
@@ -75,7 +109,6 @@ export default function Mandataires() {
                     {statusLabel[m.status || 'actif']}
                   </button>
                 </div>
-
                 <div className="grid grid-cols-2 gap-3 mt-5 pt-4 border-t">
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
@@ -92,7 +125,6 @@ export default function Mandataires() {
                     <p className="text-xs text-muted-foreground">Dossiers actifs</p>
                   </div>
                 </div>
-
                 <p className="text-xs text-muted-foreground mt-3">{m.email}</p>
               </motion.div>
             ))}

@@ -58,6 +58,47 @@ export type Database = {
           },
         ]
       }
+      documents: {
+        Row: {
+          created_at: string
+          dossier_id: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          dossier_id: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          dossier_id?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dossiers: {
         Row: {
           budget: number | null

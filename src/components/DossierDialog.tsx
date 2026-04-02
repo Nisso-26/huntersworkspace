@@ -9,6 +9,7 @@ import { useCreateDossier, useUpdateDossier, Dossier } from '@/hooks/use-dossier
 import { useMandataires } from '@/hooks/use-mandataires';
 import { useAuth } from '@/contexts/AuthContext';
 import { Plus, Pencil } from 'lucide-react';
+import DocumentsSection from '@/components/DocumentsSection';
 
 interface Props {
   dossier?: Dossier;
@@ -143,6 +144,11 @@ export default function DossierDialog({ dossier, trigger }: Props) {
               <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} />
             </div>
           </div>
+          {isEdit && dossier?.id && (
+            <div className="border-t pt-4">
+              <DocumentsSection dossierId={dossier.id} />
+            </div>
+          )}
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
             <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>

@@ -1,25 +1,36 @@
 import AppLayout from '@/components/AppLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { User, Shield, Bell, Lock } from 'lucide-react';
+import { User, Lock, MapPin, Shield } from 'lucide-react';
 
 export default function Parametres() {
-  const { user } = useAuth();
-  const [fullName, setFullName] = useState(user?.user_metadata?.full_name || '');
+  const { user, role } = useAuth();
+  const [fullName, setFullName] = useState('');
+  const [zone, setZone] = useState('');
   const [saving, setSaving] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [changingPwd, setChangingPwd] = useState(false);
 
+  useEffect(() => {
+    if (!user) return;
+    setFullName(user.user_metadata?.full_name || '');
+    // Fetch profile for zone
+    supabase.from('profiles').select('zone').eq('id', user.id).single().then(({ data }) => {
+      if (data) setZone(data.zone || '');
+    });
+  }, [user]);
+
   const updateProfile = async () => {
+    if (!user) return;
     setSaving(true);
     const { error: authErr } = await supabase.auth.updateUser({ data: { full_name: fullName } });
-    if (!authErr && user) {
-      await supabase.from('profiles').update({ full_name: fullName, updated_at: new Date().toISOString() } as any).eq('id', user.id);
+    if (!authErr) {
+      await supabase.from('profiles').update({ full_name: fullName, zone, updated_at: new Date().toISOString() } as any).eq('id', user.id);
     }
     setSaving(false);
     if (authErr) toast.error(authErr.message);
@@ -35,6 +46,12 @@ export default function Parametres() {
     else { toast.success('Mot de passe mis à jour'); setNewPassword(''); }
   };
 
+  const roleLabels: Record<string, string> = {
+    super_admin: 'Super Admin',
+    mandataire: 'Mandataire',
+    decoratrice: 'Décoratrice',
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -44,7 +61,6 @@ export default function Parametres() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Profile */}
           <div className="bg-card rounded-xl border shadow-card p-6">
             <div className="flex items-center gap-2 mb-4">
               <User className="w-5 h-5 text-accent" />
@@ -59,13 +75,20 @@ export default function Parametres() {
                 <Label>Email</Label>
                 <Input value={user?.email || ''} disabled className="opacity-70" />
               </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1"><MapPin className="w-3 h-3" /> Zone géographique</Label>
+                <Input value={zone} onChange={e => setZone(e.target.value)} placeholder="Ex: Paris, Lyon..." />
+              </div>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary">
+                <Shield className="w-4 h-4 text-accent" />
+                <span className="text-sm text-foreground font-medium">{role ? roleLabels[role] : 'Chargement...'}</span>
+              </div>
               <Button onClick={updateProfile} disabled={saving}>
                 {saving ? 'Enregistrement...' : 'Enregistrer'}
               </Button>
             </div>
           </div>
 
-          {/* Password */}
           <div className="bg-card rounded-xl border shadow-card p-6">
             <div className="flex items-center gap-2 mb-4">
               <Lock className="w-5 h-5 text-accent" />

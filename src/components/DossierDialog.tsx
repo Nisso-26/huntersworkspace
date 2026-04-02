@@ -9,6 +9,7 @@ import { useCreateDossier, useUpdateDossier, Dossier } from '@/hooks/use-dossier
 import { useMandataires } from '@/hooks/use-mandataires';
 import { useAuth } from '@/contexts/AuthContext';
 import { Plus, Pencil } from 'lucide-react';
+import DocumentsSection from '@/components/DocumentsSection';
 
 interface Props {
   dossier?: Dossier;

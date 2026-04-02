@@ -14,7 +14,7 @@ const allNavItems = [
   { label: 'Mandataires', icon: Users, href: '/mandataires', roles: ['super_admin'] },
   { label: 'Facturation', icon: CreditCard, href: '/facturation', roles: ['super_admin'] },
   { label: 'Alertes', icon: Bell, href: '/alertes', roles: ['super_admin', 'mandataire', 'decoratrice'] },
-  { label: 'Paramètres', icon: Settings, href: '/parametres', roles: ['super_admin'] },
+  { label: 'Paramètres', icon: Settings, href: '/parametres', roles: ['super_admin', 'mandataire', 'decoratrice'] },
 ];
 
 interface AppSidebarProps {

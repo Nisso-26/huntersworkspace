@@ -31,7 +31,7 @@ export function useDossiers() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('dossiers')
-        .select('*, profiles!dossiers_mandataire_id_fkey(full_name, zone)')
+        .select('*, profiles(full_name, zone)')
         .order('updated_at', { ascending: false });
 
       if (error) throw error;

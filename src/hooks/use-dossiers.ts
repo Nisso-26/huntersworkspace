@@ -31,17 +31,32 @@ export function useDossiers() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('dossiers')
-        .select('*, profiles(full_name, zone)')
+        .select('*')
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
+
+      // Fetch mandataire names separately
+      const mandataireIds = [...new Set((data || []).map(d => d.mandataire_id).filter(Boolean))];
+      let profilesMap: Record<string, { full_name: string | null; zone: string | null }> = {};
+      
+      if (mandataireIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, full_name, zone')
+          .in('id', mandataireIds);
+        
+        (profiles || []).forEach(p => {
+          profilesMap[p.id] = { full_name: p.full_name, zone: p.zone };
+        });
+      }
 
       return (data || []).map((d: any) => ({
         ...d,
         budget: Number(d.budget) || 0,
         honoraires: Number(d.honoraires) || 0,
-        mandataire_name: d.profiles?.full_name || 'Non assigné',
-        mandataire_zone: d.profiles?.zone || '',
+        mandataire_name: profilesMap[d.mandataire_id]?.full_name || 'Non assigné',
+        mandataire_zone: profilesMap[d.mandataire_id]?.zone || '',
       })) as Dossier[];
     },
     enabled: !!user,

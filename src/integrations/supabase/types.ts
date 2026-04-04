@@ -58,6 +58,47 @@ export type Database = {
           },
         ]
       }
+      commissions: {
+        Row: {
+          created_at: string
+          dossier_id: string | null
+          id: string
+          mandataire_id: string
+          montant: number
+          statut: string
+          taux: number
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          dossier_id?: string | null
+          id?: string
+          mandataire_id: string
+          montant?: number
+          statut?: string
+          taux?: number
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          dossier_id?: string | null
+          id?: string
+          mandataire_id?: string
+          montant?: number
+          statut?: string
+          taux?: number
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissions_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           created_at: string
@@ -201,9 +242,15 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          date_entree: string | null
           email: string | null
           full_name: string | null
+          iban: string | null
           id: string
+          niveau: string | null
+          pack_montant: number | null
+          pack_status: string | null
+          parrain_id: string | null
           status: string | null
           updated_at: string
           zone: string | null
@@ -211,9 +258,15 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          date_entree?: string | null
           email?: string | null
           full_name?: string | null
+          iban?: string | null
           id: string
+          niveau?: string | null
+          pack_montant?: number | null
+          pack_status?: string | null
+          parrain_id?: string | null
           status?: string | null
           updated_at?: string
           zone?: string | null
@@ -221,9 +274,15 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          date_entree?: string | null
           email?: string | null
           full_name?: string | null
+          iban?: string | null
           id?: string
+          niveau?: string | null
+          pack_montant?: number | null
+          pack_status?: string | null
+          parrain_id?: string | null
           status?: string | null
           updated_at?: string
           zone?: string | null

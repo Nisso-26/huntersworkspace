@@ -5,7 +5,7 @@ export const statusLabels: Record<string, string> = {
   visite: 'Visites',
   offre: 'Offre',
   compromis: 'Compromis',
-  signe: 'Signé',
+  signe: 'Acte signé',
   cloture: 'Clôturé',
 };
 
@@ -18,4 +18,17 @@ export const statusColors: Record<string, string> = {
   compromis: 'bg-hunters-success/10 text-hunters-success',
   signe: 'bg-hunters-success/20 text-hunters-success',
   cloture: 'bg-muted text-muted-foreground',
+};
+
+export const pipelineStatuses = ['nouveau', 'conseil', 'chasse', 'visite', 'offre', 'compromis', 'signe', 'cloture'] as const;
+
+export const columnColors: Record<string, string> = {
+  nouveau: 'border-t-muted-foreground',
+  conseil: 'border-t-hunters-info',
+  chasse: 'border-t-hunters-warning',
+  visite: 'border-t-accent',
+  offre: 'border-t-accent',
+  compromis: 'border-t-hunters-success',
+  signe: 'border-t-hunters-success',
+  cloture: 'border-t-muted-foreground',
 };

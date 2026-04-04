@@ -17,7 +17,8 @@ const statusOptions = [
   { label: 'Visite', value: 'visite' },
   { label: 'Offre', value: 'offre' },
   { label: 'Compromis', value: 'compromis' },
-  { label: 'Signé', value: 'signe' },
+  { label: 'Acte signé', value: 'signe' },
+  { label: 'Clôturé', value: 'cloture' },
 ];
 
 export default function Dossiers() {

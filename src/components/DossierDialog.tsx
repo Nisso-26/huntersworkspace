@@ -60,7 +60,7 @@ export default function DossierDialog({ dossier, trigger }: Props) {
     { value: 'visite', label: 'Visites' },
     { value: 'offre', label: 'Offre' },
     { value: 'compromis', label: 'Compromis' },
-    { value: 'signe', label: 'Signé' },
+    { value: 'signe', label: 'Acte signé' },
     { value: 'cloture', label: 'Clôturé' },
   ];
 

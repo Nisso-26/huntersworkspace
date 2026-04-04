@@ -2,6 +2,7 @@ import AppLayout from '@/components/AppLayout';
 import StatusBadge from '@/components/StatusBadge';
 import { useDossiers, useUpdateDossier } from '@/hooks/use-dossiers';
 import DossierDialog from '@/components/DossierDialog';
+import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 

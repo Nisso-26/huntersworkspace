@@ -22,6 +22,7 @@ const columnColors: Record<string, string> = {
 export default function Pipeline() {
   const { data: dossiers = [], isLoading } = useDossiers();
   const updateMut = useUpdateDossier();
+  const { isAdmin } = useAuth();
 
   return (
     <AppLayout>

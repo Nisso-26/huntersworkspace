@@ -2,6 +2,7 @@ import AppLayout from '@/components/AppLayout';
 import StatusBadge from '@/components/StatusBadge';
 import { useDossiers, useUpdateDossier } from '@/hooks/use-dossiers';
 import DossierDialog from '@/components/DossierDialog';
+import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -21,14 +22,19 @@ const columnColors: Record<string, string> = {
 export default function Pipeline() {
   const { data: dossiers = [], isLoading } = useDossiers();
   const updateMut = useUpdateDossier();
+  const { isAdmin } = useAuth();
 
   return (
     <AppLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-heading font-bold text-foreground">Pipeline Réseau</h1>
-            <p className="text-muted-foreground mt-1">Vue Kanban de tous les dossiers par statut</p>
+            <h1 className="text-3xl font-heading font-bold text-foreground">
+              {isAdmin ? 'Pipeline Réseau' : 'Mon Pipeline'}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              {isAdmin ? 'Vue Kanban de tous les dossiers par statut' : 'Suivi de mes dossiers par étape'}
+            </p>
           </div>
           <DossierDialog />
         </div>

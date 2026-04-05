@@ -1,9 +1,12 @@
 import AppLayout from '@/components/AppLayout';
-import { Bell, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Bell, Clock, AlertTriangle, CheckCircle, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useAlertes, useMarkAlertRead } from '@/hooks/use-alertes';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useState } from 'react';
+import { useAlertSettings, matchesAlertSetting } from '@/hooks/use-alert-settings';
 
 const typeStyles = {
   urgente: { bg: 'bg-destructive/5 border-destructive/20', icon: AlertTriangle, iconColor: 'text-destructive' },
@@ -14,27 +17,55 @@ const typeStyles = {
 export default function Alertes() {
   const { data: alertes = [], isLoading } = useAlertes();
   const markRead = useMarkAlertRead();
+  const { settings } = useAlertSettings();
+  const [filterType, setFilterType] = useState<string>('all');
+
+  // Filter by enabled settings + type filter
+  const filtered = alertes.filter(a => {
+    const settingKey = matchesAlertSetting(a.title);
+    if (settingKey && !settings[settingKey]) return false;
+    if (filterType === 'all') return true;
+    if (filterType === 'unread') return !a.is_read;
+    return a.type === filterType;
+  });
 
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-foreground">Alertes & Échéances</h1>
-          <p className="text-muted-foreground mt-1">Suivi des délais et notifications du réseau</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-heading font-bold text-foreground">Alertes & Échéances</h1>
+            <p className="text-muted-foreground mt-1">Suivi des délais et notifications du réseau</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-muted-foreground" />
+            <Select value={filterType} onValueChange={setFilterType}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Filtrer" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes</SelectItem>
+                <SelectItem value="unread">Non lues</SelectItem>
+                <SelectItem value="urgente">Urgentes</SelectItem>
+                <SelectItem value="warning">Avertissements</SelectItem>
+                <SelectItem value="info">Informations</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
           </div>
-        ) : alertes.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="bg-card rounded-xl border shadow-card p-8 text-center">
             <CheckCircle className="w-10 h-10 text-hunters-success mx-auto mb-3" />
             <p className="text-muted-foreground">Aucune alerte pour le moment</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {alertes.map((a, idx) => {
+            {filtered.map((a, idx) => {
               const style = typeStyles[a.type as keyof typeof typeStyles] || typeStyles.info;
               return (
                 <motion.div

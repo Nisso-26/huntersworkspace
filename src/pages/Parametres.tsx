@@ -5,8 +5,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { User, Lock, MapPin, Shield } from 'lucide-react';
+import { User, Lock, MapPin, Shield, Bell } from 'lucide-react';
+import { useAlertSettings, type AlertSettings } from '@/hooks/use-alert-settings';
+
+const alertLabels: Record<keyof AlertSettings, { label: string; description: string }> = {
+  relance_client: { label: 'Relance client J+3', description: 'Alerte si un dossier reste en "Nouveau" après 3 jours' },
+  chasse_30j: { label: 'Chasse > 30 jours', description: 'Alerte si un dossier est en chasse depuis plus de 30 jours' },
+  compromis_rappel: { label: 'Rappels compromis', description: 'Alertes J-15 et J-7 avant signature acte' },
+  acte_signe_facture: { label: 'Facture acte signé', description: 'Alerte quand un dossier passe en "Acte signé"' },
+  pack_impaye: { label: 'Pack impayé', description: 'Alerte si un pack est impayé depuis plus de 5 jours' },
+  commission_attente: { label: 'Commission en attente', description: 'Alerte si une commission est due depuis plus de 30 jours' },
+  mandataire_inactif: { label: 'Mandataire inactif', description: 'Alerte si aucune activité depuis 60 jours' },
+};
 
 export default function Parametres() {
   const { user, role } = useAuth();
@@ -15,11 +27,11 @@ export default function Parametres() {
   const [saving, setSaving] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [changingPwd, setChangingPwd] = useState(false);
+  const { settings, toggle } = useAlertSettings();
 
   useEffect(() => {
     if (!user) return;
     setFullName(user.user_metadata?.full_name || '');
-    // Fetch profile for zone
     supabase.from('profiles').select('zone').eq('id', user.id).single().then(({ data }) => {
       if (data) setZone(data.zone || '');
     });
@@ -46,7 +58,7 @@ export default function Parametres() {
     else { toast.success('Mot de passe mis à jour'); setNewPassword(''); }
   };
 
-  const roleLabels: Record<string, string> = {
+  const roleLabelsMap: Record<string, string> = {
     super_admin: 'Super Admin',
     mandataire: 'Mandataire',
     decoratrice: 'Décoratrice',
@@ -81,7 +93,7 @@ export default function Parametres() {
               </div>
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary">
                 <Shield className="w-4 h-4 text-accent" />
-                <span className="text-sm text-foreground font-medium">{role ? roleLabels[role] : 'Chargement...'}</span>
+                <span className="text-sm text-foreground font-medium">{role ? roleLabelsMap[role] : 'Chargement...'}</span>
               </div>
               <Button onClick={updateProfile} disabled={saving}>
                 {saving ? 'Enregistrement...' : 'Enregistrer'}
@@ -103,6 +115,29 @@ export default function Parametres() {
                 {changingPwd ? 'Modification...' : 'Changer le mot de passe'}
               </Button>
             </div>
+          </div>
+        </div>
+
+        {/* Alert settings */}
+        <div className="bg-card rounded-xl border shadow-card p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Bell className="w-5 h-5 text-accent" />
+            <h2 className="font-heading font-semibold text-foreground">Notifications & Alertes</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">Activez ou désactivez chaque type d'alerte automatique</p>
+          <div className="space-y-4">
+            {(Object.keys(alertLabels) as Array<keyof AlertSettings>).map((key) => (
+              <div key={key} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                <div>
+                  <p className="text-sm font-medium text-foreground">{alertLabels[key].label}</p>
+                  <p className="text-xs text-muted-foreground">{alertLabels[key].description}</p>
+                </div>
+                <Switch
+                  checked={settings[key]}
+                  onCheckedChange={() => toggle(key)}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>

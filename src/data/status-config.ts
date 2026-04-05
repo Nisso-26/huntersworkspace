@@ -7,6 +7,13 @@ export const statusLabels: Record<string, string> = {
   compromis: 'Compromis',
   signe: 'Acte signé',
   cloture: 'Clôturé',
+  en_recherche: 'En recherche',
+  identifie: 'Identifié',
+  offre_faite: 'Offre faite',
+  acte: 'Acté',
+  en_travaux: 'En travaux',
+  loue: 'Loué',
+  vendu: 'Vendu',
 };
 
 export const statusColors: Record<string, string> = {

@@ -58,11 +58,9 @@ export default function SimulateurTab({ prixRevient, loyerMensuel, reference, ad
     try {
       const { default: jsPDF } = await import('jspdf');
       const doc = new jsPDF();
-      const green = [26, 77, 46];
-      const gold = [245, 168, 0];
 
       // Header
-      doc.setFillColor(...green);
+      doc.setFillColor(26, 77, 46);
       doc.rect(0, 0, 210, 35, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);

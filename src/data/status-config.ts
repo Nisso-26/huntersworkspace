@@ -18,6 +18,13 @@ export const statusColors: Record<string, string> = {
   compromis: 'bg-hunters-success/10 text-hunters-success',
   signe: 'bg-hunters-success/20 text-hunters-success',
   cloture: 'bg-muted text-muted-foreground',
+  en_recherche: 'bg-muted text-muted-foreground',
+  identifie: 'bg-hunters-info/10 text-hunters-info',
+  offre_faite: 'bg-accent/10 text-accent',
+  acte: 'bg-hunters-success/20 text-hunters-success',
+  en_travaux: 'bg-hunters-warning/10 text-hunters-warning',
+  loue: 'bg-hunters-success/10 text-hunters-success',
+  vendu: 'bg-muted text-muted-foreground',
 };
 
 export const pipelineStatuses = ['nouveau', 'conseil', 'chasse', 'visite', 'offre', 'compromis', 'signe', 'cloture'] as const;

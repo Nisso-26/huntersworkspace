@@ -107,7 +107,7 @@ export default function Biens() {
                       <td className="p-3">{b.ville || '—'}</td>
                       <td className="p-3 text-right">{b.prix_acquisition.toLocaleString('fr-FR')} €</td>
                       <td className="p-3">
-                        <StatusBadge status={b.statut} label={statutLabels[b.statut] || b.statut} />
+                        <StatusBadge status={b.statut} />
                       </td>
                       <td className="p-3">{b.mandataire_name}</td>
                       <td className="p-3 text-right font-semibold text-accent">{renta.toFixed(2)}%</td>

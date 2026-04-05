@@ -71,7 +71,7 @@ export default function SimulateurTab({ prixRevient, loyerMensuel, reference, ad
       doc.text('Rapport de simulation', 15, 28);
 
       // Gold line
-      doc.setDrawColor(...gold);
+      doc.setDrawColor(245, 168, 0);
       doc.setLineWidth(1.5);
       doc.line(0, 35, 210, 35);
 

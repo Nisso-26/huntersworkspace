@@ -47,8 +47,16 @@ export default function Pipeline() {
     try {
       await updateMut.mutateAsync({ id: dossierId, status: newStatus });
 
-      // Auto-create facture + commission when moving to "signe"
+      // Auto-create facture + commission + alerte when moving to "signe"
       if (newStatus === 'signe' && oldStatus !== 'signe') {
+        // Create alert for billing
+        await supabase.from('alertes').insert({
+          user_id: dossier.mandataire_id,
+          type: 'info',
+          title: `Émettre la facture pour ${dossier.client_name}`,
+          detail: 'Dossier passé en Acte signé — facture auto-générée',
+          dossier_id: dossier.id,
+        } as any);
         const ref = `FACT-${Date.now().toString(36).toUpperCase()}`;
 
         // Create facture (honoraires)

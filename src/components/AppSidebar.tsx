@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard, Users, FolderKanban, FileText, CreditCard, Bell, Settings, LogOut, ChevronLeft, ChevronRight,
+  LayoutDashboard, Users, FolderKanban, FileText, CreditCard, Bell, Settings, LogOut, ChevronLeft, ChevronRight, Home,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +11,7 @@ const allNavItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/', roles: ['super_admin', 'mandataire', 'decoratrice'] },
   { label: 'Pipeline', icon: FolderKanban, href: '/pipeline', roles: ['super_admin', 'mandataire', 'decoratrice'] },
   { label: 'Dossiers', icon: FileText, href: '/dossiers', roles: ['super_admin', 'mandataire', 'decoratrice'] },
+  { label: 'Biens', icon: Home, href: '/biens', roles: ['super_admin', 'mandataire', 'decoratrice'] },
   { label: 'Mandataires', icon: Users, href: '/mandataires', roles: ['super_admin'] },
   { label: 'Facturation', icon: CreditCard, href: '/facturation', roles: ['super_admin'] },
   { label: 'Alertes', icon: Bell, href: '/alertes', roles: ['super_admin', 'mandataire', 'decoratrice'] },

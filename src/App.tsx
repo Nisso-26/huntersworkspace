@@ -11,6 +11,7 @@ import Dossiers from "./pages/Dossiers";
 import Mandataires from "./pages/Mandataires";
 import Facturation from "./pages/Facturation";
 import Alertes from "./pages/Alertes";
+import Biens from "./pages/Biens";
 import Parametres from "./pages/Parametres";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";

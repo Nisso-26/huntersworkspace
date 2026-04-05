@@ -65,10 +65,12 @@ export default function Biens() {
         <SearchFilter
           search={search}
           onSearchChange={setSearch}
-          filterValue={statutFilter}
-          onFilterChange={setStatutFilter}
-          filterOptions={statutOptions}
-          filterPlaceholder="Statut"
+          filters={[{
+            label: 'Statut',
+            value: statutFilter,
+            options: statutOptions,
+            onChange: setStatutFilter,
+          }]}
         />
 
         {isLoading ? (

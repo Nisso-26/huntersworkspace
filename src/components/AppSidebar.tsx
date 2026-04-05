@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAlertes } from '@/hooks/use-alertes';
 import huntersLogo from '@/assets/hunters-logo.jpg';
 
 const allNavItems = [
@@ -26,6 +27,8 @@ export default function AppSidebar({ mobile = false }: AppSidebarProps) {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const { user, role, signOut } = useAuth();
+  const { data: alertes = [] } = useAlertes();
+  const unreadCount = alertes.filter(a => !a.is_read).length;
 
   const navItems = allNavItems.filter(item => !role || item.roles.includes(role));
 
@@ -60,19 +63,27 @@ export default function AppSidebar({ mobile = false }: AppSidebarProps) {
       <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = location.pathname === item.href;
+          const isAlertItem = item.href === '/alertes';
           return (
             <Link
               key={item.href}
               to={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-semibold tracking-wide transition-all duration-200 uppercase',
+                'flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-semibold tracking-wide transition-all duration-200 uppercase relative',
                 isActive
                   ? 'bg-sidebar-accent text-sidebar-primary shadow-gold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground',
                 isCollapsed && 'justify-center'
               )}
             >
-              <item.icon className={cn('w-5 h-5 flex-shrink-0', isActive && 'text-sidebar-primary')} />
+              <div className="relative flex-shrink-0">
+                <item.icon className={cn('w-5 h-5', isActive && 'text-sidebar-primary')} />
+                {isAlertItem && unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </div>
               {!isCollapsed && <span className="text-xs">{item.label}</span>}
             </Link>
           );

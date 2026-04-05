@@ -58,6 +58,77 @@ export type Database = {
           },
         ]
       }
+      biens: {
+        Row: {
+          adresse: string | null
+          budget_travaux: number | null
+          code_postal: string | null
+          created_at: string
+          dossier_id: string | null
+          frais_notaire: number | null
+          id: string
+          loyer_mensuel_cible: number | null
+          mandataire_id: string | null
+          notes: string | null
+          prix_acquisition: number | null
+          reference: string
+          regime_fiscal: string | null
+          statut: string
+          surface: number | null
+          type: string
+          updated_at: string
+          ville: string | null
+        }
+        Insert: {
+          adresse?: string | null
+          budget_travaux?: number | null
+          code_postal?: string | null
+          created_at?: string
+          dossier_id?: string | null
+          frais_notaire?: number | null
+          id?: string
+          loyer_mensuel_cible?: number | null
+          mandataire_id?: string | null
+          notes?: string | null
+          prix_acquisition?: number | null
+          reference: string
+          regime_fiscal?: string | null
+          statut?: string
+          surface?: number | null
+          type?: string
+          updated_at?: string
+          ville?: string | null
+        }
+        Update: {
+          adresse?: string | null
+          budget_travaux?: number | null
+          code_postal?: string | null
+          created_at?: string
+          dossier_id?: string | null
+          frais_notaire?: number | null
+          id?: string
+          loyer_mensuel_cible?: number | null
+          mandataire_id?: string | null
+          notes?: string | null
+          prix_acquisition?: number | null
+          reference?: string
+          regime_fiscal?: string | null
+          statut?: string
+          surface?: number | null
+          type?: string
+          updated_at?: string
+          ville?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "biens_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commissions: {
         Row: {
           created_at: string

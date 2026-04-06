@@ -216,7 +216,7 @@ export default function BienDialog({ bien, trigger }: Props) {
                 <Select value={form.dossier_id} onValueChange={v => set('dossier_id', v)}>
                   <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Aucun</SelectItem>
+                    <SelectItem value="none">Aucun</SelectItem>
                     {dossiers.map(d => <SelectItem key={d.id} value={d.id}>{d.client_name}</SelectItem>)}
                   </SelectContent>
                 </Select>

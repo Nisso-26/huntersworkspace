@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -105,7 +105,7 @@ export default function BienDialog({ bien, trigger }: Props) {
   const handleSubmit = () => {
     const payload: any = {
       ...form,
-      dossier_id: form.dossier_id || null,
+      dossier_id: form.dossier_id === 'none' || !form.dossier_id ? null : form.dossier_id,
       mandataire_id: form.mandataire_id || user?.id,
     };
     if (bien) {
@@ -133,6 +133,9 @@ export default function BienDialog({ bien, trigger }: Props) {
           <DialogTitle className="text-primary">
             {bien ? `Modifier ${bien.reference}` : 'Nouveau bien'}
           </DialogTitle>
+          <DialogDescription>
+            {bien ? 'Modifiez les informations du bien immobilier.' : 'Renseignez les informations du nouveau bien.'}
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="fiche">
@@ -213,7 +216,7 @@ export default function BienDialog({ bien, trigger }: Props) {
                 <Select value={form.dossier_id} onValueChange={v => set('dossier_id', v)}>
                   <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Aucun</SelectItem>
+                    <SelectItem value="none">Aucun</SelectItem>
                     {dossiers.map(d => <SelectItem key={d.id} value={d.id}>{d.client_name}</SelectItem>)}
                   </SelectContent>
                 </Select>

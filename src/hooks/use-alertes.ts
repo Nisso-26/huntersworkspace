@@ -23,8 +23,9 @@ export function useAlertes() {
   // Realtime subscription
   useEffect(() => {
     if (!user) return;
+    const channelName = `alertes-realtime-${user.id}-${Date.now()}`;
     const channel = supabase
-      .channel('alertes-realtime')
+      .channel(channelName)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alertes' }, () => {
         qc.invalidateQueries({ queryKey: ['alertes'] });
       })

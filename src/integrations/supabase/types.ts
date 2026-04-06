@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      achats_deco: {
+        Row: {
+          chantier_id: string
+          created_at: string
+          designation: string
+          fournisseur: string | null
+          id: string
+          lien_produit: string | null
+          montant: number | null
+          statut_livraison: string | null
+        }
+        Insert: {
+          chantier_id: string
+          created_at?: string
+          designation: string
+          fournisseur?: string | null
+          id?: string
+          lien_produit?: string | null
+          montant?: number | null
+          statut_livraison?: string | null
+        }
+        Update: {
+          chantier_id?: string
+          created_at?: string
+          designation?: string
+          fournisseur?: string | null
+          id?: string
+          lien_produit?: string | null
+          montant?: number | null
+          statut_livraison?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achats_deco_chantier_id_fkey"
+            columns: ["chantier_id"]
+            isOneToOne: false
+            referencedRelation: "chantiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alertes: {
         Row: {
           created_at: string
@@ -125,6 +166,62 @@ export type Database = {
             columns: ["dossier_id"]
             isOneToOne: false
             referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chantiers: {
+        Row: {
+          bien_id: string | null
+          budget_alloue: number | null
+          created_at: string
+          date_debut_prevue: string | null
+          date_debut_reelle: string | null
+          date_fin_prevue: string | null
+          date_fin_reelle: string | null
+          id: string
+          mandataire_id: string | null
+          notes: string | null
+          reference: string
+          statut: string
+          updated_at: string
+        }
+        Insert: {
+          bien_id?: string | null
+          budget_alloue?: number | null
+          created_at?: string
+          date_debut_prevue?: string | null
+          date_debut_reelle?: string | null
+          date_fin_prevue?: string | null
+          date_fin_reelle?: string | null
+          id?: string
+          mandataire_id?: string | null
+          notes?: string | null
+          reference: string
+          statut?: string
+          updated_at?: string
+        }
+        Update: {
+          bien_id?: string | null
+          budget_alloue?: number | null
+          created_at?: string
+          date_debut_prevue?: string | null
+          date_debut_reelle?: string | null
+          date_fin_prevue?: string | null
+          date_fin_reelle?: string | null
+          id?: string
+          mandataire_id?: string | null
+          notes?: string | null
+          reference?: string
+          statut?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chantiers_bien_id_fkey"
+            columns: ["bien_id"]
+            isOneToOne: false
+            referencedRelation: "biens"
             referencedColumns: ["id"]
           },
         ]
@@ -264,39 +361,54 @@ export type Database = {
       }
       factures: {
         Row: {
+          client_name: string | null
           created_at: string
+          date_echeance: string | null
           date_emission: string
           date_paiement: string | null
+          dossier_client_name: string | null
           dossier_id: string | null
           id: string
           mandataire_id: string | null
           montant: number
+          montant_ttc: number | null
           reference: string | null
           statut: string
+          tva_taux: number | null
           type: string
         }
         Insert: {
+          client_name?: string | null
           created_at?: string
+          date_echeance?: string | null
           date_emission?: string
           date_paiement?: string | null
+          dossier_client_name?: string | null
           dossier_id?: string | null
           id?: string
           mandataire_id?: string | null
           montant?: number
+          montant_ttc?: number | null
           reference?: string | null
           statut?: string
+          tva_taux?: number | null
           type?: string
         }
         Update: {
+          client_name?: string | null
           created_at?: string
+          date_echeance?: string | null
           date_emission?: string
           date_paiement?: string | null
+          dossier_client_name?: string | null
           dossier_id?: string | null
           id?: string
           mandataire_id?: string | null
           montant?: number
+          montant_ttc?: number | null
           reference?: string | null
           statut?: string
+          tva_taux?: number | null
           type?: string
         }
         Relationships: [
@@ -305,6 +417,98 @@ export type Database = {
             columns: ["dossier_id"]
             isOneToOne: false
             referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lots_travaux: {
+        Row: {
+          artisan: string | null
+          chantier_id: string
+          created_at: string
+          date_prevue: string | null
+          designation: string
+          id: string
+          montant_devis: number | null
+          montant_facture: number | null
+          statut: string
+        }
+        Insert: {
+          artisan?: string | null
+          chantier_id: string
+          created_at?: string
+          date_prevue?: string | null
+          designation: string
+          id?: string
+          montant_devis?: number | null
+          montant_facture?: number | null
+          statut?: string
+        }
+        Update: {
+          artisan?: string | null
+          chantier_id?: string
+          created_at?: string
+          date_prevue?: string | null
+          designation?: string
+          id?: string
+          montant_devis?: number | null
+          montant_facture?: number | null
+          statut?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lots_travaux_chantier_id_fkey"
+            columns: ["chantier_id"]
+            isOneToOne: false
+            referencedRelation: "chantiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      photos_chantier: {
+        Row: {
+          chantier_id: string
+          created_at: string
+          file_name: string
+          file_path: string
+          id: string
+          lot_id: string | null
+          tag: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          chantier_id: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          id?: string
+          lot_id?: string | null
+          tag?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          chantier_id?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          lot_id?: string | null
+          tag?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photos_chantier_chantier_id_fkey"
+            columns: ["chantier_id"]
+            isOneToOne: false
+            referencedRelation: "chantiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photos_chantier_lot_id_fkey"
+            columns: ["lot_id"]
+            isOneToOne: false
+            referencedRelation: "lots_travaux"
             referencedColumns: ["id"]
           },
         ]

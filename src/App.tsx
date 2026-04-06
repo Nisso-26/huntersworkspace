@@ -12,6 +12,7 @@ import Mandataires from "./pages/Mandataires";
 import Facturation from "./pages/Facturation";
 import Alertes from "./pages/Alertes";
 import Biens from "./pages/Biens";
+import Chantiers from "./pages/Chantiers";
 import Parametres from "./pages/Parametres";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/dossiers" element={<ProtectedRoute><Dossiers /></ProtectedRoute>} />
             <Route path="/biens" element={<ProtectedRoute><Biens /></ProtectedRoute>} />
             <Route path="/mandataires" element={<ProtectedRoute requiredRole="super_admin"><Mandataires /></ProtectedRoute>} />
+            <Route path="/chantiers" element={<ProtectedRoute><Chantiers /></ProtectedRoute>} />
             <Route path="/facturation" element={<ProtectedRoute requiredRole="super_admin"><Facturation /></ProtectedRoute>} />
             <Route path="/alertes" element={<ProtectedRoute><Alertes /></ProtectedRoute>} />
             <Route path="/parametres" element={<ProtectedRoute><Parametres /></ProtectedRoute>} />

@@ -133,6 +133,9 @@ export default function BienDialog({ bien, trigger }: Props) {
           <DialogTitle className="text-primary">
             {bien ? `Modifier ${bien.reference}` : 'Nouveau bien'}
           </DialogTitle>
+          <DialogDescription>
+            {bien ? 'Modifiez les informations du bien immobilier.' : 'Renseignez les informations du nouveau bien.'}
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="fiche">

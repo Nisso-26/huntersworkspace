@@ -105,7 +105,7 @@ export default function BienDialog({ bien, trigger }: Props) {
   const handleSubmit = () => {
     const payload: any = {
       ...form,
-      dossier_id: form.dossier_id || null,
+      dossier_id: form.dossier_id === 'none' || !form.dossier_id ? null : form.dossier_id,
       mandataire_id: form.mandataire_id || user?.id,
     };
     if (bien) {

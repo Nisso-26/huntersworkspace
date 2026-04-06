@@ -39,6 +39,7 @@ export default function FactureDialog() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Nouvelle facture</DialogTitle>
+          <DialogDescription>Créez une nouvelle facture pour un mandataire.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

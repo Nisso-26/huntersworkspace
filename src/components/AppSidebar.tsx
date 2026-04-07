@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard, Users, FolderKanban, FileText, CreditCard, Bell, Settings, LogOut, ChevronLeft, ChevronRight, Home, HardHat,
+  LayoutDashboard, Users, FolderKanban, FileText, CreditCard, Bell, Settings, LogOut, ChevronLeft, ChevronRight, Home, HardHat, CalendarDays,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';

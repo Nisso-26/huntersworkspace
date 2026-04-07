@@ -13,7 +13,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
-  User, Lock, MapPin, Shield, Bell, Building2, Receipt, Network, FileText, History, Plus, Trash2, Save, AlertTriangle,
+  User, Lock, MapPin, Shield, Bell, Building2, Receipt, Network, FileText, History, Plus, Trash2, Save, AlertTriangle, UserPlus,
 } from 'lucide-react';
 import { useAlertSettings, type AlertSettings } from '@/hooks/use-alert-settings';
 import {

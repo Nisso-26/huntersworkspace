@@ -23,6 +23,7 @@ import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import ClientPortal from "./pages/ClientPortal";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/messagerie" element={<ProtectedRoute><Messagerie /></ProtectedRoute>} />
             <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
             <Route path="/parametres" element={<ProtectedRoute><Parametres /></ProtectedRoute>} />
+            <Route path="/client/:token" element={<ClientPortal />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

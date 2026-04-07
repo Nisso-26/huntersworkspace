@@ -77,10 +77,10 @@ export default function ExportComptable() {
             </div>
             <div className="space-y-2">
               <Label>Mandataire</Label>
-              <Select value={mandataireFilter} onValueChange={setMandataireFilter}>
+              <Select value={mandataireFilter || '__all__'} onValueChange={v => setMandataireFilter(v === '__all__' ? '' : v)}>
                 <SelectTrigger><SelectValue placeholder="Tous" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous</SelectItem>
+                  <SelectItem value="__all__">Tous</SelectItem>
                   {mandataires.map(m => <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>)}
                 </SelectContent>
               </Select>

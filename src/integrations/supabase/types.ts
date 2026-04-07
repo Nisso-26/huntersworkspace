@@ -18,31 +18,52 @@ export type Database = {
         Row: {
           chantier_id: string
           created_at: string
+          date_commande: string | null
+          date_livraison_estimee: string | null
+          date_livraison_reelle: string | null
           designation: string
           fournisseur: string | null
           id: string
           lien_produit: string | null
           montant: number | null
+          piece: string | null
+          prix_unitaire: number | null
+          quantite: number | null
+          reference_produit: string | null
           statut_livraison: string | null
         }
         Insert: {
           chantier_id: string
           created_at?: string
+          date_commande?: string | null
+          date_livraison_estimee?: string | null
+          date_livraison_reelle?: string | null
           designation: string
           fournisseur?: string | null
           id?: string
           lien_produit?: string | null
           montant?: number | null
+          piece?: string | null
+          prix_unitaire?: number | null
+          quantite?: number | null
+          reference_produit?: string | null
           statut_livraison?: string | null
         }
         Update: {
           chantier_id?: string
           created_at?: string
+          date_commande?: string | null
+          date_livraison_estimee?: string | null
+          date_livraison_reelle?: string | null
           designation?: string
           fournisseur?: string | null
           id?: string
           lien_produit?: string | null
           montant?: number | null
+          piece?: string | null
+          prix_unitaire?: number | null
+          quantite?: number | null
+          reference_produit?: string | null
           statut_livraison?: string | null
         }
         Relationships: [
@@ -612,34 +633,43 @@ export type Database = {
       lots_travaux: {
         Row: {
           artisan: string | null
+          avancement: number | null
           chantier_id: string
+          contact_artisan: string | null
           created_at: string
           date_prevue: string | null
           designation: string
           id: string
           montant_devis: number | null
+          montant_engage: number | null
           montant_facture: number | null
           statut: string
         }
         Insert: {
           artisan?: string | null
+          avancement?: number | null
           chantier_id: string
+          contact_artisan?: string | null
           created_at?: string
           date_prevue?: string | null
           designation: string
           id?: string
           montant_devis?: number | null
+          montant_engage?: number | null
           montant_facture?: number | null
           statut?: string
         }
         Update: {
           artisan?: string | null
+          avancement?: number | null
           chantier_id?: string
+          contact_artisan?: string | null
           created_at?: string
           date_prevue?: string | null
           designation?: string
           id?: string
           montant_devis?: number | null
+          montant_engage?: number | null
           montant_facture?: number | null
           statut?: string
         }
@@ -660,7 +690,9 @@ export type Database = {
           file_name: string
           file_path: string
           id: string
+          legende: string | null
           lot_id: string | null
+          piece: string | null
           tag: string | null
           uploaded_by: string | null
         }
@@ -670,7 +702,9 @@ export type Database = {
           file_name: string
           file_path: string
           id?: string
+          legende?: string | null
           lot_id?: string | null
+          piece?: string | null
           tag?: string | null
           uploaded_by?: string | null
         }
@@ -680,7 +714,9 @@ export type Database = {
           file_name?: string
           file_path?: string
           id?: string
+          legende?: string | null
           lot_id?: string | null
+          piece?: string | null
           tag?: string | null
           uploaded_by?: string | null
         }
@@ -697,6 +733,41 @@ export type Database = {
             columns: ["lot_id"]
             isOneToOne: false
             referencedRelation: "lots_travaux"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      photos_visite: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_path: string
+          id: string
+          legende: string | null
+          visite_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_path: string
+          id?: string
+          legende?: string | null
+          visite_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          legende?: string | null
+          visite_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photos_visite_visite_id_fkey"
+            columns: ["visite_id"]
+            isOneToOne: false
+            referencedRelation: "visites_chantier"
             referencedColumns: ["id"]
           },
         ]
@@ -802,6 +873,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      visites_chantier: {
+        Row: {
+          chantier_id: string
+          created_at: string
+          created_by: string
+          date_visite: string
+          id: string
+          observations: string | null
+          personnes_presentes: string | null
+          points_vigilance: string | null
+          prochaines_actions: Json | null
+        }
+        Insert: {
+          chantier_id: string
+          created_at?: string
+          created_by: string
+          date_visite?: string
+          id?: string
+          observations?: string | null
+          personnes_presentes?: string | null
+          points_vigilance?: string | null
+          prochaines_actions?: Json | null
+        }
+        Update: {
+          chantier_id?: string
+          created_at?: string
+          created_by?: string
+          date_visite?: string
+          id?: string
+          observations?: string | null
+          personnes_presentes?: string | null
+          points_vigilance?: string | null
+          prochaines_actions?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visites_chantier_chantier_id_fkey"
+            columns: ["chantier_id"]
+            isOneToOne: false
+            referencedRelation: "chantiers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

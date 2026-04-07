@@ -623,6 +623,7 @@ export default function Parametres() {
         {isAdmin && (
           <Tabs defaultValue="identite" className="space-y-4">
             <TabsList className="flex-wrap h-auto">
+              <TabsTrigger value="utilisateurs"><UserPlus className="w-4 h-4 mr-1" />Utilisateurs</TabsTrigger>
               <TabsTrigger value="identite"><Building2 className="w-4 h-4 mr-1" />Société</TabsTrigger>
               <TabsTrigger value="honoraires"><Receipt className="w-4 h-4 mr-1" />Honoraires</TabsTrigger>
               <TabsTrigger value="economique"><Network className="w-4 h-4 mr-1" />Réseau</TabsTrigger>
@@ -630,6 +631,7 @@ export default function Parametres() {
               <TabsTrigger value="notifications"><Bell className="w-4 h-4 mr-1" />Alertes</TabsTrigger>
               <TabsTrigger value="audit"><History className="w-4 h-4 mr-1" />Journal</TabsTrigger>
             </TabsList>
+            <TabsContent value="utilisateurs"><GestionUtilisateurs /></TabsContent>
             <TabsContent value="identite"><IdentiteSociete /></TabsContent>
             <TabsContent value="honoraires"><BaremeHonoraires /></TabsContent>
             <TabsContent value="economique"><ModeleEconomique /></TabsContent>

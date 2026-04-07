@@ -247,6 +247,89 @@ export type Database = {
           },
         ]
       }
+      client_comments: {
+        Row: {
+          content: string
+          created_at: string
+          dossier_id: string
+          id: string
+          token_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          dossier_id: string
+          id?: string
+          token_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          dossier_id?: string
+          id?: string
+          token_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_comments_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_comments_token_id_fkey"
+            columns: ["token_id"]
+            isOneToOne: false
+            referencedRelation: "client_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_tokens: {
+        Row: {
+          client_email: string | null
+          client_name: string
+          created_at: string
+          created_by: string
+          dossier_id: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          token: string
+        }
+        Insert: {
+          client_email?: string | null
+          client_name: string
+          created_at?: string
+          created_by: string
+          dossier_id: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          token?: string
+        }
+        Update: {
+          client_email?: string | null
+          client_name?: string
+          created_at?: string
+          created_by?: string
+          dossier_id?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tokens_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commissions: {
         Row: {
           created_at: string
@@ -1068,6 +1151,62 @@ export type Database = {
           user_name?: string | null
         }
         Relationships: []
+      }
+      signature_requests: {
+        Row: {
+          created_at: string
+          created_by: string
+          document_name: string
+          document_type: string
+          dossier_id: string
+          id: string
+          signed_at: string | null
+          signed_document_path: string | null
+          signer_email: string
+          signer_name: string
+          status: string
+          updated_at: string
+          yousign_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          document_name: string
+          document_type?: string
+          dossier_id: string
+          id?: string
+          signed_at?: string | null
+          signed_document_path?: string | null
+          signer_email: string
+          signer_name: string
+          status?: string
+          updated_at?: string
+          yousign_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          document_name?: string
+          document_type?: string
+          dossier_id?: string
+          id?: string
+          signed_at?: string | null
+          signed_document_path?: string | null
+          signer_email?: string
+          signer_name?: string
+          status?: string
+          updated_at?: string
+          yousign_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signature_requests_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

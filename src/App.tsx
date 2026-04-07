@@ -38,13 +38,17 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/prospects" element={<ProtectedRoute><Prospects /></ProtectedRoute>} />
             <Route path="/pipeline" element={<ProtectedRoute><Pipeline /></ProtectedRoute>} />
             <Route path="/dossiers" element={<ProtectedRoute><Dossiers /></ProtectedRoute>} />
             <Route path="/biens" element={<ProtectedRoute><Biens /></ProtectedRoute>} />
             <Route path="/mandataires" element={<ProtectedRoute requiredRole="super_admin"><Mandataires /></ProtectedRoute>} />
+            <Route path="/partenaires" element={<ProtectedRoute><Partenaires /></ProtectedRoute>} />
             <Route path="/chantiers" element={<ProtectedRoute><Chantiers /></ProtectedRoute>} />
             <Route path="/facturation" element={<ProtectedRoute requiredRole="super_admin"><Facturation /></ProtectedRoute>} />
+            <Route path="/export-comptable" element={<ProtectedRoute requiredRole="super_admin"><ExportComptable /></ProtectedRoute>} />
             <Route path="/alertes" element={<ProtectedRoute><Alertes /></ProtectedRoute>} />
+            <Route path="/messagerie" element={<ProtectedRoute><Messagerie /></ProtectedRoute>} />
             <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
             <Route path="/parametres" element={<ProtectedRoute><Parametres /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />

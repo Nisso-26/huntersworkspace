@@ -1,21 +1,26 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard, Users, FolderKanban, FileText, CreditCard, Bell, Settings, LogOut, ChevronLeft, ChevronRight, Home, HardHat, CalendarDays,
+  LayoutDashboard, Users, FolderKanban, FileText, CreditCard, Bell, Settings, LogOut, ChevronLeft, ChevronRight, Home, HardHat, CalendarDays, UserPlus, Briefcase, MessageSquare, FileSpreadsheet,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAlertes } from '@/hooks/use-alertes';
+import { useUnreadTotal } from '@/hooks/use-messagerie';
 import huntersLogo from '@/assets/hunters-logo.jpg';
 
 const allNavItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/', roles: ['super_admin', 'mandataire', 'decoratrice'] },
+  { label: 'Prospects', icon: UserPlus, href: '/prospects', roles: ['super_admin', 'mandataire'] },
   { label: 'Pipeline', icon: FolderKanban, href: '/pipeline', roles: ['super_admin', 'mandataire', 'decoratrice'] },
   { label: 'Dossiers', icon: FileText, href: '/dossiers', roles: ['super_admin', 'mandataire', 'decoratrice'] },
   { label: 'Biens', icon: Home, href: '/biens', roles: ['super_admin', 'mandataire', 'decoratrice'] },
   { label: 'Mandataires', icon: Users, href: '/mandataires', roles: ['super_admin'] },
+  { label: 'Partenaires', icon: Briefcase, href: '/partenaires', roles: ['super_admin', 'mandataire'] },
   { label: 'Chantiers', icon: HardHat, href: '/chantiers', roles: ['super_admin', 'mandataire', 'decoratrice'] },
   { label: 'Facturation', icon: CreditCard, href: '/facturation', roles: ['super_admin'] },
+  { label: 'Export compta', icon: FileSpreadsheet, href: '/export-comptable', roles: ['super_admin'] },
+  { label: 'Messagerie', icon: MessageSquare, href: '/messagerie', roles: ['super_admin', 'mandataire'] },
   { label: 'Agenda', icon: CalendarDays, href: '/agenda', roles: ['super_admin', 'mandataire', 'decoratrice'] },
   { label: 'Alertes', icon: Bell, href: '/alertes', roles: ['super_admin', 'mandataire', 'decoratrice'] },
   { label: 'Paramètres', icon: Settings, href: '/parametres', roles: ['super_admin', 'mandataire', 'decoratrice'] },

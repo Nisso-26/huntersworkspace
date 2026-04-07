@@ -114,10 +114,10 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
           </div>
           <div className="space-y-2">
             <Label>Parrain</Label>
-            <Select value={form.parrain_id} onValueChange={v => setForm(f => ({ ...f, parrain_id: v }))}>
+            <Select value={form.parrain_id || '__none__'} onValueChange={v => setForm(f => ({ ...f, parrain_id: v === '__none__' ? '' : v }))}>
               <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Aucun</SelectItem>
+                <SelectItem value="__none__">Aucun</SelectItem>
                 {mandataires.filter(x => x.id !== m.id).map(x => (
                   <SelectItem key={x.id} value={x.id}>{x.full_name}</SelectItem>
                 ))}

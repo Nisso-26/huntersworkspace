@@ -1,4 +1,5 @@
 import AppLayout from '@/components/AppLayout';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';

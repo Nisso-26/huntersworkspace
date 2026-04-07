@@ -14,6 +14,7 @@ import Alertes from "./pages/Alertes";
 import Biens from "./pages/Biens";
 import Chantiers from "./pages/Chantiers";
 import Parametres from "./pages/Parametres";
+import Agenda from "./pages/Agenda";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/chantiers" element={<ProtectedRoute><Chantiers /></ProtectedRoute>} />
             <Route path="/facturation" element={<ProtectedRoute requiredRole="super_admin"><Facturation /></ProtectedRoute>} />
             <Route path="/alertes" element={<ProtectedRoute><Alertes /></ProtectedRoute>} />
+            <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
             <Route path="/parametres" element={<ProtectedRoute><Parametres /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

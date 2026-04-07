@@ -359,6 +359,62 @@ export type Database = {
         }
         Relationships: []
       }
+      evenements: {
+        Row: {
+          created_at: string | null
+          date_debut: string
+          date_fin: string
+          dossier_id: string | null
+          id: string
+          is_reseau: boolean | null
+          lieu: string | null
+          mandataire_id: string
+          notes: string | null
+          rappel: string | null
+          titre: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date_debut: string
+          date_fin: string
+          dossier_id?: string | null
+          id?: string
+          is_reseau?: boolean | null
+          lieu?: string | null
+          mandataire_id: string
+          notes?: string | null
+          rappel?: string | null
+          titre: string
+          type?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date_debut?: string
+          date_fin?: string
+          dossier_id?: string | null
+          id?: string
+          is_reseau?: boolean | null
+          lieu?: string | null
+          mandataire_id?: string
+          notes?: string | null
+          rappel?: string | null
+          titre?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evenements_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       factures: {
         Row: {
           client_name: string | null

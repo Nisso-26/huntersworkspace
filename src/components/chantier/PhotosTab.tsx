@@ -80,7 +80,7 @@ export default function PhotosTab({ chantierId, photos }: Props) {
   const getUrl = (path: string) => signedUrls[path] || '';
 
   // Generate signed URLs for all photos
-  useState(() => {
+  useEffect(() => {
     const paths = photos.map(p => p.file_path);
     if (paths.length > 0) {
       supabase.storage.from('chantier-photos').createSignedUrls(paths, 3600).then(({ data }) => {
@@ -93,7 +93,7 @@ export default function PhotosTab({ chantierId, photos }: Props) {
         }
       });
     }
-  });
+  }, [photos]);
 
   const filtered = photos.filter(p => {
     if (filterPhase !== 'all' && p.tag !== filterPhase) return false;

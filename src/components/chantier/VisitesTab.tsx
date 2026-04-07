@@ -94,7 +94,7 @@ export default function VisitesTab({ chantierId, visites }: Props) {
   const getPhotoUrl = (path: string) => signedUrls[path] || '';
 
   // Generate signed URLs when visites change
-  useState(() => {
+  useEffect(() => {
     const allPaths = visites.flatMap(v => (v.photos || []).map((p: any) => p.file_path));
     if (allPaths.length > 0) {
       supabase.storage.from('visites-photos').createSignedUrls(allPaths, 3600).then(({ data }) => {
@@ -107,7 +107,7 @@ export default function VisitesTab({ chantierId, visites }: Props) {
         }
       });
     }
-  });
+  }, [visites]);
 
   return (
     <div className="space-y-4">

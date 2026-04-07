@@ -58,10 +58,10 @@ function NewConversationDialog({ onCreated }: { onCreated: (id: string) => void 
           )}
           <div className="space-y-2">
             <Label>Lier à un dossier (optionnel)</Label>
-            <Select value={dossierId} onValueChange={setDossierId}>
+            <Select value={dossierId} onValueChange={v => setDossierId(v === '__none__' ? '' : v)}>
               <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Aucun</SelectItem>
+                <SelectItem value="__none__">Aucun</SelectItem>
                 {dossiers.map(d => <SelectItem key={d.id} value={d.id}>{d.client_name}</SelectItem>)}
               </SelectContent>
             </Select>

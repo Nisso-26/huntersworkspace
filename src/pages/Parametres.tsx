@@ -621,7 +621,7 @@ export default function Parametres() {
 
         {/* Admin-only settings */}
         {isAdmin && (
-          <Tabs defaultValue="identite" className="space-y-4">
+          <Tabs defaultValue="utilisateurs" className="space-y-4">
             <TabsList className="flex-wrap h-auto">
               <TabsTrigger value="utilisateurs"><UserPlus className="w-4 h-4 mr-1" />Utilisateurs</TabsTrigger>
               <TabsTrigger value="identite"><Building2 className="w-4 h-4 mr-1" />Société</TabsTrigger>

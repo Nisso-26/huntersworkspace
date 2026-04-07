@@ -21,7 +21,7 @@ const Partenaires = lazy(() => import("./pages/Partenaires"));
 const Messagerie = lazy(() => import("./pages/Messagerie"));
 const ExportComptable = lazy(() => import("./pages/ExportComptable"));
 const Login = lazy(() => import("./pages/Login"));
-const Signup = lazy(() => import("./pages/Signup"));
+
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound"));

@@ -267,6 +267,108 @@ export type Database = {
           },
         ]
       }
+      company_settings: {
+        Row: {
+          adresse_siege: string | null
+          assureur_police: string | null
+          assureur_rcp: string | null
+          carte_t_expiration: string | null
+          carte_t_numero: string | null
+          carte_t_organisme: string | null
+          clause_mediation: string | null
+          clause_retractation: string | null
+          clause_rgpd: string | null
+          couleur_primaire: string | null
+          couleur_secondaire: string | null
+          created_at: string | null
+          delai_suspension_jours: number | null
+          email_alertes_dirigeant: string | null
+          email_contact: string | null
+          entete_document: string | null
+          forme_juridique: string | null
+          frequence_rapport: string | null
+          id: string
+          logo_url: string | null
+          mentions_legales: string | null
+          periode_essai_jours: number | null
+          pied_page_document: string | null
+          raison_sociale: string | null
+          siret: string | null
+          site_web: string | null
+          tarif_abonnement_defaut: number | null
+          taux_commission_siege: number | null
+          telephone: string | null
+          tva_taux_defaut: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          adresse_siege?: string | null
+          assureur_police?: string | null
+          assureur_rcp?: string | null
+          carte_t_expiration?: string | null
+          carte_t_numero?: string | null
+          carte_t_organisme?: string | null
+          clause_mediation?: string | null
+          clause_retractation?: string | null
+          clause_rgpd?: string | null
+          couleur_primaire?: string | null
+          couleur_secondaire?: string | null
+          created_at?: string | null
+          delai_suspension_jours?: number | null
+          email_alertes_dirigeant?: string | null
+          email_contact?: string | null
+          entete_document?: string | null
+          forme_juridique?: string | null
+          frequence_rapport?: string | null
+          id?: string
+          logo_url?: string | null
+          mentions_legales?: string | null
+          periode_essai_jours?: number | null
+          pied_page_document?: string | null
+          raison_sociale?: string | null
+          siret?: string | null
+          site_web?: string | null
+          tarif_abonnement_defaut?: number | null
+          taux_commission_siege?: number | null
+          telephone?: string | null
+          tva_taux_defaut?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          adresse_siege?: string | null
+          assureur_police?: string | null
+          assureur_rcp?: string | null
+          carte_t_expiration?: string | null
+          carte_t_numero?: string | null
+          carte_t_organisme?: string | null
+          clause_mediation?: string | null
+          clause_retractation?: string | null
+          clause_rgpd?: string | null
+          couleur_primaire?: string | null
+          couleur_secondaire?: string | null
+          created_at?: string | null
+          delai_suspension_jours?: number | null
+          email_alertes_dirigeant?: string | null
+          email_contact?: string | null
+          entete_document?: string | null
+          forme_juridique?: string | null
+          frequence_rapport?: string | null
+          id?: string
+          logo_url?: string | null
+          mentions_legales?: string | null
+          periode_essai_jours?: number | null
+          pied_page_document?: string | null
+          raison_sociale?: string | null
+          siret?: string | null
+          site_web?: string | null
+          tarif_abonnement_defaut?: number | null
+          taux_commission_siege?: number | null
+          telephone?: string | null
+          tva_taux_defaut?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string
@@ -477,6 +579,36 @@ export type Database = {
           },
         ]
       }
+      honoraires_tranches: {
+        Row: {
+          created_at: string | null
+          id: string
+          montant_minimum: number | null
+          ordre: number
+          prix_max: number | null
+          prix_min: number
+          taux: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          montant_minimum?: number | null
+          ordre?: number
+          prix_max?: number | null
+          prix_min?: number
+          taux?: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          montant_minimum?: number | null
+          ordre?: number
+          prix_max?: number | null
+          prix_min?: number
+          taux?: number
+        }
+        Relationships: []
+      }
       lots_travaux: {
         Row: {
           artisan: string | null
@@ -617,6 +749,36 @@ export type Database = {
           status?: string | null
           updated_at?: string
           zone?: string | null
+        }
+        Relationships: []
+      }
+      settings_audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          section: string
+          user_id: string
+          user_name: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          section: string
+          user_id: string
+          user_name?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          section?: string
+          user_id?: string
+          user_name?: string | null
         }
         Relationships: []
       }

@@ -1,29 +1,37 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import Dashboard from "./pages/Dashboard";
-import Pipeline from "./pages/Pipeline";
-import Dossiers from "./pages/Dossiers";
-import Mandataires from "./pages/Mandataires";
-import Facturation from "./pages/Facturation";
-import Alertes from "./pages/Alertes";
-import Biens from "./pages/Biens";
-import Chantiers from "./pages/Chantiers";
-import Parametres from "./pages/Parametres";
-import Agenda from "./pages/Agenda";
-import Prospects from "./pages/Prospects";
-import Partenaires from "./pages/Partenaires";
-import Messagerie from "./pages/Messagerie";
-import ExportComptable from "./pages/ExportComptable";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import NotFound from "./pages/NotFound";
-import ClientPortal from "./pages/ClientPortal";
+
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Pipeline = lazy(() => import("./pages/Pipeline"));
+const Dossiers = lazy(() => import("./pages/Dossiers"));
+const Mandataires = lazy(() => import("./pages/Mandataires"));
+const Facturation = lazy(() => import("./pages/Facturation"));
+const Alertes = lazy(() => import("./pages/Alertes"));
+const Biens = lazy(() => import("./pages/Biens"));
+const Chantiers = lazy(() => import("./pages/Chantiers"));
+const Parametres = lazy(() => import("./pages/Parametres"));
+const Agenda = lazy(() => import("./pages/Agenda"));
+const Prospects = lazy(() => import("./pages/Prospects"));
+const Partenaires = lazy(() => import("./pages/Partenaires"));
+const Messagerie = lazy(() => import("./pages/Messagerie"));
+const ExportComptable = lazy(() => import("./pages/ExportComptable"));
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const ClientPortal = lazy(() => import("./pages/ClientPortal"));
+
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+  </div>
+);
 
 const queryClient = new QueryClient();
 

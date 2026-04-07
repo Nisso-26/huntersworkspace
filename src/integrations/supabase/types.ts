@@ -390,6 +390,41 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          created_at: string
+          dossier_id: string | null
+          id: string
+          last_message_at: string | null
+          mandataire_id: string
+          sujet: string
+        }
+        Insert: {
+          created_at?: string
+          dossier_id?: string | null
+          id?: string
+          last_message_at?: string | null
+          mandataire_id: string
+          sujet?: string
+        }
+        Update: {
+          created_at?: string
+          dossier_id?: string | null
+          id?: string
+          last_message_at?: string | null
+          mandataire_id?: string
+          sujet?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           created_at: string
@@ -683,6 +718,128 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          file_name: string | null
+          file_path: string | null
+          id: string
+          is_read: boolean
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          is_read?: boolean
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          is_read?: boolean
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partenaire_dossiers: {
+        Row: {
+          created_at: string
+          dossier_id: string
+          id: string
+          partenaire_id: string
+          role_dans_dossier: string | null
+        }
+        Insert: {
+          created_at?: string
+          dossier_id: string
+          id?: string
+          partenaire_id: string
+          role_dans_dossier?: string | null
+        }
+        Update: {
+          created_at?: string
+          dossier_id?: string
+          id?: string
+          partenaire_id?: string
+          role_dans_dossier?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partenaire_dossiers_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partenaire_dossiers_partenaire_id_fkey"
+            columns: ["partenaire_id"]
+            isOneToOne: false
+            referencedRelation: "partenaires"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partenaires: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          nom: string
+          notes: string | null
+          societe: string | null
+          specialite: string
+          telephone: string | null
+          updated_at: string
+          ville: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          nom: string
+          notes?: string | null
+          societe?: string | null
+          specialite?: string
+          telephone?: string | null
+          updated_at?: string
+          ville?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          nom?: string
+          notes?: string | null
+          societe?: string | null
+          specialite?: string
+          telephone?: string | null
+          updated_at?: string
+          ville?: string | null
+        }
+        Relationships: []
+      }
       photos_chantier: {
         Row: {
           chantier_id: string
@@ -822,6 +979,65 @@ export type Database = {
           zone?: string | null
         }
         Relationships: []
+      }
+      prospects: {
+        Row: {
+          budget_estime: number | null
+          created_at: string
+          dossier_id: string | null
+          email: string | null
+          id: string
+          mandataire_id: string | null
+          motif_perte: string | null
+          nom: string
+          notes: string | null
+          objectif: string | null
+          source: string | null
+          statut: string
+          telephone: string | null
+          updated_at: string
+        }
+        Insert: {
+          budget_estime?: number | null
+          created_at?: string
+          dossier_id?: string | null
+          email?: string | null
+          id?: string
+          mandataire_id?: string | null
+          motif_perte?: string | null
+          nom: string
+          notes?: string | null
+          objectif?: string | null
+          source?: string | null
+          statut?: string
+          telephone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          budget_estime?: number | null
+          created_at?: string
+          dossier_id?: string | null
+          email?: string | null
+          id?: string
+          mandataire_id?: string | null
+          motif_perte?: string | null
+          nom?: string
+          notes?: string | null
+          objectif?: string | null
+          source?: string | null
+          statut?: string
+          telephone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospects_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       settings_audit_log: {
         Row: {

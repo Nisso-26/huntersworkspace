@@ -200,7 +200,7 @@ export default function LotsTab({ chantierId, lots, budgetAlloue }: Props) {
           </Select>
           <Input placeholder="Artisan" value={newLot.artisan} onChange={e => setNewLot(l => ({ ...l, artisan: e.target.value }))} />
           <Input type="number" placeholder="Devis €" value={newLot.montant_devis || ''} onChange={e => setNewLot(l => ({ ...l, montant_devis: Number(e.target.value) || 0 }))} />
-          <Input type="number" placeholder="Date prévue" type="date" value={newLot.date_prevue} onChange={e => setNewLot(l => ({ ...l, date_prevue: e.target.value }))} />
+          <Input type="date" placeholder="Date prévue" value={newLot.date_prevue} onChange={e => setNewLot(l => ({ ...l, date_prevue: e.target.value }))} />
         </div>
         <Button size="sm" onClick={addLot} disabled={!newLot.designation}><Plus className="w-4 h-4 mr-1" /> Ajouter</Button>
       </div>

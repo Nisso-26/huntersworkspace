@@ -52,6 +52,7 @@ const App = () => (
             <Route path="/messagerie" element={<ProtectedRoute><Messagerie /></ProtectedRoute>} />
             <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
             <Route path="/parametres" element={<ProtectedRoute><Parametres /></ProtectedRoute>} />
+            <Route path="/client/:token" element={<ClientPortal />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

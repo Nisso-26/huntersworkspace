@@ -490,6 +490,7 @@ function JournalAudit() {
 }
 
 function GestionUtilisateurs() {
+  const { user: currentUser } = useAuth();
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
@@ -497,6 +498,8 @@ function GestionUtilisateurs() {
   const [creating, setCreating] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ userId: string; action: string; name: string } | null>(null);
 
   useEffect(() => {
     loadUsers();
@@ -525,7 +528,6 @@ function GestionUtilisateurs() {
     }
     setCreating(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
       const res = await supabase.functions.invoke('create-user', {
         body: { email, password, full_name: fullName, role },
       });
@@ -541,6 +543,24 @@ function GestionUtilisateurs() {
     }
   };
 
+  const handleUserAction = async (userId: string, action: string) => {
+    setActionLoading(userId);
+    try {
+      const res = await supabase.functions.invoke('manage-user', {
+        body: { user_id: userId, action },
+      });
+      if (res.error) throw new Error(res.error.message);
+      if (res.data?.error) throw new Error(res.data.error);
+      toast.success(res.data.message);
+      loadUsers();
+    } catch (e: any) {
+      toast.error(e.message || 'Erreur');
+    } finally {
+      setActionLoading(null);
+      setConfirmAction(null);
+    }
+  };
+
   const roleLabels: Record<string, string> = {
     super_admin: 'Super Admin',
     mandataire: 'Mandataire',
@@ -548,60 +568,129 @@ function GestionUtilisateurs() {
   };
 
   return (
-    <Card className="p-6 space-y-6">
-      <h3 className="text-lg font-heading font-bold flex items-center gap-2">
-        <UserPlus className="w-5 h-5 text-primary" /> Créer un utilisateur
-      </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Nom complet</Label>
-          <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Jean Dupont" />
-        </div>
-        <div className="space-y-2">
-          <Label>Email</Label>
-          <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="jean@hunters.fr" />
-        </div>
-        <div className="space-y-2">
-          <Label>Mot de passe initial</Label>
-          <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
-        </div>
-        <div className="space-y-2">
-          <Label>Rôle</Label>
-          <Select value={role} onValueChange={setRole}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="mandataire">Mandataire</SelectItem>
-              <SelectItem value="decoratrice">Décoratrice</SelectItem>
-              <SelectItem value="super_admin">Super Admin</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      <Button onClick={handleCreate} disabled={creating}>
-        <UserPlus className="w-4 h-4 mr-1" /> {creating ? 'Création...' : 'Créer l\'utilisateur'}
-      </Button>
-
-      <div className="border-t pt-4">
-        <h4 className="text-sm font-semibold mb-3">Utilisateurs existants</h4>
-        {loadingUsers ? (
-          <p className="text-sm text-muted-foreground">Chargement...</p>
-        ) : (
+    <>
+      <Card className="p-6 space-y-6">
+        <h3 className="text-lg font-heading font-bold flex items-center gap-2">
+          <UserPlus className="w-5 h-5 text-primary" /> Créer un utilisateur
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            {users.map(u => (
-              <div key={u.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
-                <div>
-                  <p className="text-sm font-medium">{u.full_name || 'Sans nom'}</p>
-                  <p className="text-xs text-muted-foreground">{u.email}</p>
-                </div>
-                <Badge variant={u.role === 'super_admin' ? 'default' : 'secondary'}>
-                  {roleLabels[u.role] || u.role}
-                </Badge>
-              </div>
-            ))}
+            <Label>Nom complet</Label>
+            <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Jean Dupont" />
           </div>
-        )}
-      </div>
-    </Card>
+          <div className="space-y-2">
+            <Label>Email</Label>
+            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="jean@hunters.fr" />
+          </div>
+          <div className="space-y-2">
+            <Label>Mot de passe initial</Label>
+            <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
+          </div>
+          <div className="space-y-2">
+            <Label>Rôle</Label>
+            <Select value={role} onValueChange={setRole}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="mandataire">Mandataire</SelectItem>
+                <SelectItem value="decoratrice">Décoratrice</SelectItem>
+                <SelectItem value="super_admin">Super Admin</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <Button onClick={handleCreate} disabled={creating}>
+          <UserPlus className="w-4 h-4 mr-1" /> {creating ? 'Création...' : 'Créer l\'utilisateur'}
+        </Button>
+
+        <div className="border-t pt-4">
+          <h4 className="text-sm font-semibold mb-3">Utilisateurs existants ({users.length})</h4>
+          {loadingUsers ? (
+            <p className="text-sm text-muted-foreground">Chargement...</p>
+          ) : (
+            <div className="space-y-2">
+              {users.map(u => {
+                const isCurrentUser = u.id === currentUser?.id;
+                const isDisabled = u.status === 'inactif';
+                return (
+                  <div key={u.id} className={cn('flex items-center justify-between p-3 rounded-lg border', isDisabled ? 'bg-destructive/5 opacity-70' : 'bg-muted/30')}>
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <p className="text-sm font-medium flex items-center gap-2">
+                          {u.full_name || 'Sans nom'}
+                          {isDisabled && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Désactivé</Badge>}
+                          {isCurrentUser && <Badge variant="outline" className="text-[10px] px-1.5 py-0">Vous</Badge>}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{u.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={u.role === 'super_admin' ? 'default' : 'secondary'}>
+                        {roleLabels[u.role] || u.role}
+                      </Badge>
+                      {!isCurrentUser && (
+                        <div className="flex gap-1">
+                          {isDisabled ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={actionLoading === u.id}
+                              onClick={() => handleUserAction(u.id, 'enable')}
+                            >
+                              {actionLoading === u.id ? '...' : 'Réactiver'}
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={actionLoading === u.id}
+                              onClick={() => setConfirmAction({ userId: u.id, action: 'disable', name: u.full_name || u.email })}
+                            >
+                              Désactiver
+                            </Button>
+                          )}
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            disabled={actionLoading === u.id}
+                            onClick={() => setConfirmAction({ userId: u.id, action: 'delete', name: u.full_name || u.email })}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </Card>
+
+      <AlertDialog open={!!confirmAction} onOpenChange={() => setConfirmAction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmAction?.action === 'delete' ? 'Supprimer l\'utilisateur ?' : 'Désactiver l\'utilisateur ?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmAction?.action === 'delete'
+                ? `L'utilisateur "${confirmAction?.name}" sera définitivement supprimé ainsi que toutes ses données associées. Cette action est irréversible.`
+                : `L'utilisateur "${confirmAction?.name}" ne pourra plus se connecter. Vous pourrez le réactiver ultérieurement.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => confirmAction && handleUserAction(confirmAction.userId, confirmAction.action)}
+              className={confirmAction?.action === 'delete' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
+            >
+              {confirmAction?.action === 'delete' ? 'Supprimer définitivement' : 'Désactiver'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 

@@ -75,10 +75,25 @@ export default function PhotosTab({ chantierId, photos }: Props) {
     toast.success('Photo supprimée');
   };
 
-  const getUrl = (path: string) => {
-    const { data } = supabase.storage.from('chantier-photos').getPublicUrl(path);
-    return data.publicUrl;
-  };
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+
+  const getUrl = (path: string) => signedUrls[path] || '';
+
+  // Generate signed URLs for all photos
+  useState(() => {
+    const paths = photos.map(p => p.file_path);
+    if (paths.length > 0) {
+      supabase.storage.from('chantier-photos').createSignedUrls(paths, 3600).then(({ data }) => {
+        if (data) {
+          const urls: Record<string, string> = {};
+          data.forEach((item) => {
+            if (item.signedUrl) urls[item.path || ''] = item.signedUrl;
+          });
+          setSignedUrls(urls);
+        }
+      });
+    }
+  });
 
   const filtered = photos.filter(p => {
     if (filterPhase !== 'all' && p.tag !== filterPhase) return false;

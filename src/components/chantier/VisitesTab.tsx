@@ -89,10 +89,25 @@ export default function VisitesTab({ chantierId, visites }: Props) {
     }
   };
 
-  const getPhotoUrl = (path: string) => {
-    const { data } = supabase.storage.from('visites-photos').getPublicUrl(path);
-    return data.publicUrl;
-  };
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+
+  const getPhotoUrl = (path: string) => signedUrls[path] || '';
+
+  // Generate signed URLs when visites change
+  useState(() => {
+    const allPaths = visites.flatMap(v => (v.photos || []).map((p: any) => p.file_path));
+    if (allPaths.length > 0) {
+      supabase.storage.from('visites-photos').createSignedUrls(allPaths, 3600).then(({ data }) => {
+        if (data) {
+          const urls: Record<string, string> = {};
+          data.forEach((item) => {
+            if (item.signedUrl) urls[item.path || ''] = item.signedUrl;
+          });
+          setSignedUrls(urls);
+        }
+      });
+    }
+  });
 
   return (
     <div className="space-y-4">

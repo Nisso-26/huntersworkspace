@@ -49,13 +49,12 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-4 text-center space-y-2">
+          <div className="mt-4 text-center">
             <Link to="/forgot-password" className="text-sm text-primary hover:underline block">
               Mot de passe oublié ?
             </Link>
-            <p className="text-sm text-muted-foreground">
-              Pas encore de compte ?{' '}
-              <Link to="/signup" className="text-primary hover:underline">S'inscrire</Link>
+            <p className="text-xs text-muted-foreground mt-2">
+              Contactez votre administrateur pour obtenir un accès.
             </p>
           </div>
         </div>

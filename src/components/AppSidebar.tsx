@@ -35,6 +35,7 @@ export default function AppSidebar({ mobile = false }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { user, role, signOut } = useAuth();
   const { data: alertes = [] } = useAlertes();
+  const unreadMessages = useUnreadTotal();
   const unreadCount = alertes.filter(a => !a.is_read).length;
 
   const navItems = allNavItems.filter(item => !role || item.roles.includes(role));

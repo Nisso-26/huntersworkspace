@@ -10,6 +10,8 @@ import { useMandataires } from '@/hooks/use-mandataires';
 import { useAuth } from '@/contexts/AuthContext';
 import { Plus, Pencil } from 'lucide-react';
 import DocumentsSection from '@/components/DocumentsSection';
+import ClientPortalSection from '@/components/ClientPortalSection';
+import SignatureSection from '@/components/SignatureSection';
 
 interface Props {
   dossier?: Dossier;

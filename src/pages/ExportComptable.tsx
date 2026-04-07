@@ -87,10 +87,10 @@ export default function ExportComptable() {
             </div>
             <div className="space-y-2">
               <Label>Type</Label>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <Select value={typeFilter || '__all__'} onValueChange={v => setTypeFilter(v === '__all__' ? '' : v)}>
                 <SelectTrigger><SelectValue placeholder="Tous" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous les types</SelectItem>
+                  <SelectItem value="__all__">Tous les types</SelectItem>
                   {Object.entries(typeLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
                 </SelectContent>
               </Select>

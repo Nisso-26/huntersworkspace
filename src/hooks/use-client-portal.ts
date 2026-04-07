@@ -79,8 +79,8 @@ export async function fetchPortalData(token: string) {
 
   const dossierId = tokenData.dossier_id;
 
-  // Fetch dossier
-  const { data: dossier } = await supabase.from('dossiers').select('*').eq('id', dossierId).single();
+  // Fetch dossier via secure RPC (excludes PII like email/phone)
+  const { data: dossier } = await supabase.rpc('get_dossier_for_portal', { _dossier_id: dossierId });
   
   // Fetch biens
   const { data: biens } = await supabase.from('biens').select('*').eq('dossier_id', dossierId);

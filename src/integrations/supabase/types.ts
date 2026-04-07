@@ -1282,6 +1282,7 @@ export type Database = {
         Args: { _dossier_id: string }
         Returns: boolean
       }
+      get_dossier_for_portal: { Args: { _dossier_id: string }; Returns: Json }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -89,10 +89,25 @@ export default function VisitesTab({ chantierId, visites }: Props) {
     }
   };
 
-  const getPhotoUrl = (path: string) => {
-    const { data } = supabase.storage.from('visites-photos').getPublicUrl(path);
-    return data.publicUrl;
-  };
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+
+  const getPhotoUrl = (path: string) => signedUrls[path] || '';
+
+  // Generate signed URLs when visites change
+  useEffect(() => {
+    const allPaths = visites.flatMap(v => (v.photos || []).map((p: any) => p.file_path));
+    if (allPaths.length > 0) {
+      supabase.storage.from('visites-photos').createSignedUrls(allPaths, 3600).then(({ data }) => {
+        if (data) {
+          const urls: Record<string, string> = {};
+          data.forEach((item) => {
+            if (item.signedUrl) urls[item.path || ''] = item.signedUrl;
+          });
+          setSignedUrls(urls);
+        }
+      });
+    }
+  }, [visites]);
 
   return (
     <div className="space-y-4">

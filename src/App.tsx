@@ -14,6 +14,7 @@ import Alertes from "./pages/Alertes";
 import Biens from "./pages/Biens";
 import Chantiers from "./pages/Chantiers";
 import Parametres from "./pages/Parametres";
+import Agenda from "./pages/Agenda";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";

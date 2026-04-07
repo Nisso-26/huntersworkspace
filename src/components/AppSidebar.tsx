@@ -72,6 +72,8 @@ export default function AppSidebar({ mobile = false }: AppSidebarProps) {
         {navItems.map((item) => {
           const isActive = location.pathname === item.href;
           const isAlertItem = item.href === '/alertes';
+          const isMessageItem = item.href === '/messagerie';
+          const badgeCount = isAlertItem ? unreadCount : isMessageItem ? unreadMessages : 0;
           return (
             <Link
               key={item.href}
@@ -86,9 +88,9 @@ export default function AppSidebar({ mobile = false }: AppSidebarProps) {
             >
               <div className="relative flex-shrink-0">
                 <item.icon className={cn('w-5 h-5', isActive && 'text-sidebar-primary')} />
-                {isAlertItem && unreadCount > 0 && (
+                {badgeCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
-                    {unreadCount > 99 ? '99+' : unreadCount}
+                    {badgeCount > 99 ? '99+' : badgeCount}
                   </span>
                 )}
               </div>

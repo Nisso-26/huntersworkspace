@@ -489,6 +489,122 @@ function JournalAudit() {
   );
 }
 
+function GestionUtilisateurs() {
+  const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState<string>('mandataire');
+  const [creating, setCreating] = useState(false);
+  const [users, setUsers] = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    setLoadingUsers(true);
+    const { data: profiles } = await supabase.from('profiles').select('id, full_name, email, status, created_at');
+    const { data: roles } = await supabase.from('user_roles').select('user_id, role');
+    const roleMap = (roles || []).reduce((acc: Record<string, string>, r: any) => {
+      acc[r.user_id] = r.role;
+      return acc;
+    }, {});
+    setUsers((profiles || []).map(p => ({ ...p, role: roleMap[p.id] || 'mandataire' })));
+    setLoadingUsers(false);
+  };
+
+  const handleCreate = async () => {
+    if (!email || !fullName || !password) {
+      toast.error('Tous les champs sont requis');
+      return;
+    }
+    if (password.length < 6) {
+      toast.error('Le mot de passe doit faire au moins 6 caractères');
+      return;
+    }
+    setCreating(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke('create-user', {
+        body: { email, password, full_name: fullName, role },
+      });
+      if (res.error) throw new Error(res.error.message);
+      if (res.data?.error) throw new Error(res.data.error);
+      toast.success(`Utilisateur ${fullName} créé avec succès`);
+      setEmail(''); setFullName(''); setPassword(''); setRole('mandataire');
+      loadUsers();
+    } catch (e: any) {
+      toast.error(e.message || 'Erreur lors de la création');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const roleLabels: Record<string, string> = {
+    super_admin: 'Super Admin',
+    mandataire: 'Mandataire',
+    decoratrice: 'Décoratrice',
+  };
+
+  return (
+    <Card className="p-6 space-y-6">
+      <h3 className="text-lg font-heading font-bold flex items-center gap-2">
+        <UserPlus className="w-5 h-5 text-primary" /> Créer un utilisateur
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Nom complet</Label>
+          <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Jean Dupont" />
+        </div>
+        <div className="space-y-2">
+          <Label>Email</Label>
+          <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="jean@hunters.fr" />
+        </div>
+        <div className="space-y-2">
+          <Label>Mot de passe initial</Label>
+          <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
+        </div>
+        <div className="space-y-2">
+          <Label>Rôle</Label>
+          <Select value={role} onValueChange={setRole}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="mandataire">Mandataire</SelectItem>
+              <SelectItem value="decoratrice">Décoratrice</SelectItem>
+              <SelectItem value="super_admin">Super Admin</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <Button onClick={handleCreate} disabled={creating}>
+        <UserPlus className="w-4 h-4 mr-1" /> {creating ? 'Création...' : 'Créer l\'utilisateur'}
+      </Button>
+
+      <div className="border-t pt-4">
+        <h4 className="text-sm font-semibold mb-3">Utilisateurs existants</h4>
+        {loadingUsers ? (
+          <p className="text-sm text-muted-foreground">Chargement...</p>
+        ) : (
+          <div className="space-y-2">
+            {users.map(u => (
+              <div key={u.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                <div>
+                  <p className="text-sm font-medium">{u.full_name || 'Sans nom'}</p>
+                  <p className="text-xs text-muted-foreground">{u.email}</p>
+                </div>
+                <Badge variant={u.role === 'super_admin' ? 'default' : 'secondary'}>
+                  {roleLabels[u.role] || u.role}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
 export default function Parametres() {
   const { isAdmin, role } = useAuth();
 

@@ -179,6 +179,15 @@ function IdentiteSociete() {
           <div className="space-y-2"><Label>Email contact</Label><Input type="email" value={form.email_contact || ''} onChange={e => set('email_contact', e.target.value)} /></div>
           <div className="space-y-2"><Label>Site web</Label><Input value={form.site_web || ''} onChange={e => set('site_web', e.target.value)} /></div>
         </div>
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="space-y-2"><Label>Capital social</Label><Input value={form.capital_social || ''} onChange={e => set('capital_social', e.target.value)} placeholder="Ex: 1 000 €" /></div>
+          <div className="space-y-2"><Label>RCS</Label><Input value={form.rcs || ''} onChange={e => set('rcs', e.target.value)} placeholder="Ex: Tours B 123 456 789" /></div>
+          <div className="space-y-2"><Label>N° TVA Intracommunautaire</Label><Input value={form.numero_tva_intra || ''} onChange={e => set('numero_tva_intra', e.target.value)} placeholder="FR12 123456789" /></div>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="space-y-2"><Label>IBAN</Label><Input value={form.iban || ''} onChange={e => set('iban', e.target.value)} placeholder="FR76 ..." /></div>
+          <div className="space-y-2"><Label>BIC</Label><Input value={form.bic || ''} onChange={e => set('bic', e.target.value)} /></div>
+        </div>
       </div>
 
       <Button onClick={handleSave} disabled={updateMut.isPending}><Save className="w-4 h-4 mr-2" />{updateMut.isPending ? 'Enregistrement...' : 'Enregistrer'}</Button>

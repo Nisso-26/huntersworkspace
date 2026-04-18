@@ -169,7 +169,16 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
   doc.setFillColor(...green);
   doc.rect(0, 0, 210, 40, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(20);
+
+  // Logo (si dispo) en haut à droite, sinon header texte sur toute la largeur
+  if (logoData) {
+    try {
+      const fmt = logoData.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+      doc.addImage(logoData, fmt, 170, 6, 28, 28, undefined, 'FAST');
+    } catch { /* ignore image errors */ }
+  }
+
+  doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
   doc.text(raisonSociale, 15, 19);
 

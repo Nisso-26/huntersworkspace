@@ -121,12 +121,29 @@ const typeLabels: Record<string, string> = {
   avoir: 'Avoir / Remboursement',
 };
 
-export function generateFacturePDF(facture: Facture, settings?: Partial<CompanySettings> | null) {
+async function loadImageAsDataUrl(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch { return null; }
+}
+
+export async function generateFacturePDF(facture: Facture, settings?: Partial<CompanySettings> | null) {
   const doc = new jsPDF();
   const s = settings || {};
 
   const green = hexToRgb(s.couleur_primaire, [26, 77, 46]);
   const gold = hexToRgb(s.couleur_secondaire, [245, 168, 0]);
+
+  // Charge le logo (s'il existe) sous forme dataURL pour jsPDF
+  const logoData = s.logo_url ? await loadImageAsDataUrl(s.logo_url) : null;
 
   const raisonSociale = (s.raison_sociale || 'Votre société').toUpperCase();
   const formeJuridique = s.forme_juridique || '';
@@ -152,7 +169,16 @@ export function generateFacturePDF(facture: Facture, settings?: Partial<CompanyS
   doc.setFillColor(...green);
   doc.rect(0, 0, 210, 40, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(20);
+
+  // Logo (si dispo) en haut à droite, sinon header texte sur toute la largeur
+  if (logoData) {
+    try {
+      const fmt = logoData.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+      doc.addImage(logoData, fmt, 170, 6, 28, 28, undefined, 'FAST');
+    } catch { /* ignore image errors */ }
+  }
+
+  doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
   doc.text(raisonSociale, 15, 19);
 

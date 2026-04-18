@@ -202,7 +202,7 @@ export default function Facturation() {
                         </td>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => generateFacturePDF(f, companySettings)} title="Télécharger PDF">
+                            <Button variant="ghost" size="sm" onClick={() => { generateFacturePDF(f, companySettings).catch(() => {}); }} title="Télécharger PDF">
                               <Download className="w-4 h-4" />
                             </Button>
                             {f.statut !== 'payee' && f.statut !== 'annulee' && (

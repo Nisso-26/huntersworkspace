@@ -188,6 +188,34 @@ function IdentiteSociete() {
           <div className="space-y-2"><Label>IBAN</Label><Input value={form.iban || ''} onChange={e => set('iban', e.target.value)} placeholder="FR76 ..." /></div>
           <div className="space-y-2"><Label>BIC</Label><Input value={form.bic || ''} onChange={e => set('bic', e.target.value)} /></div>
         </div>
+
+        <div className="space-y-2 pt-2">
+          <Label>Logo entreprise (PNG/JPG, max 1 Mo)</Label>
+          <div className="flex items-center gap-4">
+            {form.logo_url && (
+              <img src={form.logo_url} alt="Logo" className="h-16 w-16 object-contain rounded border bg-white p-1" />
+            )}
+            <Input
+              type="file"
+              accept="image/png,image/jpeg"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (file.size > 1024 * 1024) { toast.error('Fichier > 1 Mo'); return; }
+                const ext = file.name.split('.').pop();
+                const path = `logo-${Date.now()}.${ext}`;
+                const { error: upErr } = await supabase.storage.from('company-assets').upload(path, file, { upsert: true });
+                if (upErr) { toast.error(upErr.message); return; }
+                const { data: pub } = supabase.storage.from('company-assets').getPublicUrl(path);
+                set('logo_url', pub.publicUrl);
+                toast.success('Logo téléversé — pensez à enregistrer');
+              }}
+            />
+            {form.logo_url && (
+              <Button variant="ghost" size="sm" onClick={() => set('logo_url', null)}>Retirer</Button>
+            )}
+          </div>
+        </div>
       </div>
 
       <Button onClick={handleSave} disabled={updateMut.isPending}><Save className="w-4 h-4 mr-2" />{updateMut.isPending ? 'Enregistrement...' : 'Enregistrer'}</Button>

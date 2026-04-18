@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
+import type { CompanySettings } from './use-company-settings';
 
 export interface Facture {
   id: string;
@@ -37,7 +38,6 @@ export function useFactures() {
 
       if (error) throw error;
 
-      // Fetch mandataire names
       const mandataireIds = [...new Set((data || []).map((f: any) => f.mandataire_id).filter(Boolean))];
       let profilesMap: Record<string, any> = {};
       if (mandataireIds.length > 0) {
@@ -105,104 +105,188 @@ export function useUpdateFacture() {
   });
 }
 
-export function generateFacturePDF(facture: Facture) {
+// Helper: hex (#RRGGBB) -> [r, g, b]
+function hexToRgb(hex: string | null | undefined, fallback: [number, number, number]): [number, number, number] {
+  if (!hex) return fallback;
+  const m = hex.replace('#', '').match(/^([0-9a-f]{6})$/i);
+  if (!m) return fallback;
+  const n = parseInt(m[1], 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+const typeLabels: Record<string, string> = {
+  honoraires: 'Honoraires de chasse immobilière',
+  abonnement: 'Pack mandataire mensuel',
+  commission: 'Commission mandataire',
+  avoir: 'Avoir / Remboursement',
+};
+
+export function generateFacturePDF(facture: Facture, settings?: Partial<CompanySettings> | null) {
   const doc = new jsPDF();
-  const green = [26, 77, 46] as [number, number, number];
-  const gold = [245, 168, 0] as [number, number, number];
+  const s = settings || {};
+
+  const green = hexToRgb(s.couleur_primaire, [26, 77, 46]);
+  const gold = hexToRgb(s.couleur_secondaire, [245, 168, 0]);
+
+  const raisonSociale = (s.raison_sociale || 'Votre société').toUpperCase();
+  const formeJuridique = s.forme_juridique || '';
+  const capital = s.capital_social ? `au capital de ${s.capital_social}` : '';
+  const siret = s.siret || '';
+  const rcs = s.rcs || '';
+  const tvaIntra = s.numero_tva_intra || '';
+  const adresse = s.adresse_siege || '';
+  const tel = s.telephone || '';
+  const email = s.email_contact || '';
+  const site = s.site_web || '';
+  const carteT = s.carte_t_numero ? `Carte T n° ${s.carte_t_numero}${s.carte_t_organisme ? ` (${s.carte_t_organisme})` : ''}` : '';
+  const rcp = s.assureur_rcp ? `RCP : ${s.assureur_rcp}${s.assureur_police ? ` — Police ${s.assureur_police}` : ''}` : '';
+  const iban = s.iban || '';
+  const bic = s.bic || '';
+
   const montantHT = facture.montant;
   const tvaTaux = facture.tva_taux || 20;
   const tvaAmount = montantHT * (tvaTaux / 100);
   const ttc = facture.montant_ttc || montantHT + tvaAmount;
 
-  // Header band
+  // ───── Header band ─────
   doc.setFillColor(...green);
   doc.rect(0, 0, 210, 40, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(22);
+  doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('HUNTERS IMMOBILIER', 15, 20);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text('SASU au capital de 1 000 € — SIREN 123 456 789', 15, 30);
+  doc.text(raisonSociale, 15, 19);
 
-  // Gold accent line
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  const headerLine2 = [formeJuridique, capital].filter(Boolean).join(' ');
+  if (headerLine2) doc.text(headerLine2, 15, 27);
+  const headerLine3 = [siret && `SIRET ${siret}`, rcs && `RCS ${rcs}`, tvaIntra && `TVA ${tvaIntra}`].filter(Boolean).join(' — ');
+  if (headerLine3) doc.text(headerLine3, 15, 33);
+
+  // Gold accent
   doc.setFillColor(...gold);
   doc.rect(0, 40, 210, 3, 'F');
 
-  // Facture info
-  doc.setTextColor(26, 77, 46);
+  // ───── Facture info (left) ─────
+  doc.setTextColor(green[0], green[1], green[2]);
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
   doc.text('FACTURE', 15, 58);
-  doc.setFontSize(11);
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
   doc.text(`Référence : ${facture.reference || '—'}`, 15, 67);
-  doc.text(`Date d'émission : ${new Date(facture.date_emission).toLocaleDateString('fr-FR')}`, 15, 74);
-  doc.text(`Date d'échéance : ${facture.date_echeance ? new Date(facture.date_echeance).toLocaleDateString('fr-FR') : 'J+30'}`, 15, 81);
+  doc.text(`Date d'émission : ${new Date(facture.date_emission).toLocaleDateString('fr-FR')}`, 15, 73);
+  doc.text(`Date d'échéance : ${facture.date_echeance ? new Date(facture.date_echeance).toLocaleDateString('fr-FR') : 'J+30'}`, 15, 79);
 
-  // Client info
-  doc.setTextColor(26, 77, 46);
-  doc.setFontSize(11);
+  // ───── Émetteur (right) ─────
+  doc.setTextColor(green[0], green[1], green[2]);
   doc.setFont('helvetica', 'bold');
-  doc.text('Client', 130, 58);
+  doc.setFontSize(10);
+  doc.text('Émetteur', 130, 58);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
-  doc.text(facture.dossier_client_name || facture.client_name || '—', 130, 67);
-  doc.text(`Mandataire : ${facture.mandataire_name || '—'}`, 130, 74);
+  doc.setFontSize(9);
+  let yE = 64;
+  if (adresse) {
+    adresse.split('\n').slice(0, 3).forEach((l) => { doc.text(l, 130, yE); yE += 5; });
+  }
+  if (tel) { doc.text(`Tél. ${tel}`, 130, yE); yE += 5; }
+  if (email) { doc.text(email, 130, yE); yE += 5; }
 
-  // Table header
-  const tableTop = 100;
-  doc.setFillColor(240, 240, 240);
-  doc.rect(15, tableTop - 6, 180, 10, 'F');
-  doc.setTextColor(26, 77, 46);
+  // ───── Client ─────
+  doc.setTextColor(green[0], green[1], green[2]);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('Facturé à', 15, 95);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(10);
+  doc.text(facture.dossier_client_name || facture.client_name || '—', 15, 102);
+  if (facture.mandataire_name) {
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text(`Suivi par ${facture.mandataire_name}`, 15, 108);
+  }
+
+  // ───── Table ─────
+  const tableTop = 122;
+  doc.setFillColor(green[0], green[1], green[2]);
+  doc.rect(15, tableTop - 6, 180, 9, 'F');
+  doc.setTextColor(255, 255, 255);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.text('Désignation', 18, tableTop);
-  doc.text('Qté', 110, tableTop);
-  doc.text('P.U. HT', 130, tableTop);
-  doc.text('Montant HT', 160, tableTop);
+  doc.text('Qté', 115, tableTop, { align: 'center' });
+  doc.text('P.U. HT', 145, tableTop, { align: 'right' });
+  doc.text('Montant HT', 192, tableTop, { align: 'right' });
 
-  // Table row
-  const typeLabels: Record<string, string> = {
-    honoraires: 'Honoraires de chasse immobilière',
-    abonnement: 'Pack mandataire mensuel',
-    commission: 'Commission mandataire',
-    avoir: 'Avoir / Remboursement',
-  };
+  // Row
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
-  doc.text(typeLabels[facture.type] || facture.type, 18, tableTop + 12);
-  doc.text('1', 110, tableTop + 12);
-  doc.text(`${montantHT.toLocaleString('fr-FR')} €`, 130, tableTop + 12);
-  doc.text(`${montantHT.toLocaleString('fr-FR')} €`, 160, tableTop + 12);
+  doc.setFontSize(10);
+  doc.text(typeLabels[facture.type] || facture.type, 18, tableTop + 11);
+  doc.text('1', 115, tableTop + 11, { align: 'center' });
+  doc.text(`${montantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 145, tableTop + 11, { align: 'right' });
+  doc.text(`${montantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, tableTop + 11, { align: 'right' });
 
-  // Totals
-  const totalsTop = tableTop + 30;
-  doc.setDrawColor(200, 200, 200);
-  doc.line(120, totalsTop, 195, totalsTop);
+  doc.setDrawColor(220, 220, 220);
+  doc.line(15, tableTop + 16, 195, tableTop + 16);
+
+  // ───── Totaux ─────
+  const totalsTop = tableTop + 26;
   doc.setTextColor(80, 80, 80);
-  doc.text('Total HT :', 125, totalsTop + 8);
-  doc.text(`${montantHT.toLocaleString('fr-FR')} €`, 165, totalsTop + 8);
-  doc.text(`TVA (${tvaTaux}%) :`, 125, totalsTop + 16);
-  doc.text(`${tvaAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 165, totalsTop + 16);
-  doc.setFillColor(...green);
-  doc.rect(120, totalsTop + 20, 75, 10, 'F');
+  doc.setFontSize(10);
+  doc.text('Total HT', 130, totalsTop);
+  doc.text(`${montantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, totalsTop, { align: 'right' });
+  doc.text(`TVA (${tvaTaux}%)`, 130, totalsTop + 7);
+  doc.text(`${tvaAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, totalsTop + 7, { align: 'right' });
+
+  doc.setFillColor(green[0], green[1], green[2]);
+  doc.rect(125, totalsTop + 11, 70, 11, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.text('Total TTC :', 125, totalsTop + 27);
-  doc.text(`${ttc.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 165, totalsTop + 27);
+  doc.setFontSize(11);
+  doc.text('Total TTC', 130, totalsTop + 18);
+  doc.text(`${ttc.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, totalsTop + 18, { align: 'right' });
 
-  // Footer
-  doc.setFillColor(240, 240, 240);
-  doc.rect(0, 260, 210, 37, 'F');
-  doc.setTextColor(100, 100, 100);
-  doc.setFontSize(8);
+  // ───── Règlement ─────
+  const payTop = totalsTop + 36;
+  doc.setTextColor(green[0], green[1], green[2]);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('Règlement', 15, payTop);
   doc.setFont('helvetica', 'normal');
-  doc.text('SASU Hunters Immobilier — SIREN 123 456 789 — TVA FR12 123456789', 105, 268, { align: 'center' });
-  doc.text('RIB : FR76 XXXX XXXX XXXX XXXX XXXX XXX — BIC : XXXXXXXX', 105, 274, { align: 'center' });
-  doc.text('En cas de retard de paiement, une pénalité de 3 fois le taux d\'intérêt légal sera appliquée.', 105, 280, { align: 'center' });
-  doc.text('Indemnité forfaitaire de recouvrement : 40 €. Pas d\'escompte pour paiement anticipé.', 105, 286, { align: 'center' });
+  doc.setTextColor(80, 80, 80);
+  doc.setFontSize(9);
+  let yPay = payTop + 6;
+  if (iban) { doc.text(`IBAN : ${iban}`, 15, yPay); yPay += 5; }
+  if (bic) { doc.text(`BIC : ${bic}`, 15, yPay); yPay += 5; }
+  doc.text('Paiement par virement bancaire sous 30 jours.', 15, yPay);
+
+  // ───── Footer (mentions légales) ─────
+  doc.setFillColor(245, 245, 245);
+  doc.rect(0, 255, 210, 42, 'F');
+  doc.setFillColor(...gold);
+  doc.rect(0, 255, 210, 1, 'F');
+
+  doc.setTextColor(90, 90, 90);
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'normal');
+  let yF = 261;
+  const footerLines: string[] = [];
+  const legalLine = [raisonSociale, formeJuridique, capital, siret && `SIRET ${siret}`, rcs && `RCS ${rcs}`, tvaIntra && `TVA Intra ${tvaIntra}`].filter(Boolean).join(' — ');
+  if (legalLine) footerLines.push(legalLine);
+  if (carteT) footerLines.push(carteT);
+  if (rcp) footerLines.push(rcp);
+  if (site) footerLines.push(site);
+  footerLines.push("En cas de retard de paiement : pénalité de 3× le taux d'intérêt légal + indemnité forfaitaire de 40 € (art. L441-10 C. com.).");
+  footerLines.push("Pas d'escompte pour paiement anticipé. TVA acquittée d'après les débits.");
+
+  footerLines.forEach((l) => {
+    doc.text(l, 105, yF, { align: 'center', maxWidth: 195 });
+    yF += 4.5;
+  });
 
   doc.save(`${facture.reference || 'facture'}.pdf`);
 }

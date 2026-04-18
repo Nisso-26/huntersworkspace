@@ -33,6 +33,11 @@ export interface CompanySettings {
   email_alertes_dirigeant: string;
   frequence_rapport: string;
   tva_taux_defaut: number;
+  iban: string;
+  bic: string;
+  numero_tva_intra: string;
+  capital_social: string;
+  rcs: string;
 }
 
 export interface HonorairesTranche {

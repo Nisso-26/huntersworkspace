@@ -376,6 +376,8 @@ export type Database = {
           adresse_siege: string | null
           assureur_police: string | null
           assureur_rcp: string | null
+          bic: string | null
+          capital_social: string | null
           carte_t_expiration: string | null
           carte_t_numero: string | null
           carte_t_organisme: string | null
@@ -391,12 +393,15 @@ export type Database = {
           entete_document: string | null
           forme_juridique: string | null
           frequence_rapport: string | null
+          iban: string | null
           id: string
           logo_url: string | null
           mentions_legales: string | null
+          numero_tva_intra: string | null
           periode_essai_jours: number | null
           pied_page_document: string | null
           raison_sociale: string | null
+          rcs: string | null
           siret: string | null
           site_web: string | null
           tarif_abonnement_defaut: number | null
@@ -409,6 +414,8 @@ export type Database = {
           adresse_siege?: string | null
           assureur_police?: string | null
           assureur_rcp?: string | null
+          bic?: string | null
+          capital_social?: string | null
           carte_t_expiration?: string | null
           carte_t_numero?: string | null
           carte_t_organisme?: string | null
@@ -424,12 +431,15 @@ export type Database = {
           entete_document?: string | null
           forme_juridique?: string | null
           frequence_rapport?: string | null
+          iban?: string | null
           id?: string
           logo_url?: string | null
           mentions_legales?: string | null
+          numero_tva_intra?: string | null
           periode_essai_jours?: number | null
           pied_page_document?: string | null
           raison_sociale?: string | null
+          rcs?: string | null
           siret?: string | null
           site_web?: string | null
           tarif_abonnement_defaut?: number | null
@@ -442,6 +452,8 @@ export type Database = {
           adresse_siege?: string | null
           assureur_police?: string | null
           assureur_rcp?: string | null
+          bic?: string | null
+          capital_social?: string | null
           carte_t_expiration?: string | null
           carte_t_numero?: string | null
           carte_t_organisme?: string | null
@@ -457,12 +469,15 @@ export type Database = {
           entete_document?: string | null
           forme_juridique?: string | null
           frequence_rapport?: string | null
+          iban?: string | null
           id?: string
           logo_url?: string | null
           mentions_legales?: string | null
+          numero_tva_intra?: string | null
           periode_essai_jours?: number | null
           pied_page_document?: string | null
           raison_sociale?: string | null
+          rcs?: string | null
           siret?: string | null
           site_web?: string | null
           tarif_abonnement_defaut?: number | null

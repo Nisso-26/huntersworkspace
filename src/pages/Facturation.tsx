@@ -6,6 +6,7 @@ import ExportButton, { exportToCSV } from '@/components/ExportButton';
 import { cn } from '@/lib/utils';
 import { useFactures, useUpdateFacture, generateFacturePDF } from '@/hooks/use-factures';
 import { useCommissions } from '@/hooks/use-commissions';
+import { useCompanySettings } from '@/hooks/use-company-settings';
 import FactureDialog from '@/components/FactureDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -46,6 +47,7 @@ const typeOptions = [
 export default function Facturation() {
   const { data: factures = [], isLoading } = useFactures();
   const { data: commissions = [] } = useCommissions();
+  const { data: companySettings } = useCompanySettings();
   const updateMut = useUpdateFacture();
   const [search, setSearch] = useState('');
   const [statutFilter, setStatutFilter] = useState('');
@@ -200,7 +202,7 @@ export default function Facturation() {
                         </td>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => generateFacturePDF(f)} title="Télécharger PDF">
+                            <Button variant="ghost" size="sm" onClick={() => generateFacturePDF(f, companySettings)} title="Télécharger PDF">
                               <Download className="w-4 h-4" />
                             </Button>
                             {f.statut !== 'payee' && f.statut !== 'annulee' && (

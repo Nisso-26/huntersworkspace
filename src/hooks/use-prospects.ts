@@ -21,29 +21,38 @@ export interface Prospect {
   mandataire_name?: string;
 }
 
+interface ProfileLite {
+  id: string;
+  full_name: string | null;
+}
+
 export function useProspects() {
   const { user } = useAuth();
   return useQuery({
     queryKey: ['prospects'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Prospect[]> => {
       const { data, error } = await supabase
-        .from('prospects' as any)
+        .from('prospects')
         .select('*')
         .order('updated_at', { ascending: false });
       if (error) throw error;
 
-      const ids = [...new Set((data || []).map((d: any) => d.mandataire_id).filter(Boolean))];
-      let profiles: Record<string, string> = {};
+      const rows = (data ?? []) as Prospect[];
+      const ids = [...new Set(rows.map((d) => d.mandataire_id).filter((v): v is string => !!v))];
+
+      const profiles: Record<string, string> = {};
       if (ids.length > 0) {
         const { data: p } = await supabase.from('profiles').select('id, full_name').in('id', ids);
-        (p || []).forEach((pr: any) => { profiles[pr.id] = pr.full_name || ''; });
+        ((p as ProfileLite[] | null) ?? []).forEach((pr) => {
+          profiles[pr.id] = pr.full_name ?? '';
+        });
       }
 
-      return (data || []).map((d: any) => ({
+      return rows.map((d) => ({
         ...d,
         budget_estime: Number(d.budget_estime) || 0,
-        mandataire_name: profiles[d.mandataire_id] || 'Non assigné',
-      })) as Prospect[];
+        mandataire_name: d.mandataire_id ? profiles[d.mandataire_id] || 'Non assigné' : 'Non assigné',
+      }));
     },
     enabled: !!user,
   });
@@ -53,12 +62,20 @@ export function useCreateProspect() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (prospect: Partial<Prospect>) => {
-      const { data, error } = await supabase.from('prospects' as any).insert(prospect as any).select().single();
+      const payload = { nom: prospect.nom ?? '', ...prospect };
+      const { data, error } = await supabase
+        .from('prospects')
+        .insert(payload)
+        .select()
+        .single();
       if (error) throw error;
-      return data;
+      return data as Prospect;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['prospects'] }); toast.success('Prospect créé'); },
-    onError: (e: any) => toast.error(e.message),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['prospects'] });
+      toast.success('Prospect créé');
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 }
 
@@ -67,16 +84,19 @@ export function useUpdateProspect() {
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Prospect> & { id: string }) => {
       const { data, error } = await supabase
-        .from('prospects' as any)
-        .update({ ...updates, updated_at: new Date().toISOString() } as any)
+        .from('prospects')
+        .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', id)
         .select()
         .single();
       if (error) throw error;
-      return data;
+      return data as Prospect;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['prospects'] }); toast.success('Prospect mis à jour'); },
-    onError: (e: any) => toast.error(e.message),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['prospects'] });
+      toast.success('Prospect mis à jour');
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 }
 
@@ -84,11 +104,14 @@ export function useDeleteProspect() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('prospects' as any).delete().eq('id', id);
+      const { error } = await supabase.from('prospects').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['prospects'] }); toast.success('Prospect supprimé'); },
-    onError: (e: any) => toast.error(e.message),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['prospects'] });
+      toast.success('Prospect supprimé');
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 }
 
@@ -96,21 +119,25 @@ export function useConvertProspect() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (prospect: Prospect) => {
-      // Create dossier from prospect
-      const { data: dossier, error: dErr } = await supabase.from('dossiers').insert({
-        client_name: prospect.nom,
-        email: prospect.email,
-        phone: prospect.telephone,
-        budget: prospect.budget_estime,
-        mandataire_id: prospect.mandataire_id,
-        notes: prospect.objectif ? `Objectif: ${prospect.objectif}\n${prospect.notes || ''}` : prospect.notes,
-        status: 'nouveau',
-      } as any).select().single();
+      // Crée le dossier à partir du prospect
+      const { data: dossier, error: dErr } = await supabase
+        .from('dossiers')
+        .insert({
+          client_name: prospect.nom,
+          email: prospect.email,
+          phone: prospect.telephone,
+          budget: prospect.budget_estime,
+          mandataire_id: prospect.mandataire_id,
+          notes: prospect.objectif ? `Objectif: ${prospect.objectif}\n${prospect.notes || ''}` : prospect.notes,
+          status: 'nouveau',
+        })
+        .select()
+        .single();
       if (dErr) throw dErr;
 
-      // Update prospect with dossier link
-      await supabase.from('prospects' as any)
-        .update({ statut: 'converti', dossier_id: (dossier as any).id, updated_at: new Date().toISOString() } as any)
+      await supabase
+        .from('prospects')
+        .update({ statut: 'converti', dossier_id: dossier.id, updated_at: new Date().toISOString() })
         .eq('id', prospect.id);
 
       return dossier;
@@ -120,6 +147,6 @@ export function useConvertProspect() {
       qc.invalidateQueries({ queryKey: ['dossiers'] });
       toast.success('Prospect converti en dossier');
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 }

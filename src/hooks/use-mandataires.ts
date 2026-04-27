@@ -14,7 +14,6 @@ export interface MandataireProfile {
   role: string;
   dossiers_count: number;
   ca_total: number;
-  // New fields
   niveau: string | null;
   parrain_id: string | null;
   parrain_name: string | null;
@@ -29,19 +28,31 @@ export interface MandataireProfile {
   dossiers_clotures: number;
 }
 
+interface DossierRow {
+  mandataire_id: string | null;
+  honoraires: number | null;
+  status: string;
+}
+interface CommissionRow {
+  mandataire_id: string;
+  type: string;
+  montant: number;
+  statut: string;
+}
+
 export function useMandataires() {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ['mandataires'],
-    queryFn: async () => {
+    queryFn: async (): Promise<MandataireProfile[]> => {
       const { data: roles, error: rolesErr } = await supabase
         .from('user_roles')
         .select('user_id, role')
         .eq('role', 'mandataire');
       if (rolesErr) throw rolesErr;
 
-      const userIds = (roles || []).map(r => r.user_id);
+      const userIds = (roles ?? []).map((r) => r.user_id);
       if (userIds.length === 0) return [];
 
       const { data: profiles, error: profErr } = await supabase
@@ -50,43 +61,56 @@ export function useMandataires() {
         .in('id', userIds);
       if (profErr) throw profErr;
 
-      const { data: dossiers } = await supabase
+      const { data: dossiersRaw } = await supabase
         .from('dossiers')
         .select('mandataire_id, honoraires, status');
+      const dossiers = (dossiersRaw ?? []) as DossierRow[];
 
-      const { data: commissions } = await supabase
+      const { data: commissionsRaw } = await supabase
         .from('commissions')
         .select('mandataire_id, type, montant, statut');
+      const commissions = (commissionsRaw ?? []) as CommissionRow[];
 
-      // Build parrain name map
-      const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+      const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
 
-      return (profiles || []).map(p => {
-        const mandDossiers = (dossiers || []).filter((d: any) => d.mandataire_id === p.id);
-        const activeDossiers = mandDossiers.filter((d: any) => !['cloture', 'signe'].includes(d.status));
-        const signes = mandDossiers.filter((d: any) => d.status === 'signe').length;
-        const clotures = mandDossiers.filter((d: any) => d.status === 'cloture').length;
+      return (profiles ?? []).map((p) => {
+        const mandDossiers = dossiers.filter((d) => d.mandataire_id === p.id);
+        const activeDossiers = mandDossiers.filter((d) => !['cloture', 'signe'].includes(d.status));
+        const signes = mandDossiers.filter((d) => d.status === 'signe').length;
+        const clotures = mandDossiers.filter((d) => d.status === 'cloture').length;
         const caTotal = mandDossiers
-          .filter((d: any) => ['signe', 'compromis'].includes(d.status))
-          .reduce((sum: number, d: any) => sum + (Number(d.honoraires) || 0), 0);
+          .filter((d) => ['signe', 'compromis'].includes(d.status))
+          .reduce((sum, d) => sum + (Number(d.honoraires) || 0), 0);
 
-        const mandCommissions = (commissions || []).filter((c: any) => c.mandataire_id === p.id);
-        const commDues = mandCommissions.filter((c: any) => c.statut === 'due' && c.type === 'commission').reduce((s: number, c: any) => s + Number(c.montant), 0);
-        const commVersees = mandCommissions.filter((c: any) => c.statut === 'versee' && c.type === 'commission').reduce((s: number, c: any) => s + Number(c.montant), 0);
-        const bonusParrainage = mandCommissions.filter((c: any) => c.type === 'parrainage').reduce((s: number, c: any) => s + Number(c.montant), 0);
+        const mandCommissions = commissions.filter((c) => c.mandataire_id === p.id);
+        const commDues = mandCommissions
+          .filter((c) => c.statut === 'due' && c.type === 'commission')
+          .reduce((s, c) => s + Number(c.montant), 0);
+        const commVersees = mandCommissions
+          .filter((c) => c.statut === 'versee' && c.type === 'commission')
+          .reduce((s, c) => s + Number(c.montant), 0);
+        const bonusParrainage = mandCommissions
+          .filter((c) => c.type === 'parrainage')
+          .reduce((s, c) => s + Number(c.montant), 0);
 
-        const parrainProfile = (p as any).parrain_id ? profileMap.get((p as any).parrain_id) : null;
+        const parrainProfile = p.parrain_id ? profileMap.get(p.parrain_id) : null;
 
         return {
-          ...p,
+          id: p.id,
+          full_name: p.full_name,
+          email: p.email,
+          zone: p.zone,
+          status: p.status,
+          avatar_url: p.avatar_url,
+          created_at: p.created_at,
           role: 'mandataire',
-          niveau: (p as any).niveau || 'N1',
-          parrain_id: (p as any).parrain_id || null,
-          parrain_name: parrainProfile ? (parrainProfile as any).full_name : null,
-          date_entree: (p as any).date_entree || null,
-          pack_status: (p as any).pack_status || 'actif',
-          pack_montant: Number((p as any).pack_montant) || 99,
-          iban: (p as any).iban || null,
+          niveau: p.niveau ?? 'N1',
+          parrain_id: p.parrain_id ?? null,
+          parrain_name: parrainProfile?.full_name ?? null,
+          date_entree: p.date_entree ?? null,
+          pack_status: p.pack_status ?? 'actif',
+          pack_montant: Number(p.pack_montant) || 99,
+          iban: p.iban ?? null,
           dossiers_count: activeDossiers.length,
           ca_total: caTotal,
           dossiers_signes: signes,
@@ -94,20 +118,34 @@ export function useMandataires() {
           commissions_dues: commDues,
           commissions_versees: commVersees,
           bonus_parrainage: bonusParrainage,
-        } as MandataireProfile;
+        };
       });
     },
     enabled: !!user,
   });
 }
 
+export type ProfileUpdate = Partial<{
+  full_name: string;
+  email: string;
+  zone: string;
+  status: string;
+  avatar_url: string;
+  niveau: string;
+  parrain_id: string | null;
+  date_entree: string;
+  pack_status: string;
+  pack_montant: number;
+  iban: string;
+}>;
+
 export function useUpdateProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; [key: string]: any }) => {
+    mutationFn: async ({ id, ...updates }: ProfileUpdate & { id: string }) => {
       const { error } = await supabase
         .from('profiles')
-        .update({ ...updates, updated_at: new Date().toISOString() } as any)
+        .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', id);
       if (error) throw error;
     },
@@ -115,6 +153,6 @@ export function useUpdateProfile() {
       qc.invalidateQueries({ queryKey: ['mandataires'] });
       toast.success('Profil mis à jour');
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 }

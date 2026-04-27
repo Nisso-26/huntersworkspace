@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import jsPDF from 'jspdf';
 import type { CompanySettings } from './use-company-settings';
 
 export interface Facture {
@@ -136,6 +135,8 @@ async function loadImageAsDataUrl(url: string): Promise<string | null> {
 }
 
 export async function generateFacturePDF(facture: Facture, settings?: Partial<CompanySettings> | null) {
+  // Lazy-load jsPDF (≈ 350 kB) uniquement à la demande pour alléger le bundle initial
+  const { default: jsPDF } = await import('jspdf');
   const doc = new jsPDF();
   const s = settings || {};
 

@@ -13,7 +13,7 @@ import { ChevronLeft, ChevronRight, Plus, CalendarDays, CalendarRange, Download 
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, addWeeks, isSameDay, isSameMonth, isToday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import jsPDF from 'jspdf';
+// jsPDF chargé dynamiquement dans exportPDF pour alléger le bundle
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   visite_bien: 'Visite bien',
@@ -104,7 +104,8 @@ export default function Agenda() {
   }, [isAdmin, evenements, mandataires, weekStart]);
 
   // PDF export
-  const exportPDF = () => {
+  const exportPDF = async () => {
+    const { default: jsPDF } = await import('jspdf');
     const doc = new jsPDF();
     doc.setFillColor(26, 77, 46);
     doc.rect(0, 0, 210, 25, 'F');

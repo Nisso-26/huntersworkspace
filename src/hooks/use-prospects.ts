@@ -58,10 +58,12 @@ export function useProspects() {
   });
 }
 
+type ProspectInput = Omit<Partial<Prospect>, 'mandataire_name' | 'id' | 'created_at' | 'updated_at'>;
+
 export function useCreateProspect() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (prospect: Partial<Prospect>) => {
+    mutationFn: async (prospect: ProspectInput) => {
       const payload = { nom: prospect.nom ?? '', ...prospect };
       const { data, error } = await supabase
         .from('prospects')
@@ -82,7 +84,7 @@ export function useCreateProspect() {
 export function useUpdateProspect() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<Prospect> & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: ProspectInput & { id: string }) => {
       const { data, error } = await supabase
         .from('prospects')
         .update({ ...updates, updated_at: new Date().toISOString() })

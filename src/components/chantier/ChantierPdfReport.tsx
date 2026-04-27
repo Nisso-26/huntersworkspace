@@ -1,4 +1,4 @@
-import jsPDF from 'jspdf';
+// jsPDF chargé dynamiquement dans generateChantierPdf pour alléger le bundle initial
 import { supabase } from '@/integrations/supabase/client';
 import type { Chantier } from '@/hooks/use-chantiers';
 import { format } from 'date-fns';
@@ -21,6 +21,7 @@ async function loadImageAsBase64(url: string): Promise<string | null> {
 }
 
 export async function generateChantierPdf(chantier: Chantier) {
+  const { default: jsPDF } = await import('jspdf');
   const doc = new jsPDF();
   const w = 210;
   let y = 0;

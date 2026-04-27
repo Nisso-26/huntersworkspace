@@ -108,7 +108,9 @@ export default function Facturation() {
           </div>
           <div className="flex items-center gap-2">
             <ExportButton onExportCSV={handleExport} />
-            <FactureDialog />
+            <Suspense fallback={<Skeleton className="h-9 w-40 rounded" />}>
+              <FactureDialog />
+            </Suspense>
           </div>
         </div>
 

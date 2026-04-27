@@ -135,6 +135,8 @@ async function loadImageAsDataUrl(url: string): Promise<string | null> {
 }
 
 export async function generateFacturePDF(facture: Facture, settings?: Partial<CompanySettings> | null) {
+  // Lazy-load jsPDF (≈ 350 kB) uniquement à la demande pour alléger le bundle initial
+  const { default: jsPDF } = await import('jspdf');
   const doc = new jsPDF();
   const s = settings || {};
 

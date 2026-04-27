@@ -131,15 +131,9 @@ export default function Facturation() {
         <div className="grid lg:grid-cols-2 gap-6">
           <div className="bg-card rounded-xl border shadow-card p-5">
             <h3 className="font-heading text-sm font-semibold text-foreground mb-4">CA mensuel encaissé</h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
-                <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
-                <Tooltip formatter={(v: number) => [`${v.toLocaleString('fr-FR')} €`, 'CA']} />
-                <Bar dataKey="ca" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<Skeleton className="h-[200px] w-full rounded" />}>
+              <MonthlyChart data={monthlyData} />
+            </Suspense>
           </div>
           <div className="bg-card rounded-xl border shadow-card p-5">
             <h3 className="font-heading text-sm font-semibold text-foreground mb-4">Commissions</h3>

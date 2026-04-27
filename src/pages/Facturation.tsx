@@ -7,11 +7,12 @@ import { cn } from '@/lib/utils';
 import { useFactures, useUpdateFacture, generateFacturePDF } from '@/hooks/use-factures';
 import { useCommissions } from '@/hooks/use-commissions';
 import { useCompanySettings } from '@/hooks/use-company-settings';
-import FactureDialog from '@/components/FactureDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { useState, lazy, Suspense } from 'react';
+
+const FactureDialog = lazy(() => import('@/components/FactureDialog'));
+const MonthlyChart = lazy(() => import('@/components/facturation/MonthlyChart'));
 
 const statutLabels: Record<string, string> = {
   brouillon: 'Brouillon', emise: 'Émise', en_attente: 'En attente', payee: 'Payée', impayee: 'Impayée', annulee: 'Annulée',
@@ -107,7 +108,9 @@ export default function Facturation() {
           </div>
           <div className="flex items-center gap-2">
             <ExportButton onExportCSV={handleExport} />
-            <FactureDialog />
+            <Suspense fallback={<Skeleton className="h-9 w-40 rounded" />}>
+              <FactureDialog />
+            </Suspense>
           </div>
         </div>
 
@@ -128,15 +131,9 @@ export default function Facturation() {
         <div className="grid lg:grid-cols-2 gap-6">
           <div className="bg-card rounded-xl border shadow-card p-5">
             <h3 className="font-heading text-sm font-semibold text-foreground mb-4">CA mensuel encaissé</h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
-                <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
-                <Tooltip formatter={(v: number) => [`${v.toLocaleString('fr-FR')} €`, 'CA']} />
-                <Bar dataKey="ca" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<Skeleton className="h-[200px] w-full rounded" />}>
+              <MonthlyChart data={monthlyData} />
+            </Suspense>
           </div>
           <div className="bg-card rounded-xl border shadow-card p-5">
             <h3 className="font-heading text-sm font-semibold text-foreground mb-4">Commissions</h3>

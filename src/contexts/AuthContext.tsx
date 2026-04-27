@@ -23,8 +23,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchRole = async (userId: string) => {
-    const { data } = await supabase.rpc('get_user_role', { _user_id: userId });
-    setRole(data as AppRole | null);
+    const { data, error } = await supabase.rpc('get_user_role', { _user_id: userId });
+    if (error) {
+      setRole(null);
+      return;
+    }
+    setRole((data as AppRole | null) ?? null);
   };
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import huntersLogo from '@/assets/hunters-logo.jpg';
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +22,8 @@ export default function Login() {
     if (error) {
       toast.error(error.message);
     } else {
-      navigate('/');
+      const next = searchParams.get('next');
+      navigate(next && next.startsWith('/') ? next : '/', { replace: true });
     }
   };
 

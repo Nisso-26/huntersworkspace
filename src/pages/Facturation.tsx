@@ -7,11 +7,12 @@ import { cn } from '@/lib/utils';
 import { useFactures, useUpdateFacture, generateFacturePDF } from '@/hooks/use-factures';
 import { useCommissions } from '@/hooks/use-commissions';
 import { useCompanySettings } from '@/hooks/use-company-settings';
-import FactureDialog from '@/components/FactureDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { useState, lazy, Suspense } from 'react';
+
+const FactureDialog = lazy(() => import('@/components/FactureDialog'));
+const MonthlyChart = lazy(() => import('@/components/facturation/MonthlyChart'));
 
 const statutLabels: Record<string, string> = {
   brouillon: 'Brouillon', emise: 'Émise', en_attente: 'En attente', payee: 'Payée', impayee: 'Impayée', annulee: 'Annulée',

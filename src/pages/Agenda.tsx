@@ -176,13 +176,13 @@ export default function Agenda() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon" onClick={() => navigate(-1)}><ChevronLeft className="w-4 h-4" /></Button>
-            <h2 className="text-lg font-bold min-w-[180px] text-center">
+            <h2 className="text-lg font-bold min-w-[180px] text-center capitalize">
               {view === 'month'
                 ? format(currentDate, 'MMMM yyyy', { locale: fr })
                 : `Semaine du ${format(weekStart, 'dd MMM', { locale: fr })}`}
             </h2>
             <Button variant="outline" size="icon" onClick={() => navigate(1)}><ChevronRight className="w-4 h-4" /></Button>
-            <Button variant="ghost" size="sm" onClick={() => setCurrentDate(new Date())}>Aujourd'hui</Button>
+            <Button variant="ghost" size="sm" onClick={() => setCurrentDate(new Date())} className="whitespace-nowrap">Aujourd'hui</Button>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
@@ -196,7 +196,7 @@ export default function Agenda() {
             {isAdmin && (
               <>
                 <Select value={filterMandataire} onValueChange={setFilterMandataire}>
-                  <SelectTrigger className="w-[160px]"><SelectValue placeholder="Mandataire" /></SelectTrigger>
+                  <SelectTrigger className="w-[200px]"><SelectValue placeholder="Mandataire" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Tous les mandataires</SelectItem>
                     {mandataires.map(m => (
@@ -205,7 +205,7 @@ export default function Agenda() {
                   </SelectContent>
                 </Select>
                 <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger className="w-[140px]"><SelectValue placeholder="Type" /></SelectTrigger>
+                  <SelectTrigger className="w-[160px]"><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Tous types</SelectItem>
                     {Object.entries(EVENT_TYPE_LABELS).map(([k, v]) => (

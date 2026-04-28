@@ -31,7 +31,7 @@ describe('Parcours critique : Nouveau dossier → Acte signé', () => {
   });
 
   it('toutes les étapes du parcours sont des statuts valides', () => {
-    etapes.forEach((e) => expect(isValidPipelineStatus(e)).toBe(true));
+    etapes.forEach((e) => expect(isValidPipelineStatus(e as string)).toBe(true));
     expect(isValidPipelineStatus('signe')).toBe(true);
   });
 });

@@ -163,7 +163,7 @@ export default function Agenda() {
         title={canSeeDetails ? `${evt.titre} — ${format(new Date(evt.date_debut), 'HH:mm')}` : 'Créneau occupé'}
       >
         {canSeeDetails
-          ? (compact ? format(new Date(evt.date_debut), 'HH:mm') + ' ' + evt.titre : evt.titre)
+          ? (compact ? evt.titre : `${format(new Date(evt.date_debut), 'HH:mm')} ${evt.titre}`)
           : 'Occupé'}
       </button>
     );

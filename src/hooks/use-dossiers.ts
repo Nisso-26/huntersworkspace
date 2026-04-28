@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { fetchAllPaginated } from '@/lib/supabase-pagination';
 
 export interface Dossier {
   id: string;
@@ -29,12 +30,13 @@ export function useDossiers() {
   return useQuery({
     queryKey: ['dossiers'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('dossiers')
-        .select('*')
-        .order('updated_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await fetchAllPaginated<any>((from, to) =>
+        supabase
+          .from('dossiers')
+          .select('*')
+          .order('updated_at', { ascending: false })
+          .range(from, to),
+      );
 
       // Fetch mandataire names separately
       const mandataireIds = [...new Set((data || []).map(d => d.mandataire_id).filter(Boolean))];

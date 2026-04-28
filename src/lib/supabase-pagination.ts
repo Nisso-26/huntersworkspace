@@ -9,7 +9,7 @@
  *   );
  */
 export async function fetchAllPaginated<T>(
-  query: (from: number, to: number) => Promise<{ data: T[] | null; error: any }>,
+  query: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: any }>,
   chunkSize = 1000,
   hardLimit = 50000, // Garde-fou : on ne dépasse pas 50 000 lignes côté client
 ): Promise<T[]> {

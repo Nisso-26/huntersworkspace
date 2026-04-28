@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { fetchAllPaginated } from '@/lib/supabase-pagination';
 
 export interface Prospect {
   id: string;
@@ -31,13 +32,15 @@ export function useProspects() {
   return useQuery({
     queryKey: ['prospects'],
     queryFn: async (): Promise<Prospect[]> => {
-      const { data, error } = await supabase
-        .from('prospects')
-        .select('*')
-        .order('updated_at', { ascending: false });
-      if (error) throw error;
+      const data = await fetchAllPaginated<Prospect>((from, to) =>
+        supabase
+          .from('prospects')
+          .select('*')
+          .order('updated_at', { ascending: false })
+          .range(from, to),
+      );
 
-      const rows = (data ?? []) as Prospect[];
+      const rows = data;
       const ids = [...new Set(rows.map((d) => d.mandataire_id).filter((v): v is string => !!v))];
 
       const profiles: Record<string, string> = {};

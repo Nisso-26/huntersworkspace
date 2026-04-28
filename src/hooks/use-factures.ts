@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { fetchAllPaginated } from '@/lib/supabase-pagination';
 import type { CompanySettings } from './use-company-settings';
 
 export interface Facture {
@@ -30,12 +31,13 @@ export function useFactures() {
   return useQuery({
     queryKey: ['factures'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('factures')
-        .select('*')
-        .order('date_emission', { ascending: false });
-
-      if (error) throw error;
+      const data = await fetchAllPaginated<any>((from, to) =>
+        supabase
+          .from('factures')
+          .select('*')
+          .order('date_emission', { ascending: false })
+          .range(from, to),
+      );
 
       const mandataireIds = [...new Set((data || []).map((f: any) => f.mandataire_id).filter(Boolean))];
       let profilesMap: Record<string, any> = {};

@@ -18,7 +18,7 @@ import { fetchAllPaginated } from './supabase-pagination';
  * final est rigoureusement correct quel que soit le niveau.
  */
 describe('Parcours critique : Nouveau dossier → Acte signé', () => {
-  const etapes = ['nouveau', 'conseil', 'recherche', 'visite', 'offre', 'compromis'] as const;
+  const etapes = ['nouveau', 'conseil', 'chasse', 'visite', 'offre', 'compromis'] as const;
 
   it('aucune étape intermédiaire ne déclenche la facturation', () => {
     for (let i = 0; i < etapes.length - 1; i++) {

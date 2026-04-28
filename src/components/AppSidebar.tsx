@@ -19,7 +19,7 @@ const allNavItems = [
   { label: 'Partenaires', icon: Briefcase, href: '/partenaires', roles: ['super_admin', 'mandataire'] },
   { label: 'Chantiers', icon: HardHat, href: '/chantiers', roles: ['super_admin', 'mandataire', 'decoratrice'] },
   { label: 'Facturation', icon: CreditCard, href: '/facturation', roles: ['super_admin'] },
-  { label: 'Export compta', icon: FileSpreadsheet, href: '/export-comptable', roles: ['super_admin'] },
+  { label: 'Export comptable', icon: FileSpreadsheet, href: '/export-comptable', roles: ['super_admin'] },
   { label: 'Messagerie', icon: MessageSquare, href: '/messagerie', roles: ['super_admin', 'mandataire'] },
   { label: 'Agenda', icon: CalendarDays, href: '/agenda', roles: ['super_admin', 'mandataire', 'decoratrice'] },
   { label: 'Alertes', icon: Bell, href: '/alertes', roles: ['super_admin', 'mandataire', 'decoratrice'] },

@@ -9,6 +9,7 @@ import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { summarizeStrategie } from '@/lib/strategie-parser';
 
 const statusOptions = [
   { label: 'Nouveau', value: 'nouveau' },

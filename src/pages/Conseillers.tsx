@@ -102,9 +102,12 @@ export default function Conseillers() {
       if ((data as any)?.error) throw new Error((data as any).error);
       const link = (data as any)?.invitation_link as string | null;
       setInviteLink(link);
-      toast.success('Invitation envoyée avec succès', { description: link ? 'Lien d\'activation prêt à copier.' : 'L\'utilisateur recevra un email.' });
       setForm({ first_name: '', last_name: '', email: '' });
-      load();
+      // Différé pour éviter une race entre démontage Radix et notifications/refresh
+      setTimeout(() => {
+        toast.success('Invitation envoyée avec succès', { description: link ? 'Lien d\'activation prêt à copier.' : 'L\'utilisateur recevra un email.' });
+        load();
+      }, 50);
     } catch (err: any) {
       toast.error('Échec de l\'invitation', { description: err.message });
     } finally {

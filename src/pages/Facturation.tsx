@@ -129,13 +129,13 @@ export default function Facturation() {
 
         {/* Charts */}
         <div className="grid lg:grid-cols-2 gap-6">
-          <div className="bg-card rounded-xl border shadow-card p-5">
+          <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card p-5">
             <h3 className="font-heading text-sm font-semibold text-foreground mb-4">CA mensuel encaissé</h3>
             <Suspense fallback={<Skeleton className="h-[200px] w-full rounded" />}>
               <MonthlyChart data={monthlyData} />
             </Suspense>
           </div>
-          <div className="bg-card rounded-xl border shadow-card p-5">
+          <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card p-5">
             <h3 className="font-heading text-sm font-semibold text-foreground mb-4">Commissions</h3>
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="p-4 rounded-lg bg-muted border">
@@ -160,7 +160,7 @@ export default function Facturation() {
           ]}
         />
 
-        <div className="bg-card rounded-xl border shadow-card overflow-hidden">
+        <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card overflow-hidden">
           {isLoading ? (
             <div className="p-5 space-y-3">
               {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 rounded" />)}
@@ -169,7 +169,7 @@ export default function Facturation() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b bg-secondary/50">
+                  <tr className="border-b border-border/40 bg-secondary/30">
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3">Référence</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden md:table-cell">Conseiller</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden sm:table-cell">Type</th>
@@ -185,7 +185,7 @@ export default function Facturation() {
                     <tr><td colSpan={8} className="px-5 py-8 text-center text-sm text-muted-foreground">Aucune facture</td></tr>
                   ) : (
                     filtered.map((f) => (
-                      <tr key={f.id} className="hover:bg-secondary/30 transition-colors">
+                      <tr key={f.id} className="hover:bg-secondary/50 transition-colors">
                         <td className="px-5 py-3.5 text-sm font-medium text-foreground">{f.reference || '—'}</td>
                         <td className="px-5 py-3.5 text-sm text-foreground hidden md:table-cell">{f.mandataire_name}</td>
                         <td className="px-5 py-3.5 text-sm text-muted-foreground hidden sm:table-cell">{typeLabels[f.type] || f.type}</td>

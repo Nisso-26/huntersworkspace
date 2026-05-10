@@ -36,7 +36,7 @@ export default function ResetPassword() {
   if (!ready) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-navy p-4">
-        <div className="bg-card rounded-xl border shadow-card p-8 text-center max-w-md">
+        <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card p-8 text-center max-w-md">
           <img src={huntersLogo} alt="HUNTERS" className="h-12 object-contain mx-auto mb-4" />
           <p className="text-muted-foreground">Lien de réinitialisation invalide ou expiré.</p>
         </div>
@@ -50,7 +50,7 @@ export default function ResetPassword() {
         <div className="flex justify-center mb-8">
           <img src={huntersLogo} alt="HUNTERS" className="h-16 object-contain" />
         </div>
-        <div className="bg-card rounded-xl border shadow-card p-8">
+        <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card p-8">
           <h1 className="text-2xl font-heading font-bold text-foreground text-center mb-6">Nouveau mot de passe</h1>
           <form onSubmit={handleUpdate} className="space-y-4">
             <div className="space-y-2">

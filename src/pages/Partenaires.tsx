@@ -149,7 +149,7 @@ export default function Partenaires() {
             {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-xl" />)}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-card rounded-xl border shadow-card p-8 text-center">
+          <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card p-8 text-center">
             <p className="text-muted-foreground">Aucun prescripteur trouvé</p>
           </div>
         ) : (
@@ -160,7 +160,7 @@ export default function Partenaires() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.04 }}
-                className="bg-card rounded-xl border shadow-card p-5 hover:shadow-lg transition-shadow"
+                className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card p-5 hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">

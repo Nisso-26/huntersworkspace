@@ -57,7 +57,7 @@ function DraggableCard({ dossier, idx }: { dossier: Dossier; idx: number }) {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: isDragging ? 0.4 : 1, y: 0 }}
           transition={{ delay: idx * 0.04 }}
-          className="bg-background rounded-lg border p-3 hover:shadow-card transition-shadow group"
+          className="bg-card rounded-xl border border-border/60 p-3.5 hover:shadow-card-hover hover:-translate-y-px transition-all duration-150 cursor-pointer group"
           style={{ touchAction: 'manipulation' }}
         >
           <div className="flex items-start gap-2">
@@ -75,7 +75,7 @@ function DraggableCard({ dossier, idx }: { dossier: Dossier; idx: number }) {
               <p className="text-sm font-medium text-foreground truncate">{dossier.client_name}</p>
               <p className="text-xs text-muted-foreground mt-1 truncate">{dossier.ville || '—'}</p>
               <div className="flex items-center justify-between mt-2">
-                <span className="text-xs font-medium text-foreground">
+                <span className="text-xs font-bold text-accent">
                   {(dossier.budget || 0).toLocaleString('fr-FR')} €
                 </span>
                 <span className="text-xs text-muted-foreground truncate ml-2">
@@ -118,7 +118,7 @@ function DroppableColumn({
   return (
     <div ref={setNodeRef} className="flex-shrink-0 w-[260px] sm:w-[240px]">
       <div
-        className={`bg-card rounded-xl border border-t-4 ${columnColors[status]} shadow-card transition-all ${
+        className={`bg-card rounded-xl border border-border/60 shadow-card border-t-4 ${columnColors[status]} shadow-card transition-all ${
           isOver ? 'ring-2 ring-accent shadow-lg scale-[1.01]' : ''
         }`}
       >

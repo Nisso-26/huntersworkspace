@@ -316,7 +316,7 @@ export default function StrategieIA({ dossier }: Props) {
               <div key={idx} className="border rounded-lg overflow-hidden">
                 <button
                   onClick={() => setExpanded(expanded === idx ? null : idx)}
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-secondary/30 transition-colors"
+                  className="w-full flex items-center justify-between p-4 text-left hover:bg-secondary/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <span className="w-6 h-6 rounded-full bg-accent text-accent-foreground text-xs font-bold flex items-center justify-center flex-shrink-0">

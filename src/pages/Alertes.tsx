@@ -59,7 +59,7 @@ export default function Alertes() {
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-card rounded-xl border shadow-card p-8 text-center">
+          <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card p-8 text-center">
             <CheckCircle className="w-10 h-10 text-hunters-success mx-auto mb-3" />
             <p className="text-muted-foreground">Aucune alerte pour le moment</p>
           </div>

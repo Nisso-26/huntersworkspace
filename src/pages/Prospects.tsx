@@ -217,7 +217,7 @@ export default function Prospects() {
               const cards = filtered.filter(p => p.statut === statut);
               return (
                 <div key={statut} className="flex-shrink-0 w-[260px]">
-                  <div className="bg-card rounded-xl border shadow-card">
+                  <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card">
                     <div className="p-4 border-b flex items-center justify-between">
                       <h3 className="text-sm font-semibold text-foreground">{statutLabels[statut]}</h3>
                       <span className="text-xs bg-secondary text-muted-foreground rounded-full px-2 py-0.5">{cards.length}</span>
@@ -261,7 +261,7 @@ export default function Prospects() {
             })}
           </div>
         ) : (
-          <div className="bg-card rounded-xl border shadow-card overflow-hidden">
+          <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card overflow-hidden">
             <SearchFilter
               search={search}
               onSearchChange={setSearch}
@@ -271,7 +271,7 @@ export default function Prospects() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b bg-secondary/50">
+                  <tr className="border-b border-border/40 bg-secondary/30">
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3">Nom</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden md:table-cell">Contact</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden sm:table-cell">Source</th>
@@ -285,7 +285,7 @@ export default function Prospects() {
                   {filtered.length === 0 ? (
                     <tr><td colSpan={7} className="px-5 py-8 text-center text-sm text-muted-foreground">Aucun contact</td></tr>
                   ) : filtered.map(p => (
-                    <tr key={p.id} className="hover:bg-secondary/30 transition-colors">
+                    <tr key={p.id} className="hover:bg-secondary/50 transition-colors">
                       <td className="px-5 py-3.5 text-sm font-medium text-foreground">{p.nom}</td>
                       <td className="px-5 py-3.5 text-sm text-muted-foreground hidden md:table-cell">{p.email || p.telephone || '—'}</td>
                       <td className="px-5 py-3.5 text-sm text-muted-foreground hidden sm:table-cell">{sourceLabels[p.source] || p.source}</td>

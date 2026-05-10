@@ -8,7 +8,7 @@ export default function Signup() {
         <div className="flex justify-center mb-8">
           <img src={huntersLogo} alt="HUNTERS" className="h-16 object-contain" />
         </div>
-        <div className="bg-card rounded-xl border shadow-card p-8 text-center">
+        <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card p-8 text-center">
           <h1 className="text-2xl font-heading font-bold text-foreground mb-2">
             Accès sur invitation
           </h1>

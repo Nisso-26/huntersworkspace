@@ -136,7 +136,7 @@ export default function Messagerie() {
 
         <div className="flex gap-4 h-[calc(100vh-220px)] min-h-[400px]">
           {/* Conversation list */}
-          <div className="w-[300px] flex-shrink-0 bg-card rounded-xl border shadow-card overflow-hidden flex flex-col">
+          <div className="w-[300px] flex-shrink-0 bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card overflow-hidden flex flex-col">
             <div className="p-3 border-b">
               <p className="text-xs font-semibold text-muted-foreground uppercase">Conversations</p>
             </div>
@@ -171,7 +171,7 @@ export default function Messagerie() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 bg-card rounded-xl border shadow-card overflow-hidden flex flex-col">
+          <div className="flex-1 bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card overflow-hidden flex flex-col">
             {!selectedId ? (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center text-muted-foreground">

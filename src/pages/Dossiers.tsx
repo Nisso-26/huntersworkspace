@@ -69,7 +69,7 @@ export default function Dossiers() {
           ]}
         />
 
-        <div className="bg-card rounded-xl border shadow-card overflow-hidden">
+        <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card overflow-hidden">
           {isLoading ? (
             <div className="p-5 space-y-3">
               {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 rounded" />)}
@@ -78,7 +78,7 @@ export default function Dossiers() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b bg-secondary/50">
+                  <tr className="border-b border-border/40 bg-secondary/30">
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3">Client</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden md:table-cell">Conseiller</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden sm:table-cell">Ville</th>
@@ -98,7 +98,7 @@ export default function Dossiers() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: idx * 0.03 }}
-                        className="hover:bg-secondary/30 transition-colors"
+                        className="hover:bg-secondary/50 transition-colors"
                       >
                         <td className="px-5 py-3.5">
                           <p className="text-sm font-medium text-foreground">{d.client_name}</p>

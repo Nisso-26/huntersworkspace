@@ -64,7 +64,7 @@ export default function ExportComptable() {
           <p className="text-muted-foreground mt-1">Export mensuel pour l'expert-comptable — format compatible Cegid / Sage / EBP</p>
         </div>
 
-        <div className="bg-card rounded-xl border shadow-card p-6 space-y-4">
+        <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card p-6 space-y-4">
           <h2 className="font-heading font-semibold text-foreground">Filtres</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
@@ -98,7 +98,7 @@ export default function ExportComptable() {
           </div>
         </div>
 
-        <div className="bg-card rounded-xl border shadow-card p-6">
+        <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="font-heading font-semibold text-foreground">Aperçu — {filtered.length} écritures</h2>
@@ -117,7 +117,7 @@ export default function ExportComptable() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-secondary/50">
+                <tr className="border-b border-border/40 bg-secondary/30">
                   <th className="text-left px-4 py-2 text-xs font-semibold text-muted-foreground">Date</th>
                   <th className="text-left px-4 py-2 text-xs font-semibold text-muted-foreground">Type</th>
                   <th className="text-left px-4 py-2 text-xs font-semibold text-muted-foreground">Référence</th>

@@ -4,56 +4,60 @@ import StatusBadge from '@/components/StatusBadge';
 import { useDossiers } from '@/hooks/use-dossiers';
 import { useMandataires } from '@/hooks/use-mandataires';
 import { useAuth } from '@/contexts/AuthContext';
-import {
-  FolderOpen, TrendingUp, Users, Target, FileCheck, ArrowUpRight,
-} from 'lucide-react';
+import { FolderOpen, TrendingUp, Users, FileCheck, ArrowUpRight, Building2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from 'react-router-dom';
 
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.06 } },
-};
-const item = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-};
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
+const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } } };
 
 export default function Dashboard() {
   const { data: dossiers = [], isLoading: loadingD } = useDossiers();
   const { data: mandataires = [], isLoading: loadingM } = useMandataires();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
 
-  // Stats are automatically filtered by RLS:
-  // - Directeur sees all dossiers/mandataires
-  // - Mandataire sees only their own dossiers (mandataires list will be empty due to RLS)
   const caTotal = dossiers
     .filter(d => ['signe', 'compromis'].includes(d.status))
     .reduce((sum, d) => sum + (d.honoraires || 0), 0);
   const dossiersActifs = dossiers.filter(d => !['cloture', 'signe'].includes(d.status)).length;
   const dossiersSigne = dossiers.filter(d => d.status === 'signe').length;
   const mandatairesActifs = mandataires.filter(m => m.status === 'actif').length;
-
-  const recentDossiers = [...dossiers].slice(0, 5);
+  const recentDossiers = [...dossiers].slice(0, 6);
   const topMandataires = [...mandataires].sort((a, b) => b.ca_total - a.ca_total).slice(0, 5);
-
   const isLoading = loadingD || loadingM;
+
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || '';
 
   return (
     <AppLayout>
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
-        <motion.div variants={item}>
-          <h1 className="text-3xl font-heading font-bold text-foreground">
-            {isAdmin ? 'Tableau de bord' : 'Mon espace'}
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            {isAdmin ? 'Vue d\'ensemble du réseau HUNTERS' : 'Mes dossiers et activités'}
-          </p>
+
+        {/* Header */}
+        <motion.div variants={item} className="flex items-end justify-between flex-wrap gap-4">
+          <div>
+            <p className="label-premium mb-1">
+              {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
+            <h1 className="text-2xl font-bold text-foreground font-heading">
+              {isAdmin ? 'Tableau de bord' : `Bonjour, ${firstName}`}
+            </h1>
+            <div className="bar-or mt-2" />
+          </div>
+          {isAdmin && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card border border-border/60 px-3 py-2 rounded-lg shadow-card">
+              <Building2 className="w-3.5 h-3.5 text-primary" />
+              <span>Hunters Immobilier · Tours</span>
+            </div>
+          )}
         </motion.div>
 
+        {/* KPI Cards */}
         <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {isLoading ? (
-            Array.from({ length: isAdmin ? 4 : 3 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)
+            Array.from({ length: isAdmin ? 4 : 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-28 rounded-xl" />
+            ))
           ) : (
             <>
               <StatCard
@@ -61,94 +65,151 @@ export default function Dashboard() {
                 value={`${(caTotal / 1000).toFixed(1)}k €`}
                 icon={TrendingUp}
                 variant="gold"
+                subtitle="Honoraires encaissés"
               />
               <StatCard
                 label={isAdmin ? 'Dossiers actifs' : 'Mes dossiers actifs'}
                 value={dossiersActifs}
                 icon={FolderOpen}
+                subtitle="En cours de traitement"
               />
               {isAdmin && (
-                <StatCard label="Conseillers actifs" value={mandatairesActifs} icon={Users} variant="info" />
+                <StatCard
+                  label="Conseillers actifs"
+                  value={mandatairesActifs}
+                  icon={Users}
+                  variant="info"
+                  subtitle="Dans le réseau"
+                />
               )}
               <StatCard
-                label={isAdmin ? 'Dossiers signés' : 'Mes dossiers signés'}
+                label={isAdmin ? 'Actes signés' : 'Mes actes signés'}
                 value={dossiersSigne}
                 icon={FileCheck}
                 variant="success"
+                subtitle="Transactions finalisées"
               />
             </>
           )}
         </motion.div>
 
+        {/* Corps principal */}
         <div className={`grid ${isAdmin ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-6`}>
+
+          {/* Derniers dossiers */}
           <motion.div variants={item} className={isAdmin ? 'lg:col-span-2' : ''}>
-            <div className="bg-card rounded-xl border shadow-card">
-              <div className="flex items-center justify-between p-5 border-b">
-                <h2 className="font-heading text-lg font-semibold text-foreground">
-                  {isAdmin ? 'Derniers dossiers mis à jour' : 'Mes derniers dossiers'}
-                </h2>
-                <a href="/dossiers" className="text-sm text-accent hover:underline flex items-center gap-1">
+            <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-border/50">
+                <div>
+                  <h2 className="font-heading font-bold text-foreground text-sm">
+                    {isAdmin ? 'Derniers dossiers clients' : 'Mes derniers dossiers'}
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Mis à jour récemment</p>
+                </div>
+                <Link
+                  to="/dossiers"
+                  className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-accent transition-colors"
+                >
                   Voir tout <ArrowUpRight className="w-3.5 h-3.5" />
-                </a>
+                </Link>
               </div>
-              <div className="divide-y">
-                {isLoading ? (
-                  Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 mx-5 my-2 rounded" />)
-                ) : recentDossiers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground p-5 text-center">Aucun dossier pour le moment</p>
-                ) : (
-                  recentDossiers.map((d) => (
-                    <div key={d.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-secondary/50 transition-colors">
+
+              {isLoading ? (
+                <div className="p-4 space-y-3">
+                  {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-lg" />)}
+                </div>
+              ) : recentDossiers.length === 0 ? (
+                <div className="py-12 text-center">
+                  <FolderOpen className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">Aucun dossier pour le moment</p>
+                  <Link to="/dossiers" className="text-xs text-primary hover:underline mt-1 inline-block">
+                    Créer un premier dossier →
+                  </Link>
+                </div>
+              ) : (
+                <div className="divide-y divide-border/40">
+                  {recentDossiers.map((d, idx) => (
+                    <Link
+                      key={d.id}
+                      to={`/dossiers/${d.id}`}
+                      className="flex items-center justify-between px-6 py-3.5 hover:bg-secondary/40 transition-colors group"
+                    >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-                          <Target className="w-4 h-4 text-accent" />
+                        <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/12 transition-colors">
+                          <span className="text-[11px] font-bold text-primary">
+                            {d.client_name.slice(0, 2).toUpperCase()}
+                          </span>
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{d.client_name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {isAdmin ? `${d.mandataire_name} · ` : ''}{d.ville}
+                          <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                            {d.client_name}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground truncate">
+                            {isAdmin ? `${d.mandataire_name} · ` : ''}{d.ville || '—'}
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-foreground hidden sm:block">
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <span className="text-sm font-bold text-foreground hidden sm:block">
                           {d.budget.toLocaleString('fr-FR')} €
                         </span>
-                        <StatusBadge status={d.status as any} />
+                        <StatusBadge status={d.status} size="sm" />
                       </div>
-                    </div>
-                  ))
-                )}
-              </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
 
+          {/* Top Conseillers */}
           {isAdmin && (
-            <motion.div variants={item} className="bg-card rounded-xl border shadow-card">
-              <div className="p-5 border-b">
-                <h2 className="font-heading text-lg font-semibold text-foreground">Top Conseillers</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">Par chiffre d'affaires généré</p>
-              </div>
-              <div className="divide-y">
+            <motion.div variants={item}>
+              <div className="bg-card rounded-xl border border-border/60 shadow-card border-border/60 shadow-card overflow-hidden">
+                <div className="px-6 py-4 border-b border-border/50">
+                  <h2 className="font-heading font-bold text-foreground text-sm">Top Conseillers</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Par chiffre d'affaires</p>
+                </div>
+
                 {isLoading ? (
-                  Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 mx-5 my-2 rounded" />)
+                  <div className="p-4 space-y-3">
+                    {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-lg" />)}
+                  </div>
                 ) : topMandataires.length === 0 ? (
-                  <p className="text-sm text-muted-foreground p-5 text-center">Aucun conseiller</p>
+                  <div className="py-10 text-center">
+                    <Users className="w-7 h-7 text-muted-foreground/30 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Aucun conseiller dans le réseau</p>
+                  </div>
                 ) : (
-                  topMandataires.map((m, idx) => (
-                    <div key={m.id} className="flex items-center gap-3 px-5 py-3.5">
-                      <span className="text-xs font-bold text-accent w-5">{idx + 1}</span>
-                      <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-semibold text-foreground">{(m.full_name || '?').split(' ').map(n => n[0]).join('')}</span>
+                  <div className="divide-y divide-border/40">
+                    {topMandataires.map((m, idx) => (
+                      <div key={m.id} className="flex items-center gap-3 px-6 py-3">
+                        <div className="relative flex-shrink-0">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold
+                            ${idx === 0 ? 'bg-accent text-accent-foreground shadow-gold' : 'bg-secondary text-foreground'}`}>
+                            {(m.full_name || '?').split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                          </div>
+                          {idx === 0 && (
+                            <span className="absolute -top-1 -right-1 text-[10px]">🏆</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[12px] font-semibold text-foreground truncate">{m.full_name}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{m.zone || '—'}</p>
+                        </div>
+                        <span className="text-sm font-bold text-foreground flex-shrink-0">
+                          {(m.ca_total / 1000).toFixed(1)}k €
+                        </span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{m.full_name}</p>
-                        <p className="text-xs text-muted-foreground">{m.zone}</p>
-                      </div>
-                      <span className="text-sm font-semibold text-foreground">{(m.ca_total / 1000).toFixed(1)}k €</span>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 )}
+
+                <div className="px-6 py-3 border-t border-border/40 bg-secondary/20">
+                  <Link to="/mandataires" className="text-xs font-semibold text-primary hover:text-accent transition-colors flex items-center gap-1">
+                    Voir le réseau complet <ArrowUpRight className="w-3 h-3" />
+                  </Link>
+                </div>
               </div>
             </motion.div>
           )}

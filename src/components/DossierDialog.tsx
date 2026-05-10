@@ -72,7 +72,7 @@ export default function DossierDialog({ dossier, trigger }: Props) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button size="sm" className="gap-2">
+          <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90">
             {isEdit ? <Pencil className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
             {isEdit ? 'Modifier' : 'Nouveau dossier'}
           </Button>

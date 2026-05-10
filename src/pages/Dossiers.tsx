@@ -106,7 +106,7 @@ export default function Dossiers() {
                         <td className="px-5 py-3.5 text-sm text-foreground hidden sm:table-cell">{d.ville}</td>
                         <td className="px-5 py-3.5 text-sm font-medium text-foreground">{d.budget.toLocaleString('fr-FR')} €</td>
                         <td className="px-5 py-3.5 text-sm text-muted-foreground hidden lg:table-cell">
-                          {renderStrategie(d.strategie)}
+                          {summarizeStrategie(d.strategie)}
                         </td>
                         <td className="px-5 py-3.5"><StatusBadge status={d.status as any} /></td>
                         <td className="px-5 py-3.5">

@@ -23,15 +23,15 @@ export function useAlertes() {
   // Realtime subscription
   useEffect(() => {
     if (!user) return;
-    const channelName = `alertes-realtime-${user.id}-${Date.now()}`;
+    const channelName = `alertes-${user.id}`;
     const channel = supabase
       .channel(channelName)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'alertes' }, () => {
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'alertes' }, () => {
         qc.invalidateQueries({ queryKey: ['alertes'] });
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user, qc]);
+  }, [user?.id, qc]);
 
   return useQuery({
     queryKey: ['alertes'],

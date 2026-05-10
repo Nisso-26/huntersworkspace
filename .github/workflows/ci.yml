@@ -1,0 +1,31 @@
+name: CI — Vérification qualité code
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality-check:
+    name: TypeScript + ESLint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Installation Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Installation des dépendances
+        run: npm ci
+
+      - name: Vérification TypeScript (noEmit)
+        run: npx tsc --noEmit
+
+      - name: Vérification ESLint
+        run: npm run lint

@@ -60,18 +60,29 @@ export default function StrategieIA({ dossier }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(0);
 
-  // Récupère la stratégie stockée
-  let strategie: StrategieData | null = null;
-  try {
-    const raw = dossier.strategie;
-    if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-      const obj = raw as any;
-      if (obj.synthese) strategie = obj as StrategieData;
-    } else if (typeof raw === 'string' && raw.startsWith('{')) {
-      const parsed = JSON.parse(raw);
-      if (parsed.synthese) strategie = parsed as StrategieData;
+  // Parse sécurisé : tolère null, objet déjà parsé, JSON string, ou données malformées
+  const parseStrategie = (raw: unknown): StrategieData | null => {
+    try {
+      let obj: any = null;
+      if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+        obj = raw;
+      } else if (typeof raw === 'string') {
+        const trimmed = raw.trim();
+        if (!trimmed.startsWith('{')) return null;
+        obj = JSON.parse(trimmed);
+      }
+      if (!obj || typeof obj !== 'object') return null;
+      // Vérifie les clés essentielles attendues par le rendu
+      if (typeof obj.synthese !== 'string' || !obj.synthese) return null;
+      if (!obj.indicateurs_cles || typeof obj.indicateurs_cles !== 'object') return null;
+      if (!Array.isArray(obj.recommandations)) return null;
+      return obj as StrategieData;
+    } catch (err) {
+      console.warn('StrategieIA: parsing échoué', err);
+      return null;
     }
-  } catch { strategie = null; }
+  };
+  const strategie: StrategieData | null = parseStrategie(dossier.strategie);
 
   const [form, setForm] = useState({
     age: '',

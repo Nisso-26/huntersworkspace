@@ -12,6 +12,7 @@ import { Plus, Pencil } from 'lucide-react';
 import DocumentsSection from '@/components/DocumentsSection';
 import ClientPortalSection from '@/components/ClientPortalSection';
 import SignatureSection from '@/components/SignatureSection';
+import StrategieIA from '@/components/StrategieIA';
 
 interface Props {
   dossier?: Dossier;
@@ -151,6 +152,9 @@ export default function DossierDialog({ dossier, trigger }: Props) {
           </div>
           {isEdit && dossier?.id && (
             <>
+              <div className="border-t pt-4">
+                <StrategieIA dossier={dossier} />
+              </div>
               <div className="border-t pt-4">
                 <DocumentsSection dossierId={dossier.id} />
               </div>

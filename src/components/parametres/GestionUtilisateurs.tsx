@@ -90,13 +90,17 @@ export default function GestionUtilisateurs() {
       });
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
-      toast.success(res.data.message);
-      loadUsers();
+      // Ferme le dialog d'abord, puis notifie/recharge après démontage Radix
+      setConfirmAction(null);
+      setTimeout(() => {
+        toast.success(res.data.message);
+        loadUsers();
+      }, 50);
     } catch (e: any) {
       toast.error(e.message || 'Erreur');
+      setConfirmAction(null);
     } finally {
       setActionLoading(null);
-      setConfirmAction(null);
     }
   };
 
@@ -206,7 +210,7 @@ export default function GestionUtilisateurs() {
         </div>
       </Card>
 
-      <AlertDialog open={!!confirmAction} onOpenChange={() => setConfirmAction(null)}>
+      <AlertDialog open={!!confirmAction} onOpenChange={(o) => { if (actionLoading) return; if (!o) setConfirmAction(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>

@@ -110,7 +110,7 @@ export default function Messagerie() {
     const file = e.target.files?.[0];
     if (!file || !selectedId || !user) return;
     const path = `messages/${selectedId}/${Date.now()}_${file.name}`;
-    const { error } = await supabase.storage.from('dossier-documents').upload(path, file);
+    const { error } = await supabase.storage.from('documents du dossier').upload(path, file);
     if (error) return;
     await sendMut.mutateAsync({
       conversation_id: selectedId,
@@ -202,7 +202,7 @@ export default function Messagerie() {
                               size="sm"
                               className={cn('p-0 h-auto text-xs mt-1', isMe ? 'text-primary-foreground' : 'text-primary')}
                               onClick={async () => {
-                                const { data } = supabase.storage.from('dossier-documents').getPublicUrl(m.file_path!);
+                                const { data } = supabase.storage.from('documents du dossier').getPublicUrl(m.file_path!);
                                 window.open(data.publicUrl, '_blank');
                               }}
                             >

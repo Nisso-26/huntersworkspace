@@ -41,7 +41,7 @@ export function useUploadDocument() {
       const filePath = `${user!.id}/${dossierId}/${Date.now()}_${file.name}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('dossier-documents')
+        .from('documents du dossier')
         .upload(filePath, file);
       if (uploadError) throw uploadError;
 
@@ -69,7 +69,7 @@ export function useDeleteDocument() {
   return useMutation({
     mutationFn: async ({ id, filePath, dossierId }: { id: string; filePath: string; dossierId: string }) => {
       const { error: storageError } = await supabase.storage
-        .from('dossier-documents')
+        .from('documents du dossier')
         .remove([filePath]);
       if (storageError) throw storageError;
 

@@ -38,7 +38,7 @@ export default function DocumentsSection({ dossierId }: { dossierId: string }) {
 
   const handleDownload = async (filePath: string, fileName: string) => {
     const { data, error } = await supabase.storage
-      .from('dossier-documents')
+      .from('documents du dossier')
       .download(filePath);
     if (error || !data) return;
     const url = URL.createObjectURL(data);

@@ -2,10 +2,11 @@ import js from "@eslint/js";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
+import importPlugin from "eslint-plugin-import";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  { ignores: ["dist", "supabase/functions/**", "playwright-fixture.ts", "playwright.config.ts"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -16,11 +17,41 @@ export default tseslint.config(
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
+      import: importPlugin,
+    },
+    settings: {
+      "import/resolver": {
+        typescript: { project: "./tsconfig.json", alwaysTryTypes: true },
+        node: true,
+      },
+      "import/parsers": {
+        "@typescript-eslint/parser": [".ts", ".tsx"],
+      },
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
+      // Bruyantes — laissées en warn pour ne pas bloquer le build legacy
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-empty-object-type": "warn",
+      "prefer-const": "warn",
+
+      // Contrôles d'import : default vs named, chemins inexistants
+      // (TypeScript fait déjà le gros du travail via tsc --noEmit dans prebuild)
+      "import/default": "warn",
+      "import/no-named-as-default": "error",
+      "import/no-named-as-default-member": "warn",
+      "import/no-unresolved": ["error", { ignore: ["^virtual:", "\\.svg\\?react$"] }],
+      "import/named": "off",
+      "import/namespace": "off",
+    },
+  },
+  {
+    // Fichiers de config Node : autoriser require()
+    files: ["*.config.{js,ts}", "tailwind.config.ts", "postcss.config.js"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
 );

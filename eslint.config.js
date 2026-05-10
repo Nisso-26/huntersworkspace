@@ -38,14 +38,20 @@ export default tseslint.config(
       "prefer-const": "warn",
 
       // Contrôles d'import : default vs named, chemins inexistants
-      "import/default": "error",
+      // (TypeScript fait déjà le gros du travail via tsc --noEmit dans prebuild)
+      "import/default": "warn",
       "import/no-named-as-default": "error",
       "import/no-named-as-default-member": "warn",
-      "import/no-unresolved": "error",
-      // import/named désactivé : TypeScript le couvre déjà et le plugin a
-      // des faux positifs sur les re-exports type-only (ex. VariantProps de cva)
+      "import/no-unresolved": ["error", { ignore: ["^virtual:", "\\.svg\\?react$"] }],
       "import/named": "off",
       "import/namespace": "off",
+    },
+  },
+  {
+    // Fichiers de config Node : autoriser require()
+    files: ["*.config.{js,ts}", "tailwind.config.ts", "postcss.config.js"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
 );

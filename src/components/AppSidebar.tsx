@@ -4,6 +4,7 @@ import {
   LayoutDashboard, Users, FolderKanban, FileText, CreditCard, Bell, Settings, LogOut, ChevronLeft, ChevronRight, Home, HardHat, CalendarDays, UserPlus, Briefcase, MessageSquare, FileSpreadsheet, ShieldCheck,
 } from 'lucide-react';
 import { useState } from 'react';
+import GlobalSearch from '@/components/GlobalSearch';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAlertes } from '@/hooks/use-alertes';
 import { useUnreadTotal } from '@/hooks/use-messagerie';
@@ -70,6 +71,11 @@ export default function AppSidebar({ mobile = false }: AppSidebarProps) {
       )}
 
       <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+        {!isCollapsed && (
+          <div className="mb-3">
+            <GlobalSearch />
+          </div>
+        )}
         {navItems.map((item) => {
           const isActive = location.pathname === item.href;
           const isAlertItem = item.href === '/alertes';

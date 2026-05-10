@@ -5,10 +5,12 @@ import DossierDialog from '@/components/DossierDialog';
 import SearchFilter from '@/components/SearchFilter';
 import ExportButton, { exportToCSV } from '@/components/ExportButton';
 import { motion } from 'framer-motion';
-import { Trash2 } from 'lucide-react';
+import { Trash2, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { summarizeStrategie } from '@/lib/strategie-parser';
 import { summarizeStrategie } from '@/lib/strategie-parser';
 
 const statusOptions = [
@@ -25,6 +27,7 @@ const statusOptions = [
 export default function Dossiers() {
   const { data: dossiers = [], isLoading } = useDossiers();
   const deleteMut = useDeleteDossier();
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
@@ -119,6 +122,15 @@ export default function Dossiers() {
                               onClick={() => { if (confirm('Supprimer ce dossier ?')) deleteMut.mutate(d.id); }}
                             >
                               <Trash2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-primary"
+                              onClick={() => navigate(`/dossiers/${d.id}`)}
+                              title="Ouvrir le dossier"
+                            >
+                              <ExternalLink className="w-4 h-4" />
                             </Button>
                           </div>
                         </td>

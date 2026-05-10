@@ -41,6 +41,12 @@ function DraggableCard({ dossier, idx }: { dossier: Dossier; idx: number }) {
     id: dossier.id,
     data: { dossier },
   });
+  const updateMut = useUpdateDossier();
+
+  const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    e.stopPropagation();
+    await updateMut.mutateAsync({ id: dossier.id, status: e.target.value });
+  };
 
   return (
     <DossierDialog
@@ -55,7 +61,6 @@ function DraggableCard({ dossier, idx }: { dossier: Dossier; idx: number }) {
           style={{ touchAction: 'manipulation' }}
         >
           <div className="flex items-start gap-2">
-            {/* Poignée dédiée — empêche le tap mobile d'ouvrir le dialog par mégarde */}
             <button
               type="button"
               {...attributes}
@@ -77,6 +82,17 @@ function DraggableCard({ dossier, idx }: { dossier: Dossier; idx: number }) {
                   {(dossier.mandataire_name || '').split(' ')[0]}
                 </span>
               </div>
+              {/* Sélecteur statut mobile uniquement */}
+              <select
+                className="mt-2 w-full text-xs border rounded px-1.5 py-1 bg-background text-foreground sm:hidden"
+                value={dossier.status}
+                onChange={handleStatusChange}
+                onClick={e => e.stopPropagation()}
+              >
+                {pipelineStatuses.map(s => (
+                  <option key={s} value={s}>{statusLabels[s] || s}</option>
+                ))}
+              </select>
             </div>
           </div>
         </motion.div>

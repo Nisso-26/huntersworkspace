@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
+const DossierDetail = lazy(() => import("./pages/DossierDetail"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Signup = lazy(() => import("./pages/Signup"));
 const Pipeline = lazy(() => import("./pages/Pipeline"));
@@ -55,6 +56,7 @@ const App = () => (
               <Route path="/prospects" element={<ProtectedRoute><Prospects /></ProtectedRoute>} />
               <Route path="/pipeline" element={<ProtectedRoute><Pipeline /></ProtectedRoute>} />
               <Route path="/dossiers" element={<ProtectedRoute><Dossiers /></ProtectedRoute>} />
+              <Route path="/dossiers/:id" element={<ProtectedRoute><DossierDetail /></ProtectedRoute>} />
               <Route path="/biens" element={<ProtectedRoute><Biens /></ProtectedRoute>} />
               <Route path="/mandataires" element={<ProtectedRoute requiredRole="super_admin"><Mandataires /></ProtectedRoute>} />
               <Route path="/conseillers" element={<ProtectedRoute requiredRole="super_admin"><Conseillers /></ProtectedRoute>} />

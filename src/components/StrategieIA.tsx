@@ -250,16 +250,36 @@ export default function StrategieIA({ dossier }: Props) {
         </div>
       )}
 
-      {/* État vide propre */}
+      {/* État vide / invalide — non bloquant, avec motif explicite */}
       {!strategie && !showForm && (
-        <div className="rounded-lg border border-dashed bg-secondary/20 p-6 text-center">
-          <Sparkles className="w-6 h-6 text-accent mx-auto mb-2 opacity-60" />
-          <p className="text-sm text-muted-foreground">
-            Aucune stratégie générée pour ce dossier.
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Cliquez sur « Générer la stratégie » pour lancer l'analyse IA.
-          </p>
+        <div className="rounded-lg border border-dashed bg-secondary/20 p-6 text-center space-y-2">
+          <Sparkles className="w-6 h-6 text-accent mx-auto opacity-60" />
+          {parseError === 'empty' || parseError === null ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Aucune stratégie générée pour ce dossier.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Cliquez sur « Générer la stratégie » pour lancer l'analyse IA.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                <Info className="w-3.5 h-3.5" />
+                {STRATEGIE_ERROR_MESSAGES[parseError]}
+              </div>
+              {isPlainText && rawText ? (
+                <div className="text-left bg-card border rounded p-3 mt-2">
+                  <p className="text-xs text-muted-foreground mb-1">Contenu actuel :</p>
+                  <p className="text-sm text-foreground whitespace-pre-wrap">{rawText}</p>
+                </div>
+              ) : null}
+              <p className="text-xs text-muted-foreground">
+                Vous pouvez régénérer une stratégie IA structurée à tout moment.
+              </p>
+            </>
+          )}
         </div>
       )}
 

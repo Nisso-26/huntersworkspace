@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 
 export interface Alerte {
   id: string;
@@ -19,11 +19,12 @@ export interface Alerte {
 export function useAlertes() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const instanceId = useId();
 
   // Realtime subscription
   useEffect(() => {
-    if (!user) return;
-    const channelName = `alertes-${user.id}`;
+    if (!user?.id) return;
+    const channelName = `alertes-${user.id}-${instanceId}`;
     const channel = supabase
       .channel(channelName)
       .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'alertes' }, () => {
@@ -31,7 +32,7 @@ export function useAlertes() {
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user?.id, qc]);
+  }, [user?.id, qc, instanceId]);
 
   return useQuery({
     queryKey: ['alertes'],

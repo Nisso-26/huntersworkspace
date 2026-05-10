@@ -210,7 +210,7 @@ export default function GestionUtilisateurs() {
         </div>
       </Card>
 
-      <AlertDialog open={!!confirmAction} onOpenChange={() => setConfirmAction(null)}>
+      <AlertDialog open={!!confirmAction} onOpenChange={(o) => { if (actionLoading) return; if (!o) setConfirmAction(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>

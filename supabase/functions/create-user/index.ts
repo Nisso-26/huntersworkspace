@@ -35,15 +35,15 @@ Deno.serve(async (req) => {
       const composedName = full_name || [first_name, last_name].filter(Boolean).join(" ").trim();
       if (!composedName) throw new Error("Prénom et nom requis");
 
-      const origin = req.headers.get("origin") || req.headers.get("referer") || undefined;
-      const redirectTo = origin ? `${origin.replace(/\/$/, "")}/login` : undefined;
+      const APP_URL = "https://huntersworkspace.lovable.app";
+      const redirectTo = `${APP_URL}/reset-password`;
 
       const { data, error } = await adminClient.auth.admin.generateLink({
         type: "invite",
         email,
         options: {
           data: { full_name: composedName, first_name, last_name },
-          ...(redirectTo ? { redirectTo } : {}),
+          redirectTo,
         },
       });
       if (error) throw error;

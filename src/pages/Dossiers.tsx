@@ -36,29 +36,10 @@ export default function Dossiers() {
     return matchSearch && matchStatus;
   });
 
-  const renderStrategie = (s: string | Record<string, any> | null | undefined): string => {
-    if (s === null || s === undefined) return '—';
-    if (typeof s === 'object') return '✓ IA';
-    if (typeof s === 'string') {
-      const trimmed = s.trim();
-      if (!trimmed) return '—';
-      if (trimmed.startsWith('{')) {
-        try {
-          const parsed = JSON.parse(trimmed);
-          if (parsed && typeof parsed === 'object') return '✓ IA';
-        } catch {
-          // fallthrough → texte brut
-        }
-      }
-      return trimmed;
-    }
-    return '—';
-  };
-
   const handleExport = () => {
     exportToCSV(
       ['Client', 'Email', 'Mandataire', 'Ville', 'Budget', 'Stratégie', 'Statut'],
-      filtered.map(d => [d.client_name, d.email || '', d.mandataire_name || '', d.ville || '', d.budget.toLocaleString('fr-FR'), renderStrategie(d.strategie), d.status]),
+      filtered.map(d => [d.client_name, d.email || '', d.mandataire_name || '', d.ville || '', d.budget.toLocaleString('fr-FR'), summarizeStrategie(d.strategie), d.status]),
       'dossiers_hunters'
     );
   };

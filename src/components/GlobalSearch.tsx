@@ -42,11 +42,11 @@ export default function GlobalSearch() {
     ...mandataires
       .filter(m => (m.full_name || '').toLowerCase().includes(q) || (m.zone || '').toLowerCase().includes(q))
       .slice(0, 3)
-      .map(m => ({ type: 'mandataire', label: m.full_name || '', sub: m.zone || '', href: '/mandataires', icon: Users })),
+      .map(m => ({ type: 'conseiller', label: m.full_name || '', sub: m.zone || '', href: '/mandataires', icon: Users })),
     ...prospects
       .filter(p => (p.nom || '').toLowerCase().includes(q))
       .slice(0, 3)
-      .map(p => ({ type: 'prospect', label: p.nom || '', sub: '', href: '/prospects', icon: UserPlus })),
+      .map(p => ({ type: 'contact', label: p.nom || '', sub: '', href: '/prospects', icon: UserPlus })),
   ];
 
   const handleSelect = (href: string) => {

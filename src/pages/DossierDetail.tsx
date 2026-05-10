@@ -42,19 +42,21 @@ export default function DossierDetail() {
   const dossier = dossiers.find(d => d.id === id);
 
   const [form, setForm] = useState({
-    client_name: dossier?.client_name || '',
-    email: dossier?.email || '',
-    phone: dossier?.phone || '',
-    mandataire_id: dossier?.mandataire_id || '',
-    status: dossier?.status || 'nouveau',
-    budget: dossier?.budget?.toString() || '',
-    ville: dossier?.ville || '',
-    honoraires: dossier?.honoraires?.toString() || '',
-    notes: dossier?.notes || '',
+    client_name: '',
+    email: '',
+    phone: '',
+    mandataire_id: '',
+    status: 'nouveau',
+    budget: '',
+    ville: '',
+    honoraires: '',
+    notes: '',
   });
 
-  // Sync form quand le dossier charge
-  if (dossier && !form.client_name && !isLoading) {
+  // Sync form quand le dossier charge — une seule fois
+  const [formInitialized, setFormInitialized] = useState(false);
+  if (dossier && !formInitialized && !isLoading) {
+    setFormInitialized(true);
     setForm({
       client_name: dossier.client_name,
       email: dossier.email || '',

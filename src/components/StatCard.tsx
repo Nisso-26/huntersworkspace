@@ -17,7 +17,7 @@ export default function StatCard({ label, value, change, icon: Icon, variant = '
     <div className={cn(
       'relative rounded-xl p-5 transition-all duration-200 overflow-hidden card-hover',
       isGold
-        ? 'bg-gradient-to-br from-[hsl(147,52%,16%)] to-[hsl(147,48%,22%)] shadow-gold border border-white/5'
+        ? 'bg-gradient-hunters shadow-gold border border-white/5'
         : 'bg-card shadow-card border border-border/60',
     )}>
       {/* Fond décoratif */}

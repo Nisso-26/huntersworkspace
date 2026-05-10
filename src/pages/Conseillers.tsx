@@ -28,8 +28,8 @@ const roleLabels: Record<string, string> = {
   decoratrice: 'Décoratrice',
 };
 const roleBadge: Record<string, string> = {
-  super_admin: 'bg-[#F5A800]/15 text-[#F5A800] border border-[#F5A800]/30',
-  mandataire: 'bg-[#1A4D2E]/10 text-[#1A4D2E] border border-[#1A4D2E]/20',
+  super_admin: 'bg-accent/15 text-accent border border-accent/30',
+  mandataire: 'bg-primary/10 text-primary border border-primary/20',
   decoratrice: 'bg-muted text-muted-foreground border',
 };
 
@@ -145,7 +145,7 @@ export default function Conseillers() {
           </div>
           <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setInviteLink(null); }}>
             <DialogTrigger asChild>
-              <Button className="bg-[#1A4D2E] hover:bg-[#1A4D2E]/90 text-white">
+              <Button className="bg-primary hover:bg-primary/90 text-white">
                 <UserPlus className="w-4 h-4 mr-2" />
                 Inviter un conseiller
               </Button>
@@ -171,8 +171,8 @@ export default function Conseillers() {
                 </div>
 
                 {inviteLink && (
-                  <div className="rounded-lg border-2 border-[#F5A800]/40 bg-[#F5A800]/5 p-3 space-y-2">
-                    <p className="text-xs font-semibold text-[#1A4D2E] flex items-center gap-2">
+                  <div className="rounded-lg border-2 border-accent/40 bg-accent/5 p-3 space-y-2">
+                    <p className="text-xs font-semibold text-primary flex items-center gap-2">
                       <Mail className="w-3.5 h-3.5" /> Lien d'activation
                     </p>
                     <div className="flex items-center gap-2">
@@ -187,7 +187,7 @@ export default function Conseillers() {
 
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={submitting}>Fermer</Button>
-                  <Button type="submit" disabled={submitting} className="bg-[#1A4D2E] hover:bg-[#1A4D2E]/90 text-white">
+                  <Button type="submit" disabled={submitting} className="bg-primary hover:bg-primary/90 text-white">
                     {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UserPlus className="w-4 h-4 mr-2" />}
                     Inviter
                   </Button>

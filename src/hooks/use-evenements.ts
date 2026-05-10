@@ -44,7 +44,8 @@ export function useEvenements() {
       const { data, error } = await supabase
         .from('evenements')
         .select('*')
-        .order('date_debut', { ascending: true });
+        .order('date_debut', { ascending: true })
+        .limit(200);
       if (error) throw error;
 
       // Fetch mandataire names

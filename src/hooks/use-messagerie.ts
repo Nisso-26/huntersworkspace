@@ -154,7 +154,7 @@ export function useRealtimeMessages(conversationId: string | null) {
     if (!conversationId) return;
     const channel = supabase
       .channel(`messages-${conversationId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` }, () => {
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` }, () => {
         qc.invalidateQueries({ queryKey: ['messages', conversationId] });
         qc.invalidateQueries({ queryKey: ['conversations'] });
       })

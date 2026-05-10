@@ -8,48 +8,16 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Sparkles, ChevronDown, ChevronUp, Loader2, TrendingUp, AlertTriangle, CheckCircle, ArrowRight } from 'lucide-react';
+import { Sparkles, ChevronDown, ChevronUp, Loader2, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  parseStrategie,
+  STRATEGIE_ERROR_MESSAGES,
+  type StrategieData,
+} from '@/lib/strategie-parser';
 
 interface Props {
   dossier: Dossier;
-}
-
-interface StrategieData {
-  synthese: string;
-  profil_investisseur: string;
-  indicateurs_cles: {
-    revenus_nets_totaux_mensuels: number;
-    taux_effort_actuel_pct: number;
-    capacite_emprunt_estimee: number;
-    mensualite_max_supplementaire: number;
-    cash_flow_mensuel_libre: number;
-  };
-  recommandations: Array<{
-    rang: number;
-    titre: string;
-    dispositif: string;
-    description: string;
-    budget_acquisition_total: number;
-    apport_recommande: number;
-    mensualite_credit_estimee: number;
-    loyer_brut_mensuel_estime: number;
-    cash_flow_net_mensuel_estime: number;
-    rendement_brut_estime_pct: number;
-    economie_fiscale_annuelle_estimee: number;
-    avantages: string[];
-    points_vigilance: string[];
-    horizon_recommande: string;
-    zones_suggerees: string[];
-  }>;
-  plan_action: Array<{
-    etape: number;
-    titre: string;
-    description: string;
-    delai: string;
-  }>;
-  points_attention: string[];
-  disclaimer: string;
 }
 
 const fmt = (v: number) => v?.toLocaleString('fr-FR') ?? '0';
@@ -60,29 +28,13 @@ export default function StrategieIA({ dossier }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(0);
 
-  // Parse sécurisé : tolère null, objet déjà parsé, JSON string, ou données malformées
-  const parseStrategie = (raw: unknown): StrategieData | null => {
-    try {
-      let obj: any = null;
-      if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-        obj = raw;
-      } else if (typeof raw === 'string') {
-        const trimmed = raw.trim();
-        if (!trimmed.startsWith('{')) return null;
-        obj = JSON.parse(trimmed);
-      }
-      if (!obj || typeof obj !== 'object') return null;
-      // Vérifie les clés essentielles attendues par le rendu
-      if (typeof obj.synthese !== 'string' || !obj.synthese) return null;
-      if (!obj.indicateurs_cles || typeof obj.indicateurs_cles !== 'object') return null;
-      if (!Array.isArray(obj.recommandations)) return null;
-      return obj as StrategieData;
-    } catch (err) {
-      console.warn('StrategieIA: parsing échoué', err);
-      return null;
-    }
-  };
-  const strategie: StrategieData | null = parseStrategie(dossier.strategie);
+  // Parsing strict, tolérant et non-bloquant — voir src/lib/strategie-parser.ts
+  const parsed = parseStrategie(dossier.strategie);
+  const strategie: StrategieData | null = parsed.strategie;
+  const parseError = parsed.error;
+  const isPlainText = parsed.isPlainText;
+  const rawText = parsed.rawText;
+
 
   const [form, setForm] = useState({
     age: '',
@@ -298,16 +250,36 @@ export default function StrategieIA({ dossier }: Props) {
         </div>
       )}
 
-      {/* État vide propre */}
+      {/* État vide / invalide — non bloquant, avec motif explicite */}
       {!strategie && !showForm && (
-        <div className="rounded-lg border border-dashed bg-secondary/20 p-6 text-center">
-          <Sparkles className="w-6 h-6 text-accent mx-auto mb-2 opacity-60" />
-          <p className="text-sm text-muted-foreground">
-            Aucune stratégie générée pour ce dossier.
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Cliquez sur « Générer la stratégie » pour lancer l'analyse IA.
-          </p>
+        <div className="rounded-lg border border-dashed bg-secondary/20 p-6 text-center space-y-2">
+          <Sparkles className="w-6 h-6 text-accent mx-auto opacity-60" />
+          {parseError === 'empty' || parseError === null ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Aucune stratégie générée pour ce dossier.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Cliquez sur « Générer la stratégie » pour lancer l'analyse IA.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                <Info className="w-3.5 h-3.5" />
+                {STRATEGIE_ERROR_MESSAGES[parseError]}
+              </div>
+              {isPlainText && rawText ? (
+                <div className="text-left bg-card border rounded p-3 mt-2">
+                  <p className="text-xs text-muted-foreground mb-1">Contenu actuel :</p>
+                  <p className="text-sm text-foreground whitespace-pre-wrap">{rawText}</p>
+                </div>
+              ) : null}
+              <p className="text-xs text-muted-foreground">
+                Vous pouvez régénérer une stratégie IA structurée à tout moment.
+              </p>
+            </>
+          )}
         </div>
       )}
 

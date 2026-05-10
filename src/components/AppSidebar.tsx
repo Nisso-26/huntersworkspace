@@ -13,7 +13,7 @@ import { useUnreadTotal } from '@/hooks/use-messagerie';
 import huntersLogo from '@/assets/hunters-logo.jpg';
 
 const allNavItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, href: '/', roles: ['super_admin', 'mandataire', 'decoratrice'], group: 'principal' },
+  { label: 'Tableau de bord', icon: LayoutDashboard, href: '/', roles: ['super_admin', 'mandataire', 'decoratrice'], group: 'principal' },
   { label: 'Contacts', icon: UserPlus, href: '/prospects', roles: ['super_admin', 'mandataire'], group: 'activite' },
   { label: 'Suivi des missions', icon: FolderKanban, href: '/pipeline', roles: ['super_admin', 'mandataire', 'decoratrice'], group: 'activite' },
   { label: 'Dossiers', icon: FileText, href: '/dossiers', roles: ['super_admin', 'mandataire', 'decoratrice'], group: 'activite' },

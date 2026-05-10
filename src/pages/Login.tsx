@@ -77,11 +77,8 @@ export default function Login() {
             <Link to="/forgot-password" className="text-sm text-primary hover:underline block">
               Mot de passe oublié ?
             </Link>
-            <p className="text-xs text-muted-foreground">
-              Pas encore de compte ?{' '}
-              <Link to="/signup" className="text-primary hover:underline font-medium">
-                Créer un compte
-              </Link>
+            <p className="text-xs text-muted-foreground text-center">
+              Accès sur invitation uniquement.<br />Contactez votre directeur.
             </p>
           </div>
         </div>

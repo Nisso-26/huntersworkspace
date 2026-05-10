@@ -39,7 +39,8 @@ export function useAlertes() {
       const { data, error } = await supabase
         .from('alertes')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100);
       if (error) throw error;
       return (data || []) as Alerte[];
     },

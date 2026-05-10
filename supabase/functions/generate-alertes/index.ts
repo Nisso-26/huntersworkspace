@@ -10,8 +10,32 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  // Sécurité : vérifier que l'appel vient d'un contexte autorisé
+  // (cron interne ou super_admin authentifié)
+  const authHeader = req.headers.get("Authorization") || "";
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+
+  // Accepte soit le service role key (cron), soit un JWT super_admin
+  const isCron = authHeader === `Bearer ${serviceRoleKey}`;
+  if (!isCron) {
+    const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await userClient.auth.getUser();
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Non autorisé" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { data: isAdmin } = await userClient.rpc("has_role", { _user_id: user.id, _role: "super_admin" });
+    if (!isAdmin) {
+      return new Response(JSON.stringify({ error: "Accès réservé au Super Admin" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  }
+
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   const now = new Date();

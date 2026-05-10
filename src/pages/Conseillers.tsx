@@ -146,7 +146,7 @@ export default function Conseillers() {
               Gestion des accès — {rows.length} utilisateur{rows.length > 1 ? 's' : ''}
             </p>
           </div>
-          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setInviteLink(null); }}>
+          <Dialog open={open} onOpenChange={(o) => { if (submitting && !o) return; setOpen(o); if (!o) setInviteLink(null); }}>
             <DialogTrigger asChild>
               <Button className="bg-primary hover:bg-primary/90 text-white">
                 <UserPlus className="w-4 h-4 mr-2" />

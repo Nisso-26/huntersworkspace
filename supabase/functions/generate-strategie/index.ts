@@ -114,8 +114,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!apiKey) throw new Error("ANTHROPIC_API_KEY non configurée");
+    const apiKey = Deno.env.get("ANTHROPIC_API_KEY") || Deno.env.get("CLÉ_API_ANTHROPIC");
+    if (!apiKey) throw new Error("Clé API Anthropic non configurée");
 
     const body = await req.json();
     if (!body.client_name) throw new Error("client_name requis");

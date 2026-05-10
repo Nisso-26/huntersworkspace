@@ -35,7 +35,7 @@ export default function DossierDialog({ dossier, trigger }: Props) {
     status: dossier?.status || 'nouveau',
     budget: dossier?.budget?.toString() || '',
     ville: dossier?.ville || '',
-    strategie: dossier?.strategie || '',
+    strategie: typeof dossier?.strategie === 'string' ? dossier.strategie : '',
     honoraires: dossier?.honoraires?.toString() || '',
     notes: dossier?.notes || '',
   });

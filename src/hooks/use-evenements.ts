@@ -30,13 +30,13 @@ export function useEvenements() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel(`evenements-rt-${user.id}-${Date.now()}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'evenements' }, () => {
+      .channel(`evenements-${user.id}`)
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'evenements' }, () => {
         qc.invalidateQueries({ queryKey: ['evenements'] });
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user, qc]);
+  }, [user?.id, qc]);
 
   return useQuery({
     queryKey: ['evenements'],

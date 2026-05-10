@@ -63,8 +63,13 @@ export default function StrategieIA({ dossier }: Props) {
   // Récupère la stratégie stockée
   let strategie: StrategieData | null = null;
   try {
-    if (dossier.strategie && typeof dossier.strategie === 'string' && dossier.strategie.startsWith('{')) {
-      strategie = JSON.parse(dossier.strategie);
+    const raw = dossier.strategie;
+    if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+      const obj = raw as any;
+      if (obj.synthese) strategie = obj as StrategieData;
+    } else if (typeof raw === 'string' && raw.startsWith('{')) {
+      const parsed = JSON.parse(raw);
+      if (parsed.synthese) strategie = parsed as StrategieData;
     }
   } catch { strategie = null; }
 

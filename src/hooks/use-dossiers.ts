@@ -13,7 +13,7 @@ export interface Dossier {
   status: string;
   budget: number;
   ville: string | null;
-  strategie: string | null;
+  strategie: string | Record<string, any> | null;
   honoraires: number;
   etape: number;
   notes: string | null;

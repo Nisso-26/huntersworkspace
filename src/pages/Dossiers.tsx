@@ -104,7 +104,15 @@ export default function Dossiers() {
                         <td className="px-5 py-3.5 text-sm text-foreground hidden md:table-cell">{d.mandataire_name}</td>
                         <td className="px-5 py-3.5 text-sm text-foreground hidden sm:table-cell">{d.ville}</td>
                         <td className="px-5 py-3.5 text-sm font-medium text-foreground">{d.budget.toLocaleString('fr-FR')} €</td>
-                        <td className="px-5 py-3.5 text-sm text-muted-foreground hidden lg:table-cell">{d.strategie}</td>
+                        <td className="px-5 py-3.5 text-sm text-muted-foreground hidden lg:table-cell">
+                          {typeof d.strategie === 'string' && !d.strategie.startsWith('{')
+                            ? d.strategie
+                            : d.strategie && typeof d.strategie === 'object'
+                            ? '✓ Stratégie IA générée'
+                            : typeof d.strategie === 'string' && d.strategie.startsWith('{')
+                            ? '✓ Stratégie IA générée'
+                            : '—'}
+                        </td>
                         <td className="px-5 py-3.5"><StatusBadge status={d.status as any} /></td>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-1">

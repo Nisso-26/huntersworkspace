@@ -5,7 +5,7 @@ import AppLayout from '@/components/AppLayout';
 import StatusBadge from '@/components/StatusBadge';
 import DocumentsSection from '@/components/DocumentsSection';
 import SignatureSection from '@/components/SignatureSection';
-import { ClientPortalSection, ClientComments } from '@/components/ClientPortalSection';
+import ClientPortalSection, { ClientComments } from '@/components/ClientPortalSection';
 import StrategieIA from '@/components/StrategieIA';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

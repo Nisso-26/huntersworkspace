@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Sparkles, ChevronDown, ChevronUp, Loader2, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Info } from 'lucide-react';
+import { ChevronDown, ChevronUp, Loader2, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Info, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   parseStrategie,
@@ -79,11 +79,11 @@ export default function StrategieIA({ dossier }: Props) {
       });
 
       if (res.error) throw new Error(res.error.message);
-      if (!res.data?.ok) throw new Error(res.data?.error || 'Erreur IA');
+      if (!res.data?.ok) throw new Error(res.data?.error || 'Erreur de génération');
 
       const strategieJson = JSON.stringify(res.data.strategie);
       await updateMut.mutateAsync({ id: dossier.id, strategie: strategieJson });
-      toast.success('Stratégie IA générée avec succès');
+      toast.success('Stratégie générée avec succès');
       setShowForm(false);
       window.location.reload();
     } catch (e: any) {
@@ -97,15 +97,15 @@ export default function StrategieIA({ dossier }: Props) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-heading font-semibold text-foreground flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-accent" />
-          Stratégie IA
+          <TrendingUp className="w-4 h-4 text-accent" />
+          Stratégie patrimoniale
         </h3>
         <Button
           size="sm"
           onClick={() => setShowForm(!showForm)}
           className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
         >
-          <Sparkles className="w-3.5 h-3.5" />
+          <FileText className="w-3.5 h-3.5" />
           {strategie ? 'Régénérer' : 'Générer la stratégie'}
         </Button>
       </div>
@@ -244,7 +244,7 @@ export default function StrategieIA({ dossier }: Props) {
           <div className="flex gap-2 pt-2">
             <Button variant="outline" size="sm" onClick={() => setShowForm(false)} className="flex-1">Annuler</Button>
             <Button size="sm" onClick={handleGenerate} disabled={generating} className="flex-1 gap-2 bg-accent hover:bg-accent/90 text-accent-foreground">
-              {generating ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Génération en cours...</> : <><Sparkles className="w-3.5 h-3.5" /> Générer</>}
+              {generating ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Génération en cours...</> : <><FileText className="w-3.5 h-3.5" /> Générer</>}
             </Button>
           </div>
         </div>
@@ -253,14 +253,14 @@ export default function StrategieIA({ dossier }: Props) {
       {/* État vide / invalide — non bloquant, avec motif explicite */}
       {!strategie && !showForm && (
         <div className="rounded-lg border border-dashed bg-secondary/20 p-6 text-center space-y-2">
-          <Sparkles className="w-6 h-6 text-accent mx-auto opacity-60" />
+          <TrendingUp className="w-6 h-6 text-accent mx-auto opacity-60" />
           {parseError === 'empty' || parseError === null ? (
             <>
               <p className="text-sm text-muted-foreground">
                 Aucune stratégie générée pour ce dossier.
               </p>
               <p className="text-xs text-muted-foreground">
-                Cliquez sur « Générer la stratégie » pour lancer l'analyse IA.
+                Cliquez sur « Générer la stratégie » pour lancer l'analyse.
               </p>
             </>
           ) : (
@@ -276,7 +276,7 @@ export default function StrategieIA({ dossier }: Props) {
                 </div>
               ) : null}
               <p className="text-xs text-muted-foreground">
-                Vous pouvez régénérer une stratégie IA structurée à tout moment.
+                Vous pouvez régénérer une stratégie structurée à tout moment.
               </p>
             </>
           )}
@@ -411,15 +411,17 @@ export default function StrategieIA({ dossier }: Props) {
           )}
 
           {/* Disclaimer */}
-          <p className="text-xs text-muted-foreground italic border-t pt-3">{strategie.disclaimer}</p>
+          <p className="text-xs text-muted-foreground italic border-t pt-3">
+            Cette analyse est fournie à titre indicatif par Hunters Immobilier dans le cadre d'un accompagnement personnalisé. Elle ne constitue pas un conseil en investissement au sens juridique du terme.
+          </p>
         </div>
       )}
 
-      {!strategie && !showForm && (
+      {!strategie && !showForm && parseError === null && (
         <div className="text-center py-8 text-muted-foreground">
-          <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-30" />
+          <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-30" />
           <p className="text-sm">Aucune stratégie générée pour ce dossier.</p>
-          <p className="text-xs mt-1">Cliquez sur "Générer la stratégie" pour commencer.</p>
+          <p className="text-xs mt-1">Cliquez sur « Générer la stratégie » pour commencer.</p>
         </div>
       )}
     </div>

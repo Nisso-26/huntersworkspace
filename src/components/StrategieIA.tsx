@@ -298,6 +298,19 @@ export default function StrategieIA({ dossier }: Props) {
         </div>
       )}
 
+      {/* État vide propre */}
+      {!strategie && !showForm && (
+        <div className="rounded-lg border border-dashed bg-secondary/20 p-6 text-center">
+          <Sparkles className="w-6 h-6 text-accent mx-auto mb-2 opacity-60" />
+          <p className="text-sm text-muted-foreground">
+            Aucune stratégie générée pour ce dossier.
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Cliquez sur « Générer la stratégie » pour lancer l'analyse IA.
+          </p>
+        </div>
+      )}
+
       {/* Affichage de la stratégie générée */}
       {strategie && !showForm && (
         <div className="space-y-4">

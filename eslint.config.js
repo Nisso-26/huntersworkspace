@@ -39,6 +39,6 @@ export default tseslint.config(
       "import/no-named-as-default": "error",
       "import/no-named-as-default-member": "warn",
       "import/no-unresolved": "error",
-ažno    },
+},
   },
 );

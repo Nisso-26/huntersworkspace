@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 
 export interface Evenement {
   id: string;
@@ -26,17 +26,18 @@ export interface Evenement {
 export function useEvenements() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const instanceId = useId();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
     const channel = supabase
-      .channel(`evenements-${user.id}`)
+      .channel(`evenements-${user.id}-${instanceId}`)
       .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'evenements' }, () => {
         qc.invalidateQueries({ queryKey: ['evenements'] });
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user?.id, qc]);
+  }, [user?.id, qc, instanceId]);
 
   return useQuery({
     queryKey: ['evenements'],

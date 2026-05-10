@@ -73,18 +73,18 @@ export default function ClientPortal() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[hsl(60,24%,95%)]">
-        <Loader2 className="w-8 h-8 animate-spin text-[hsl(147,49%,20%)]" />
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (error || !data?.dossier) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[hsl(60,24%,95%)] p-4 text-center">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4 text-center">
         <div className="text-6xl mb-4">🔒</div>
-        <h1 className="text-xl font-bold text-[hsl(0,0%,17%)] mb-2">Accès non disponible</h1>
-        <p className="text-[hsl(0,0%,45%)]">{error || 'Ce lien est invalide ou a expiré.'}</p>
+        <h1 className="text-xl font-bold text-foreground mb-2">Accès non disponible</h1>
+        <p className="text-muted-foreground">{error || 'Ce lien est invalide ou a expiré.'}</p>
       </div>
     );
   }
@@ -105,15 +105,15 @@ export default function ClientPortal() {
   const futureEvents = evenements.filter((e: any) => new Date(e.date_debut) > new Date());
 
   return (
-    <div className="min-h-screen bg-[hsl(60,24%,95%)]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-[hsl(147,49%,20%)] text-white py-4 px-4 md:px-8" role="banner">
+      <header className="bg-primary text-white py-4 px-4 md:px-8" role="banner">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-lg md:text-xl font-bold tracking-tight font-montserrat">HUNTERS</h1>
-            <p className="text-xs text-[hsl(60,24%,85%)]">Espace Client</p>
+            <p className="text-xs text-primary-foreground/70">Espace Client</p>
           </div>
-          <span className="text-sm text-[hsl(60,24%,85%)]">{data.token.client_name}</span>
+          <span className="text-sm text-primary-foreground/70">{data.token.client_name}</span>
         </div>
       </header>
 
@@ -122,7 +122,7 @@ export default function ClientPortal() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[hsl(41,100%,48%)]" />
+              <Clock className="w-4 h-4 text-accent" />
               Avancement de votre dossier
             </CardTitle>
           </CardHeader>
@@ -134,14 +134,14 @@ export default function ClientPortal() {
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm mb-1 ${
                       i <= currentStepIndex
-                        ? 'bg-[hsl(147,49%,20%)] text-white'
-                        : 'bg-[hsl(60,8%,90%)] text-[hsl(0,0%,45%)]'
+                        ? 'bg-primary text-white'
+                        : 'bg-secondary text-muted-foreground'
                     }`}
                     aria-current={i === currentStepIndex ? 'step' : undefined}
                   >
                     {i <= currentStepIndex ? <CheckCircle2 className="w-4 h-4" /> : <span className="text-xs">{i + 1}</span>}
                   </div>
-                  <span className="text-[10px] md:text-xs text-[hsl(0,0%,45%)] leading-tight">{step.label}</span>
+                  <span className="text-[10px] md:text-xs text-muted-foreground leading-tight">{step.label}</span>
                 </div>
               ))}
             </div>
@@ -287,7 +287,7 @@ export default function ClientPortal() {
                 {documents.map((d: any) => (
                   <Card key={d.id}>
                     <CardContent className="py-3 flex items-center gap-3">
-                      <FileText className="w-4 h-4 text-[hsl(147,49%,20%)]" />
+                      <FileText className="w-4 h-4 text-primary" />
                       <span className="text-sm flex-1 truncate">{d.file_name}</span>
                       <span className="text-xs text-muted-foreground">{new Date(d.created_at).toLocaleDateString('fr-FR')}</span>
                     </CardContent>
@@ -306,7 +306,7 @@ export default function ClientPortal() {
                 {futureEvents.map((e: any) => (
                   <Card key={e.id}>
                     <CardContent className="py-3 flex items-center gap-3">
-                      <Calendar className="w-4 h-4 text-[hsl(41,100%,48%)]" />
+                      <Calendar className="w-4 h-4 text-accent" />
                       <div className="flex-1">
                         <p className="text-sm font-medium">{e.titre}</p>
                         <p className="text-xs text-muted-foreground">{new Date(e.date_debut).toLocaleDateString('fr-FR')} — {e.lieu || ''}</p>
@@ -323,7 +323,7 @@ export default function ClientPortal() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-[hsl(41,100%,48%)]" />
+              <MessageSquare className="w-4 h-4 text-accent" />
               Laisser un commentaire
             </CardTitle>
           </CardHeader>
@@ -338,7 +338,7 @@ export default function ClientPortal() {
             <Button
               onClick={handleComment}
               disabled={!comment.trim() || sending}
-              className="bg-[hsl(147,49%,20%)] hover:bg-[hsl(147,46%,28%)] text-white"
+              className="bg-primary hover:bg-primary/90 text-white"
             >
               {sending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Envoyer
@@ -357,9 +357,9 @@ export default function ClientPortal() {
 
 function ResultCard({ label, value, positive }: { label: string; value: string; positive?: boolean }) {
   return (
-    <div className="bg-[hsl(60,8%,90%)] rounded-lg p-3 text-center">
+    <div className="bg-secondary rounded-lg p-3 text-center">
       <p className="text-[10px] text-muted-foreground mb-1">{label}</p>
-      <p className={`text-sm font-bold ${positive === false ? 'text-destructive' : positive === true ? 'text-[hsl(147,49%,20%)]' : ''}`}>
+      <p className={`text-sm font-bold ${positive === false ? 'text-destructive' : positive === true ? 'text-primary' : ''}`}>
         {value}
       </p>
     </div>

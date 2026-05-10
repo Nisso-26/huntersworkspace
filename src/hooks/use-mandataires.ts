@@ -63,12 +63,14 @@ export function useMandataires() {
 
       const { data: dossiersRaw } = await supabase
         .from('dossiers')
-        .select('mandataire_id, honoraires, status');
+        .select('mandataire_id, honoraires, status')
+        .in('mandataire_id', userIds);
       const dossiers = (dossiersRaw ?? []) as DossierRow[];
 
       const { data: commissionsRaw } = await supabase
         .from('commissions')
-        .select('mandataire_id, type, montant, statut');
+        .select('mandataire_id, type, montant, statut')
+        .in('mandataire_id', userIds);
       const commissions = (commissionsRaw ?? []) as CommissionRow[];
 
       const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));

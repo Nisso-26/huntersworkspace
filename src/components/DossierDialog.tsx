@@ -13,6 +13,7 @@ import DocumentsSection from '@/components/DocumentsSection';
 import ClientPortalSection from '@/components/ClientPortalSection';
 import SignatureSection from '@/components/SignatureSection';
 import StrategieIA from '@/components/StrategieIA';
+import { ClientComments } from '@/components/ClientPortalSection';
 
 interface Props {
   dossier?: Dossier;
@@ -163,6 +164,12 @@ export default function DossierDialog({ dossier, trigger }: Props) {
               </div>
               <div className="border-t pt-4">
                 <ClientPortalSection dossierId={dossier.id} clientName={form.client_name} />
+              </div>
+              <div className="border-t pt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm font-semibold text-foreground">💬 Commentaires client</span>
+                </div>
+                <ClientComments dossierId={dossier.id} />
               </div>
             </>
           )}

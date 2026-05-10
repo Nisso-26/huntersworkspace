@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useClientTokens, useCreateClientToken, useRevokeClientToken } from '@/hooks/use-client-portal';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -97,6 +98,42 @@ export default function ClientPortalSection({ dossierId, clientName }: Props) {
           Générer lien
         </Button>
       </div>
+    </div>
+  );
+}
+
+export function ClientComments({ dossierId }: { dossierId: string }) {
+  const [comments, setComments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase
+      .from('client_comments' as any)
+      .select('*')
+      .eq('dossier_id', dossierId)
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        setComments(data || []);
+        setLoading(false);
+      });
+  }, [dossierId]);
+
+  if (loading) return <p className="text-xs text-muted-foreground">Chargement...</p>;
+  if (comments.length === 0) return (
+    <p className="text-xs text-muted-foreground text-center py-3">Aucun commentaire client.</p>
+  );
+
+  return (
+    <div className="space-y-2 mt-2">
+      {comments.map((c: any) => (
+        <div key={c.id} className="bg-secondary/30 rounded-lg px-3 py-2 text-sm">
+          <p className="text-foreground">{c.content}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {new Date(c.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          </p>
+        </div>
+      ))}
     </div>
   );
 }

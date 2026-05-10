@@ -20,43 +20,6 @@ interface Props {
   dossier: Dossier;
 }
 
-interface StrategieData {
-  synthese: string;
-  profil_investisseur: string;
-  indicateurs_cles: {
-    revenus_nets_totaux_mensuels: number;
-    taux_effort_actuel_pct: number;
-    capacite_emprunt_estimee: number;
-    mensualite_max_supplementaire: number;
-    cash_flow_mensuel_libre: number;
-  };
-  recommandations: Array<{
-    rang: number;
-    titre: string;
-    dispositif: string;
-    description: string;
-    budget_acquisition_total: number;
-    apport_recommande: number;
-    mensualite_credit_estimee: number;
-    loyer_brut_mensuel_estime: number;
-    cash_flow_net_mensuel_estime: number;
-    rendement_brut_estime_pct: number;
-    economie_fiscale_annuelle_estimee: number;
-    avantages: string[];
-    points_vigilance: string[];
-    horizon_recommande: string;
-    zones_suggerees: string[];
-  }>;
-  plan_action: Array<{
-    etape: number;
-    titre: string;
-    description: string;
-    delai: string;
-  }>;
-  points_attention: string[];
-  disclaimer: string;
-}
-
 const fmt = (v: number) => v?.toLocaleString('fr-FR') ?? '0';
 
 export default function StrategieIA({ dossier }: Props) {
@@ -65,29 +28,13 @@ export default function StrategieIA({ dossier }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(0);
 
-  // Parse sécurisé : tolère null, objet déjà parsé, JSON string, ou données malformées
-  const parseStrategie = (raw: unknown): StrategieData | null => {
-    try {
-      let obj: any = null;
-      if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-        obj = raw;
-      } else if (typeof raw === 'string') {
-        const trimmed = raw.trim();
-        if (!trimmed.startsWith('{')) return null;
-        obj = JSON.parse(trimmed);
-      }
-      if (!obj || typeof obj !== 'object') return null;
-      // Vérifie les clés essentielles attendues par le rendu
-      if (typeof obj.synthese !== 'string' || !obj.synthese) return null;
-      if (!obj.indicateurs_cles || typeof obj.indicateurs_cles !== 'object') return null;
-      if (!Array.isArray(obj.recommandations)) return null;
-      return obj as StrategieData;
-    } catch (err) {
-      console.warn('StrategieIA: parsing échoué', err);
-      return null;
-    }
-  };
-  const strategie: StrategieData | null = parseStrategie(dossier.strategie);
+  // Parsing strict, tolérant et non-bloquant — voir src/lib/strategie-parser.ts
+  const parsed = parseStrategie(dossier.strategie);
+  const strategie: StrategieData | null = parsed.strategie;
+  const parseError = parsed.error;
+  const isPlainText = parsed.isPlainText;
+  const rawText = parsed.rawText;
+
 
   const [form, setForm] = useState({
     age: '',

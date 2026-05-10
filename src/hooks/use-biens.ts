@@ -81,7 +81,7 @@ export function useCreateBien() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['biens'] });
-      toast.success('Bien créé');
+      toast.success('Bien immobilier ajouté avec succès');
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -102,7 +102,7 @@ export function useUpdateBien() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['biens'] });
-      toast.success('Bien mis à jour');
+      toast.success('Bien immobilier mis à jour avec succès');
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -117,7 +117,7 @@ export function useDeleteBien() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['biens'] });
-      toast.success('Bien supprimé');
+      toast.success('Bien immobilier supprimé');
     },
     onError: (e: any) => toast.error(e.message),
   });

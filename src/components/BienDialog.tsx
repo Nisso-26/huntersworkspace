@@ -26,7 +26,7 @@ const statuts = [
   { value: 'identifie', label: 'Identifié' },
   { value: 'visite', label: 'Visité' },
   { value: 'offre_faite', label: 'Offre faite' },
-  { value: 'compromis', label: 'Compromis' },
+  { value: 'compromis', label: 'Compromis signé' },
   { value: 'acte', label: 'Acté' },
   { value: 'en_travaux', label: 'En travaux' },
   { value: 'loue', label: 'Loué' },
@@ -223,7 +223,7 @@ export default function BienDialog({ bien, trigger }: Props) {
               </div>
               {isAdmin && (
                 <div>
-                  <Label>Mandataire</Label>
+                  <Label>Conseiller</Label>
                   <Select value={form.mandataire_id} onValueChange={v => set('mandataire_id', v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>

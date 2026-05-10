@@ -194,7 +194,7 @@ export function useCreateChantier() {
       const { error } = await supabase.from('chantiers').insert(chantier as any);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['chantiers'] }); toast.success('Chantier créé'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['chantiers'] }); toast.success('Suivi travaux créé avec succès'); },
     onError: (e: any) => toast.error(e.message),
   });
 }
@@ -206,7 +206,7 @@ export function useUpdateChantier() {
       const { error } = await supabase.from('chantiers').update({ ...updates, updated_at: new Date().toISOString() } as any).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['chantiers'] }); toast.success('Chantier mis à jour'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['chantiers'] }); toast.success('Suivi travaux mis à jour avec succès'); },
     onError: (e: any) => toast.error(e.message),
   });
 }

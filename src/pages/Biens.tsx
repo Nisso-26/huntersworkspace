@@ -15,7 +15,7 @@ const statutOptions = [
   { label: 'Identifié', value: 'identifie' },
   { label: 'Visité', value: 'visite' },
   { label: 'Offre faite', value: 'offre_faite' },
-  { label: 'Compromis', value: 'compromis' },
+  { label: 'Compromis signé', value: 'compromis' },
   { label: 'Acté', value: 'acte' },
   { label: 'En travaux', value: 'en_travaux' },
   { label: 'Loué', value: 'loue' },
@@ -38,7 +38,7 @@ export default function Biens() {
 
   const handleExport = () => {
     exportToCSV(
-      ['Référence', 'Type', 'Ville', 'Prix acquisition', 'Statut', 'Mandataire', 'Rentabilité brute'],
+      ['Référence', 'Type', 'Ville', 'Prix acquisition', 'Statut', 'Conseiller', 'Rentabilité brute'],
       filtered.map(b => {
         const prixRevient = b.prix_acquisition + b.frais_notaire + b.budget_travaux;
         const renta = prixRevient > 0 ? ((b.loyer_mensuel_cible * 12) / prixRevient * 100).toFixed(2) + '%' : '—';
@@ -85,7 +85,7 @@ export default function Biens() {
                   <th className="text-left p-3">Ville</th>
                   <th className="text-right p-3">Prix</th>
                   <th className="text-left p-3">Statut</th>
-                  <th className="text-left p-3">Mandataire</th>
+                  <th className="text-left p-3">Conseiller</th>
                   <th className="text-right p-3">Renta. brute</th>
                   <th className="text-center p-3">Actions</th>
                 </tr>

@@ -47,7 +47,7 @@ function NewConversationDialog({ onCreated }: { onCreated: (id: string) => void 
           </div>
           {isAdmin && (
             <div className="space-y-2">
-              <Label>Mandataire</Label>
+              <Label>Conseiller</Label>
               <Select value={mandataireId} onValueChange={setMandataireId}>
                 <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
                 <SelectContent>
@@ -129,7 +129,7 @@ export default function Messagerie() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-heading font-bold text-foreground">Messagerie</h1>
-            <p className="text-muted-foreground mt-1">Communication siège ↔ mandataires</p>
+            <p className="text-muted-foreground mt-1">Messagerie interne Hunters</p>
           </div>
           <NewConversationDialog onCreated={setSelectedId} />
         </div>

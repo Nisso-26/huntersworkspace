@@ -66,7 +66,7 @@ export default function ProfileSection() {
   };
 
   const roleLabelsMap: Record<string, string> = {
-    super_admin: 'Super Admin', mandataire: 'Mandataire', decoratrice: 'Décoratrice',
+    super_admin: 'Directeur', mandataire: 'Conseiller', decoratrice: 'Décoratrice',
   };
 
   return (

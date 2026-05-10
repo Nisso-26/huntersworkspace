@@ -48,10 +48,10 @@ function PartenaireDialog({ partenaire, trigger }: { partenaire?: Partenaire; tr
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {trigger || <Button className="gap-2"><Plus className="w-4 h-4" />Nouveau partenaire</Button>}
+        {trigger || <Button className="gap-2"><Plus className="w-4 h-4" />Nouveau prescripteur</Button>}
       </DialogTrigger>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>{partenaire ? 'Modifier le partenaire' : 'Nouveau partenaire'}</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{partenaire ? 'Modifier le partenaire' : 'Nouveau prescripteur'}</DialogTitle></DialogHeader>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2 col-span-2">
@@ -128,7 +128,7 @@ export default function Partenaires() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-heading font-bold text-foreground">Partenaires</h1>
+            <h1 className="text-3xl font-heading font-bold text-foreground">Prescripteurs</h1>
             <p className="text-muted-foreground mt-1">Annuaire des prescripteurs — {partenaires.length} partenaire{partenaires.length > 1 ? 's' : ''}</p>
           </div>
           <div className="flex items-center gap-2">
@@ -150,7 +150,7 @@ export default function Partenaires() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-card rounded-xl border shadow-card p-8 text-center">
-            <p className="text-muted-foreground">Aucun partenaire trouvé</p>
+            <p className="text-muted-foreground">Aucun prescripteur trouvé</p>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

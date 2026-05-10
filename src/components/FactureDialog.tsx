@@ -121,7 +121,7 @@ export default function FactureDialog() {
               </div>
             )}
             <div className="space-y-2 col-span-2">
-              <Label>Mandataire</Label>
+              <Label>Conseiller</Label>
               <Select value={form.mandataire_id} onValueChange={v => setForm(f => ({ ...f, mandataire_id: v }))}>
                 <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                 <SelectContent>

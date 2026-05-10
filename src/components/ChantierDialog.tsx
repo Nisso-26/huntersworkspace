@@ -153,7 +153,7 @@ export default function ChantierDialog({ chantier, trigger }: Props) {
               </div>
               {isAdmin && (
                 <div>
-                  <Label>Mandataire</Label>
+                  <Label>Conseiller</Label>
                   <Select value={form.mandataire_id} onValueChange={v => set('mandataire_id', v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>

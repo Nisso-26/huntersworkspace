@@ -14,11 +14,11 @@ import { summarizeStrategie } from '@/lib/strategie-parser';
 
 const statusOptions = [
   { label: 'Nouveau', value: 'nouveau' },
-  { label: 'Conseil', value: 'conseil' },
-  { label: 'Chasse', value: 'chasse' },
+  { label: 'En conseil', value: 'conseil' },
+  { label: 'En chasse', value: 'chasse' },
   { label: 'Visite', value: 'visite' },
-  { label: 'Offre', value: 'offre' },
-  { label: 'Compromis', value: 'compromis' },
+  { label: 'Offre déposée', value: 'offre' },
+  { label: 'Compromis signé', value: 'compromis' },
   { label: 'Acte signé', value: 'signe' },
   { label: 'Clôturé', value: 'cloture' },
 ];
@@ -40,7 +40,7 @@ export default function Dossiers() {
 
   const handleExport = () => {
     exportToCSV(
-      ['Client', 'Email', 'Mandataire', 'Ville', 'Budget', 'Stratégie', 'Statut'],
+      ['Client', 'Email', 'Conseiller', 'Ville', 'Budget', 'Stratégie', 'Statut'],
       filtered.map(d => [d.client_name, d.email || '', d.mandataire_name || '', d.ville || '', d.budget.toLocaleString('fr-FR'), summarizeStrategie(d.strategie), d.status]),
       'dossiers_hunters'
     );
@@ -51,7 +51,7 @@ export default function Dossiers() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-heading font-bold text-foreground">Dossiers Clients</h1>
+            <h1 className="text-3xl font-heading font-bold text-foreground">Dossiers clients</h1>
             <p className="text-muted-foreground mt-1">{dossiers.length} dossier{dossiers.length > 1 ? 's' : ''} au total</p>
           </div>
           <div className="flex items-center gap-2">
@@ -80,7 +80,7 @@ export default function Dossiers() {
                 <thead>
                   <tr className="border-b bg-secondary/50">
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3">Client</th>
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden md:table-cell">Mandataire</th>
+                    <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden md:table-cell">Conseiller</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden sm:table-cell">Ville</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3">Budget</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden lg:table-cell">Stratégie</th>

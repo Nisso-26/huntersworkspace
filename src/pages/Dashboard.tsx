@@ -25,7 +25,7 @@ export default function Dashboard() {
   const { isAdmin } = useAuth();
 
   // Stats are automatically filtered by RLS:
-  // - Super Admin sees all dossiers/mandataires
+  // - Directeur sees all dossiers/mandataires
   // - Mandataire sees only their own dossiers (mandataires list will be empty due to RLS)
   const caTotal = dossiers
     .filter(d => ['signe', 'compromis'].includes(d.status))
@@ -68,7 +68,7 @@ export default function Dashboard() {
                 icon={FolderOpen}
               />
               {isAdmin && (
-                <StatCard label="Mandataires actifs" value={mandatairesActifs} icon={Users} variant="info" />
+                <StatCard label="Conseillers actifs" value={mandatairesActifs} icon={Users} variant="info" />
               )}
               <StatCard
                 label={isAdmin ? 'Dossiers signés' : 'Mes dossiers signés'}
@@ -126,14 +126,14 @@ export default function Dashboard() {
           {isAdmin && (
             <motion.div variants={item} className="bg-card rounded-xl border shadow-card">
               <div className="p-5 border-b">
-                <h2 className="font-heading text-lg font-semibold text-foreground">Top Mandataires</h2>
+                <h2 className="font-heading text-lg font-semibold text-foreground">Top Conseillers</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">Par chiffre d'affaires généré</p>
               </div>
               <div className="divide-y">
                 {isLoading ? (
                   Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 mx-5 my-2 rounded" />)
                 ) : topMandataires.length === 0 ? (
-                  <p className="text-sm text-muted-foreground p-5 text-center">Aucun mandataire</p>
+                  <p className="text-sm text-muted-foreground p-5 text-center">Aucun conseiller</p>
                 ) : (
                   topMandataires.map((m, idx) => (
                     <div key={m.id} className="flex items-center gap-3 px-5 py-3.5">

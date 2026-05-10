@@ -101,8 +101,8 @@ export default function GestionUtilisateurs() {
   };
 
   const roleLabels: Record<string, string> = {
-    super_admin: 'Super Admin',
-    mandataire: 'Mandataire',
+    super_admin: 'Directeur',
+    mandataire: 'Conseiller',
     decoratrice: 'Décoratrice',
   };
 
@@ -130,9 +130,9 @@ export default function GestionUtilisateurs() {
             <Select value={role} onValueChange={setRole}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="mandataire">Mandataire</SelectItem>
+                <SelectItem value="mandataire">Conseiller</SelectItem>
                 <SelectItem value="decoratrice">Décoratrice</SelectItem>
-                <SelectItem value="super_admin">Super Admin</SelectItem>
+                <SelectItem value="super_admin">Directeur</SelectItem>
               </SelectContent>
             </Select>
           </div>

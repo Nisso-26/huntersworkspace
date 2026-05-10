@@ -57,7 +57,7 @@ export function useUploadDocument() {
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['documents', vars.dossierId] });
-      toast.success('Document uploadé');
+      toast.success('Document ajouté avec succès');
     },
     onError: (e: any) => toast.error(e.message),
   });

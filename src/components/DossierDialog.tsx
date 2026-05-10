@@ -59,11 +59,11 @@ export default function DossierDialog({ dossier, trigger }: Props) {
 
   const statuses = [
     { value: 'nouveau', label: 'Nouveau' },
-    { value: 'conseil', label: 'Conseil' },
-    { value: 'chasse', label: 'Chasse' },
+    { value: 'conseil', label: 'En conseil' },
+    { value: 'chasse', label: 'En chasse' },
     { value: 'visite', label: 'Visites' },
-    { value: 'offre', label: 'Offre' },
-    { value: 'compromis', label: 'Compromis' },
+    { value: 'offre', label: 'Offre déposée' },
+    { value: 'compromis', label: 'Compromis signé' },
     { value: 'signe', label: 'Acte signé' },
     { value: 'cloture', label: 'Clôturé' },
   ];
@@ -101,7 +101,7 @@ export default function DossierDialog({ dossier, trigger }: Props) {
             </div>
             {isAdmin && mandataires && (
               <div className="space-y-2 col-span-2">
-                <Label>Mandataire</Label>
+                <Label>Conseiller</Label>
                 <Select value={form.mandataire_id} onValueChange={v => setForm(f => ({ ...f, mandataire_id: v }))}>
                   <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                   <SelectContent>

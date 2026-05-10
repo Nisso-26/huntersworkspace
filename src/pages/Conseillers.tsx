@@ -102,7 +102,7 @@ export default function Conseillers() {
       if ((data as any)?.error) throw new Error((data as any).error);
       const link = (data as any)?.invitation_link as string | null;
       setInviteLink(link);
-      toast.success('Invitation envoyée', { description: link ? 'Lien d\'activation prêt à copier.' : 'L\'utilisateur recevra un email.' });
+      toast.success('Invitation envoyée avec succès', { description: link ? 'Lien d\'activation prêt à copier.' : 'L\'utilisateur recevra un email.' });
       setForm({ first_name: '', last_name: '', email: '' });
       load();
     } catch (err: any) {
@@ -129,7 +129,7 @@ export default function Conseillers() {
       toast.error('Erreur', { description: error.message });
       return;
     }
-    toast.success('Accès révoqué');
+    toast.success('Accès client révoqué avec succès');
     load();
   };
 

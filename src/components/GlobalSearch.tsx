@@ -81,7 +81,7 @@ export default function GlobalSearch() {
                 ref={inputRef}
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="Rechercher un dossier, mandataire, prospect..."
+                placeholder="Rechercher un dossier, conseiller, contact..."
                 className="flex-1 bg-transparent text-sm outline-none text-foreground placeholder:text-muted-foreground"
               />
               {query && (

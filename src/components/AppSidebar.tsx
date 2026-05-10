@@ -12,14 +12,14 @@ import huntersLogo from '@/assets/hunters-logo.jpg';
 
 const allNavItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/', roles: ['super_admin', 'mandataire', 'decoratrice'] },
-  { label: 'Prospects', icon: UserPlus, href: '/prospects', roles: ['super_admin', 'mandataire'] },
-  { label: 'Pipeline', icon: FolderKanban, href: '/pipeline', roles: ['super_admin', 'mandataire', 'decoratrice'] },
+  { label: 'Contacts', icon: UserPlus, href: '/prospects', roles: ['super_admin', 'mandataire'] },
+  { label: 'Suivi des missions', icon: FolderKanban, href: '/pipeline', roles: ['super_admin', 'mandataire', 'decoratrice'] },
   { label: 'Dossiers', icon: FileText, href: '/dossiers', roles: ['super_admin', 'mandataire', 'decoratrice'] },
-  { label: 'Biens', icon: Home, href: '/biens', roles: ['super_admin', 'mandataire', 'decoratrice'] },
-  { label: 'Mandataires', icon: Users, href: '/mandataires', roles: ['super_admin'] },
+  { label: 'Biens immobiliers', icon: Home, href: '/biens', roles: ['super_admin', 'mandataire', 'decoratrice'] },
+  { label: 'Réseau Conseillers', icon: Users, href: '/mandataires', roles: ['super_admin'] },
   { label: 'Conseillers', icon: ShieldCheck, href: '/conseillers', roles: ['super_admin'] },
-  { label: 'Partenaires', icon: Briefcase, href: '/partenaires', roles: ['super_admin', 'mandataire'] },
-  { label: 'Chantiers', icon: HardHat, href: '/chantiers', roles: ['super_admin', 'mandataire', 'decoratrice'] },
+  { label: 'Prescripteurs', icon: Briefcase, href: '/partenaires', roles: ['super_admin', 'mandataire'] },
+  { label: 'Suivi Travaux', icon: HardHat, href: '/chantiers', roles: ['super_admin', 'mandataire', 'decoratrice'] },
   { label: 'Facturation', icon: CreditCard, href: '/facturation', roles: ['super_admin'] },
   { label: 'Export comptable', icon: FileSpreadsheet, href: '/export-comptable', roles: ['super_admin'] },
   { label: 'Messagerie', icon: MessageSquare, href: '/messagerie', roles: ['super_admin', 'mandataire'] },
@@ -49,8 +49,8 @@ export default function AppSidebar({ mobile = false }: AppSidebarProps) {
   const displayName = user?.user_metadata?.full_name || user?.email || '';
 
   const roleLabels: Record<string, string> = {
-    super_admin: 'Super Admin',
-    mandataire: 'Mandataire',
+    super_admin: 'Directeur',
+    mandataire: 'Conseiller',
     decoratrice: 'Décoratrice',
   };
 

@@ -46,7 +46,7 @@ export default function Chantiers() {
 
   const handleExport = () => {
     exportToCSV(
-      ['Référence', 'Bien', 'Mandataire', 'Budget', 'Consommé', 'Statut', 'Fin prévue'],
+      ['Référence', 'Bien', 'Conseiller', 'Budget', 'Consommé', 'Statut', 'Fin prévue'],
       filtered.map(c => [c.reference, c.bien_reference || '', c.mandataire_name || '', c.budget_alloue.toLocaleString('fr-FR'), (c.budget_consomme || 0).toLocaleString('fr-FR'), statutLabels[c.statut], c.date_fin_prevue || '']),
       'chantiers_hunters'
     );
@@ -87,7 +87,7 @@ export default function Chantiers() {
                   <tr className="border-b bg-secondary/50">
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3">Référence</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3">Bien</th>
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden md:table-cell">Mandataire</th>
+                    <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden md:table-cell">Conseiller</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3">Budget</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden lg:table-cell">Fin prévue</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3">Statut</th>

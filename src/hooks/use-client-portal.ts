@@ -40,7 +40,7 @@ export function useCreateClientToken() {
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['client-tokens', vars.dossier_id] });
-      toast.success('Lien client généré');
+      toast.success('Lien d\'accès client généré');
     },
     onError: (e: any) => toast.error(e.message),
   });

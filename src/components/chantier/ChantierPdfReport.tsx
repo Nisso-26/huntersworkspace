@@ -57,7 +57,7 @@ export async function generateChantierPdf(chantier: Chantier) {
   doc.setFont('helvetica', 'normal');
   const infos = [
     ['Bien', `${chantier.bien_reference || '—'} ${chantier.bien_ville ? `(${chantier.bien_ville})` : ''}`],
-    ['Mandataire', chantier.mandataire_name || '—'],
+    ['Conseiller', chantier.mandataire_name || '—'],
     ['Statut', chantier.statut],
     ['Début prévu', chantier.date_debut_prevue || '—'],
     ['Fin prévue', chantier.date_fin_prevue || '—'],

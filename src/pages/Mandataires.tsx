@@ -58,7 +58,7 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
   return (
     <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
       <DialogHeader>
-        <DialogTitle>{m.full_name || 'Mandataire'}</DialogTitle>
+        <DialogTitle>{m.full_name || 'Conseiller'}</DialogTitle>
       </DialogHeader>
       <div className="space-y-6">
         {/* KPIs */}
@@ -189,7 +189,7 @@ export default function Mandataires() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-heading font-bold text-foreground">Mandataires</h1>
+            <h1 className="text-3xl font-heading font-bold text-foreground">Conseillers</h1>
             <p className="text-muted-foreground mt-1">Gestion du réseau — {mandataires.length} mandataire{mandataires.length > 1 ? 's' : ''}</p>
           </div>
           <ExportButton onExportCSV={handleExport} />
@@ -198,7 +198,7 @@ export default function Mandataires() {
         <SearchFilter
           search={search}
           onSearchChange={setSearch}
-          placeholder="Rechercher un mandataire..."
+          placeholder="Rechercher un conseiller..."
           filters={[
             { label: 'Tous les statuts', value: statusFilter, options: statusOptions, onChange: setStatusFilter },
           ]}
@@ -210,7 +210,7 @@ export default function Mandataires() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-card rounded-xl border shadow-card p-8 text-center">
-            <p className="text-muted-foreground">Aucun mandataire trouvé</p>
+            <p className="text-muted-foreground">Aucun conseiller trouvé</p>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -75,7 +75,7 @@ export function useCreateDossier() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['dossiers'] });
-      toast.success('Dossier créé');
+      toast.success('Dossier client créé avec succès');
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -96,7 +96,7 @@ export function useUpdateDossier() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['dossiers'] });
-      toast.success('Dossier mis à jour');
+      toast.success('Dossier mis à jour avec succès');
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -111,7 +111,7 @@ export function useDeleteDossier() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['dossiers'] });
-      toast.success('Dossier supprimé');
+      toast.success('Dossier supprimé avec succès');
     },
     onError: (e: any) => toast.error(e.message),
   });

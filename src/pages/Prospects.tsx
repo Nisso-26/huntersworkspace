@@ -71,7 +71,7 @@ function ProspectForm({ prospect, trigger }: ProspectFormProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {trigger || <Button className="gap-2"><UserPlus className="w-4 h-4" />Nouveau prospect</Button>}
+        {trigger || <Button className="gap-2"><UserPlus className="w-4 h-4" />Nouveau contact</Button>}
       </DialogTrigger>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -115,7 +115,7 @@ function ProspectForm({ prospect, trigger }: ProspectFormProps) {
             </div>
             {isAdmin && (
               <div className="space-y-2">
-                <Label>Mandataire</Label>
+                <Label>Conseiller</Label>
                 <Select value={form.mandataire_id} onValueChange={v => setForm(f => ({ ...f, mandataire_id: v }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -175,7 +175,7 @@ export default function Prospects() {
 
   const handleExport = () => {
     exportToCSV(
-      ['Nom', 'Email', 'Téléphone', 'Source', 'Budget', 'Statut', 'Mandataire', 'Date'],
+      ['Nom', 'Email', 'Téléphone', 'Source', 'Budget', 'Statut', 'Conseiller', 'Date'],
       filtered.map(p => [p.nom, p.email || '', p.telephone || '', sourceLabels[p.source] || p.source, p.budget_estime.toLocaleString('fr-FR'), statutLabels[p.statut], p.mandataire_name || '', new Date(p.created_at).toLocaleDateString('fr-FR')]),
       'prospects_hunters'
     );
@@ -186,7 +186,7 @@ export default function Prospects() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-heading font-bold text-foreground">Prospects</h1>
+            <h1 className="text-3xl font-heading font-bold text-foreground">Contacts</h1>
             <p className="text-muted-foreground mt-1">Pipeline CRM — {activeProspects.length} prospect{activeProspects.length > 1 ? 's' : ''} actif{activeProspects.length > 1 ? 's' : ''}</p>
           </div>
           <div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ export default function Prospects() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {isLoading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />) : (
             <>
-              <StatCard label="Prospects actifs" value={activeProspects.length} icon={Users} />
+              <StatCard label="Contacts actifs" value={activeProspects.length} icon={Users} />
               <StatCard label="Convertis" value={convertis} icon={Target} variant="success" />
               <StatCard label="Perdus" value={perdus} icon={X} />
               <StatCard label="Taux conversion" value={`${tauxConversion}%`} icon={TrendingUp} variant="gold" />
@@ -253,7 +253,7 @@ export default function Prospects() {
                           </motion.div>
                         } />
                       ))}
-                      {cards.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">Aucun prospect</p>}
+                      {cards.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">Aucun contact</p>}
                     </div>
                   </div>
                 </div>
@@ -277,13 +277,13 @@ export default function Prospects() {
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden sm:table-cell">Source</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3">Budget</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3">Statut</th>
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden lg:table-cell">Mandataire</th>
+                    <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden lg:table-cell">Conseiller</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {filtered.length === 0 ? (
-                    <tr><td colSpan={7} className="px-5 py-8 text-center text-sm text-muted-foreground">Aucun prospect</td></tr>
+                    <tr><td colSpan={7} className="px-5 py-8 text-center text-sm text-muted-foreground">Aucun contact</td></tr>
                   ) : filtered.map(p => (
                     <tr key={p.id} className="hover:bg-secondary/30 transition-colors">
                       <td className="px-5 py-3.5 text-sm font-medium text-foreground">{p.nom}</td>

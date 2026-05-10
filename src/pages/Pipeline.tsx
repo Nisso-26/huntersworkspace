@@ -237,7 +237,7 @@ export default function Pipeline() {
 
           qc.invalidateQueries({ queryKey: ['factures'] });
           qc.invalidateQueries({ queryKey: ['commissions'] });
-          toast.success('Facture et commission créées automatiquement');
+          toast.success('Facturation et commission générées automatiquement');
         }
       } catch (err: any) {
         toast.error(err?.message || 'Erreur lors du déplacement');

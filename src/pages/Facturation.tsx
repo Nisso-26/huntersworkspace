@@ -26,7 +26,7 @@ const statutStyles: Record<string, string> = {
   annulee: 'bg-muted text-muted-foreground',
 };
 const typeLabels: Record<string, string> = {
-  abonnement: 'Pack mensuel', commission: 'Commission', honoraires: 'Honoraires', avoir: 'Avoir',
+  abonnement: 'Abonnement mensuel', commission: 'Commission', honoraires: 'Honoraires', avoir: 'Avoir',
 };
 
 const statutOptions = [
@@ -39,7 +39,7 @@ const statutOptions = [
 ];
 
 const typeOptions = [
-  { label: 'Pack mensuel', value: 'abonnement' },
+  { label: 'Abonnement mensuel', value: 'abonnement' },
   { label: 'Commission', value: 'commission' },
   { label: 'Honoraires', value: 'honoraires' },
   { label: 'Avoir', value: 'avoir' },
@@ -92,7 +92,7 @@ export default function Facturation() {
 
   const handleExport = () => {
     exportToCSV(
-      ['Référence', 'Mandataire', 'Type', 'Montant HT', 'TTC', 'Date', 'Statut'],
+      ['Référence', 'Conseiller', 'Type', 'Montant HT', 'TTC', 'Date', 'Statut'],
       filtered.map(f => [f.reference || '', f.mandataire_name || '', typeLabels[f.type] || f.type, f.montant.toLocaleString('fr-FR'), (f.montant_ttc || 0).toLocaleString('fr-FR'), new Date(f.date_emission).toLocaleDateString('fr-FR'), statutLabels[f.statut]]),
       'factures_hunters'
     );
@@ -171,7 +171,7 @@ export default function Facturation() {
                 <thead>
                   <tr className="border-b bg-secondary/50">
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3">Référence</th>
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden md:table-cell">Mandataire</th>
+                    <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden md:table-cell">Conseiller</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden sm:table-cell">Type</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3">HT</th>
                     <th className="text-left text-xs font-semibold text-muted-foreground px-5 py-3 hidden lg:table-cell">TTC</th>

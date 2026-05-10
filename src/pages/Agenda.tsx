@@ -196,9 +196,9 @@ export default function Agenda() {
             {isAdmin && (
               <>
                 <Select value={filterMandataire} onValueChange={setFilterMandataire}>
-                  <SelectTrigger className="w-[200px]"><SelectValue placeholder="Mandataire" /></SelectTrigger>
+                  <SelectTrigger className="w-[200px]"><SelectValue placeholder="Conseiller" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les mandataires</SelectItem>
+                    <SelectItem value="all">Tous les conseillers</SelectItem>
                     {mandataires.map(m => (
                       <SelectItem key={m.id} value={m.id}>{m.full_name || m.email}</SelectItem>
                     ))}

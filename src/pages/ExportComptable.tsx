@@ -39,7 +39,7 @@ export default function ExportComptable() {
 
   const handleExportCSV = () => {
     exportToCSV(
-      ['Date', 'Type opération', 'Référence', 'Client', 'Mandataire', 'Montant HT', 'TVA (%)', 'Montant TVA', 'Montant TTC', 'Statut paiement'],
+      ['Date', 'Type opération', 'Référence', 'Client', 'Conseiller', 'Montant HT', 'TVA (%)', 'Montant TVA', 'Montant TTC', 'Statut paiement'],
       filtered.map(f => [
         new Date(f.date_emission).toLocaleDateString('fr-FR'),
         typeLabels[f.type] || f.type,
@@ -76,7 +76,7 @@ export default function ExportComptable() {
               <Input type="date" value={dateFin} onChange={e => setDateFin(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Mandataire</Label>
+              <Label>Conseiller</Label>
               <Select value={mandataireFilter || '__all__'} onValueChange={v => setMandataireFilter(v === '__all__' ? '' : v)}>
                 <SelectTrigger><SelectValue placeholder="Tous" /></SelectTrigger>
                 <SelectContent>
@@ -122,7 +122,7 @@ export default function ExportComptable() {
                   <th className="text-left px-4 py-2 text-xs font-semibold text-muted-foreground">Type</th>
                   <th className="text-left px-4 py-2 text-xs font-semibold text-muted-foreground">Référence</th>
                   <th className="text-left px-4 py-2 text-xs font-semibold text-muted-foreground hidden md:table-cell">Client</th>
-                  <th className="text-left px-4 py-2 text-xs font-semibold text-muted-foreground hidden lg:table-cell">Mandataire</th>
+                  <th className="text-left px-4 py-2 text-xs font-semibold text-muted-foreground hidden lg:table-cell">Conseiller</th>
                   <th className="text-right px-4 py-2 text-xs font-semibold text-muted-foreground">HT</th>
                   <th className="text-right px-4 py-2 text-xs font-semibold text-muted-foreground hidden sm:table-cell">TTC</th>
                   <th className="text-left px-4 py-2 text-xs font-semibold text-muted-foreground">Statut</th>

@@ -56,7 +56,7 @@ export default function LotsTab({ chantierId, lots, budgetAlloue }: Props) {
 
   const addLot = () => {
     if (!newLot.designation) return;
-    createLot.mutate({ chantier_id: chantierId, ...newLot, statut: 'a_venir' } as any);
+    createLot.mutate({ chantier_id: chantierId, ...newLot, statut: 'a_faire' } as any);
     setNewLot({ designation: '', artisan: '', contact_artisan: '', montant_devis: 0, montant_engage: 0, montant_facture: 0, avancement: 0, date_prevue: '' });
   };
 

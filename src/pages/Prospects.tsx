@@ -19,7 +19,7 @@ import { motion } from 'framer-motion';
 
 const statutLabels: Record<string, string> = {
   contact_entrant: 'Contact entrant', qualification: 'Qualification', rdv_planifie: 'RDV planifié',
-  mandat_en_cours: 'Mandat signé', converti: 'Converti', perdu: 'Perdu',
+  mandat_signe: 'Mandat signé', converti: 'Converti', perdu: 'Perdu',
 };
 const statutStyles: Record<string, string> = {
   contact_entrant: 'bg-muted text-muted-foreground',
@@ -32,7 +32,7 @@ const statutStyles: Record<string, string> = {
 const sourceLabels: Record<string, string> = {
   recommandation: 'Recommandation', site: 'Site web', reseaux: 'Réseaux sociaux', autre: 'Autre',
 };
-const pipelineStatuts = ['contact_entrant', 'qualification', 'rdv_planifie', 'mandat_en_cours'];
+const pipelineStatuts = ['contact_entrant', 'qualification', 'rdv_planifie', 'mandat_signe'];
 
 interface ProspectFormProps {
   prospect?: Prospect;

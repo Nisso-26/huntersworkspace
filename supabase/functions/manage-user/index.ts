@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
       });
       if (error) throw error;
       // Update profile status
-      await adminClient.from("profiles").update({ status: "inactif" }).eq("id", user_id);
+      await adminClient.from("profiles").update({ status: "suspendu" }).eq("id", user_id);
       return new Response(JSON.stringify({ success: true, message: "Utilisateur désactivé" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

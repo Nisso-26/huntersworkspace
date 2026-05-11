@@ -201,7 +201,7 @@ export default function GestionUtilisateurs() {
             <div className="space-y-2">
               {users.map(u => {
                 const isCurrentUser = u.id === currentUser?.id;
-                const isDisabled = u.status === 'inactif';
+                const isDisabled = u.status === 'suspendu' || u.status === 'inactif';
                 return (
                   <div
                     key={u.id}

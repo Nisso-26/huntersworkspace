@@ -78,7 +78,7 @@ export default function FactureDialog() {
       dossier_client_name: selectedDossier?.client_name || null,
     } as any);
     setOpen(false);
-    setForm({ mandataire_id: '', dossier_id: '', montant: '', tva_taux: '20', type: 'honoraires', statut: 'emise', reference: genRef(), client_name: '' });
+    setForm({ mandataire_id: '', dossier_id: '', montant: '', tva_taux: '20', type: 'honoraires', statut: 'en_attente', reference: genRef(), client_name: '' });
   };
 
   // Filter dossiers to only signed ones for honoraires

@@ -60,7 +60,7 @@ export default function ClientPortal() {
       .catch(e => {
         const msg = e.message || '';
         if (msg.includes('expiré') || msg.includes('expired') || msg.includes('invalid')) {
-          setError('Ce lien d'accès a expiré ou n'est plus valide. Contactez votre conseiller pour en obtenir un nouveau.');
+          setError("Ce lien d'accès a expiré ou n'est plus valide. Contactez votre conseiller pour en obtenir un nouveau.");
         } else {
           setError('Impossible de charger votre espace. Veuillez réessayer ou contacter votre conseiller.');
         }

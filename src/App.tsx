@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
+const Ressources = lazy(() => import("./pages/Ressources"));
 const DossierDetail = lazy(() => import("./pages/DossierDetail"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Signup = lazy(() => import("./pages/Signup"));
@@ -67,6 +68,7 @@ const App = () => (
               <Route path="/alertes" element={<ProtectedRoute><Alertes /></ProtectedRoute>} />
               <Route path="/messagerie" element={<ProtectedRoute><Messagerie /></ProtectedRoute>} />
               <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
+              <Route path="/ressources" element={<ProtectedRoute><Ressources /></ProtectedRoute>} />
               <Route path="/parametres" element={<ProtectedRoute><Parametres /></ProtectedRoute>} />
               <Route path="/client/:token" element={<ClientPortal />} />
               <Route path="*" element={<NotFound />} />

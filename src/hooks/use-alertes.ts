@@ -30,7 +30,7 @@ export function useAlertes() {
       return (data || []) as Alerte[];
     },
     enabled: !!user,
-    refetchInterval: 60000,
+    refetchInterval: 30000,
   });
 }
 

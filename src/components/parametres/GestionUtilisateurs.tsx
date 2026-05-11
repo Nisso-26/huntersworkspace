@@ -6,8 +6,6 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,34 +13,22 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  User, Lock, MapPin, Shield, Bell, Building2, Receipt, Network, FileText,
-  History, Plus, Trash2, Save, AlertTriangle, UserPlus,
-} from 'lucide-react';
-import {
-  useCompanySettings, useUpdateCompanySettings,
-  useHonorairesTranches, useSaveHonorairesTranches,
-  useAuditLog, type CompanySettings, type HonorairesTranche,
-} from '@/hooks/use-company-settings';
-import { useAlertSettings, type AlertSettings } from '@/hooks/use-alert-settings';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { UserPlus, Trash2, Copy, CheckCircle2 } from 'lucide-react';
 
 export default function GestionUtilisateurs() {
   const { user: currentUser } = useAuth();
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
-  const [password, setPassword] = useState('');
   const [role, setRole] = useState<string>('mandataire');
   const [creating, setCreating] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<{ userId: string; action: string; name: string } | null>(null);
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
+  useEffect(() => { loadUsers(); }, []);
 
   const loadUsers = async () => {
     setLoadingUsers(true);
@@ -57,29 +43,44 @@ export default function GestionUtilisateurs() {
   };
 
   const handleCreate = async () => {
-    if (!email || !fullName || !password) {
-      toast.error('Tous les champs sont requis');
-      return;
-    }
-    if (password.length < 6) {
-      toast.error('Le mot de passe doit faire au moins 6 caractères');
+    if (!email || !fullName) {
+      toast.error('Le nom complet et l\'email sont requis');
       return;
     }
     setCreating(true);
+    setInviteLink(null);
     try {
       const res = await supabase.functions.invoke('create-user', {
-        body: { email, password, full_name: fullName, role, app_url: window.location.origin },
+        body: {
+          mode: 'invite',
+          email,
+          full_name: fullName,
+          role,
+          app_url: window.location.origin,
+        },
       });
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
-      toast.success(`Utilisateur ${fullName} créé avec succès`);
-      setEmail(''); setFullName(''); setPassword(''); setRole('mandataire');
+
+      toast.success(`Invitation envoyée à ${fullName}`);
+      setInviteLink(res.data?.invitation_link ?? null);
+      setEmail('');
+      setFullName('');
+      setRole('mandataire');
       loadUsers();
     } catch (e: any) {
-      toast.error(e.message || 'Erreur lors de la création');
+      toast.error(e.message || 'Erreur lors de l\'invitation');
     } finally {
       setCreating(false);
     }
+  };
+
+  const handleCopy = async () => {
+    if (!inviteLink) return;
+    await navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast.success('Lien copié dans le presse-papier');
   };
 
   const handleUserAction = async (userId: string, action: string) => {
@@ -90,7 +91,6 @@ export default function GestionUtilisateurs() {
       });
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
-      // Ferme le dialog d'abord, puis notifie/recharge après démontage Radix
       setConfirmAction(null);
       setTimeout(() => {
         toast.success(res.data.message);
@@ -114,39 +114,87 @@ export default function GestionUtilisateurs() {
     <>
       <Card className="p-6 space-y-6">
         <h3 className="text-lg font-heading font-bold flex items-center gap-2">
-          <UserPlus className="w-5 h-5 text-primary" /> Créer un utilisateur
+          <UserPlus className="w-5 h-5 text-primary" /> Inviter un collaborateur
         </h3>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>Nom complet</Label>
-            <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Jean Dupont" />
+            <Label className="label-premium">Nom complet *</Label>
+            <Input
+              value={fullName}
+              onChange={e => setFullName(e.target.value)}
+              placeholder="Jean DUPONT"
+              className="h-10"
+            />
           </div>
           <div className="space-y-2">
-            <Label>Email</Label>
-            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="jean@hunters.fr" />
+            <Label className="label-premium">Email professionnel *</Label>
+            <Input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="jean@hunters.fr"
+              className="h-10"
+            />
           </div>
-          <div className="space-y-2">
-            <Label>Mot de passe initial</Label>
-            <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
-          </div>
-          <div className="space-y-2">
-            <Label>Rôle</Label>
+          <div className="space-y-2 md:col-span-2">
+            <Label className="label-premium">Rôle</Label>
             <Select value={role} onValueChange={setRole}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-10 w-full md:w-64">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                <SelectItem value="mandataire">Conseiller</SelectItem>
+                <SelectItem value="mandataire">Conseiller en investissement</SelectItem>
                 <SelectItem value="decoratrice">Décoratrice</SelectItem>
                 <SelectItem value="super_admin">Directeur</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
-        <Button onClick={handleCreate} disabled={creating}>
-          <UserPlus className="w-4 h-4 mr-1" /> {creating ? 'Création...' : 'Créer l\'utilisateur'}
+
+        <Button
+          onClick={handleCreate}
+          disabled={creating}
+          className="bg-primary hover:bg-primary/90 text-white gap-2"
+        >
+          <UserPlus className="w-4 h-4" />
+          {creating ? 'Envoi en cours...' : 'Envoyer l\'invitation'}
         </Button>
 
+        {/* Lien d'activation généré */}
+        {inviteLink && (
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
+              <p className="text-sm font-semibold text-primary">Lien d'activation généré</p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Transmettez ce lien au collaborateur pour qu'il définisse son mot de passe. Il expire dans 24h.
+            </p>
+            <div className="flex gap-2 items-center">
+              <Input
+                readOnly
+                value={inviteLink}
+                className="flex-1 text-xs font-mono bg-white border-border/60 cursor-text"
+                onClick={e => (e.target as HTMLInputElement).select()}
+              />
+              <Button
+                size="sm"
+                onClick={handleCopy}
+                className="flex-shrink-0 gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground"
+              >
+                {copied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? 'Copié !' : 'Copier'}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Liste des utilisateurs */}
         <div className="border-t pt-4">
-          <h4 className="text-sm font-semibold mb-3">Utilisateurs existants ({users.length})</h4>
+          <h4 className="text-sm font-semibold mb-3 text-foreground">
+            Collaborateurs ({users.length})
+          </h4>
           {loadingUsers ? (
             <p className="text-sm text-muted-foreground">Chargement...</p>
           ) : (
@@ -155,19 +203,37 @@ export default function GestionUtilisateurs() {
                 const isCurrentUser = u.id === currentUser?.id;
                 const isDisabled = u.status === 'inactif';
                 return (
-                  <div key={u.id} className={cn('flex items-center justify-between p-3 rounded-lg border', isDisabled ? 'bg-destructive/5 opacity-70' : 'bg-muted/30')}>
-                    <div className="flex items-center gap-3">
-                      <div>
-                        <p className="text-sm font-medium flex items-center gap-2">
+                  <div
+                    key={u.id}
+                    className={cn(
+                      'flex items-center justify-between p-3 rounded-lg border',
+                      isDisabled ? 'bg-destructive/5 opacity-70 border-destructive/20' : 'bg-muted/30 border-border/60'
+                    )}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-[11px] font-bold text-primary">
+                          {(u.full_name || u.email || '?').slice(0, 2).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground flex items-center gap-2 flex-wrap">
                           {u.full_name || 'Sans nom'}
-                          {isDisabled && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Désactivé</Badge>}
-                          {isCurrentUser && <Badge variant="outline" className="text-[10px] px-1.5 py-0">Vous</Badge>}
+                          {isDisabled && (
+                            <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Désactivé</Badge>
+                          )}
+                          {isCurrentUser && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">Vous</Badge>
+                          )}
                         </p>
-                        <p className="text-xs text-muted-foreground">{u.email}</p>
+                        <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={u.role === 'super_admin' ? 'default' : 'secondary'}>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Badge
+                        variant={u.role === 'super_admin' ? 'default' : 'secondary'}
+                        className="text-[10px]"
+                      >
                         {roleLabels[u.role] || u.role}
                       </Badge>
                       {!isCurrentUser && (
@@ -210,16 +276,19 @@ export default function GestionUtilisateurs() {
         </div>
       </Card>
 
-      <AlertDialog open={!!confirmAction} onOpenChange={(o) => { if (actionLoading) return; if (!o) setConfirmAction(null); }}>
+      <AlertDialog
+        open={!!confirmAction}
+        onOpenChange={(o) => { if (actionLoading) return; if (!o) setConfirmAction(null); }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmAction?.action === 'delete' ? 'Supprimer l\'utilisateur ?' : 'Désactiver l\'utilisateur ?'}
+              {confirmAction?.action === 'delete' ? 'Supprimer ce collaborateur ?' : 'Désactiver ce collaborateur ?'}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirmAction?.action === 'delete'
-                ? `L'utilisateur "${confirmAction?.name}" sera définitivement supprimé ainsi que toutes ses données associées. Cette action est irréversible.`
-                : `L'utilisateur "${confirmAction?.name}" ne pourra plus se connecter. Vous pourrez le réactiver ultérieurement.`}
+                ? `"${confirmAction?.name}" sera définitivement supprimé ainsi que toutes ses données. Cette action est irréversible.`
+                : `"${confirmAction?.name}" ne pourra plus se connecter. Vous pourrez le réactiver ultérieurement.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -236,4 +305,3 @@ export default function GestionUtilisateurs() {
     </>
   );
 }
-

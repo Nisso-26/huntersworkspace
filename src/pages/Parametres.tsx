@@ -52,7 +52,13 @@ export default function Parametres() {
               <TabsTrigger value="audit"><History className="w-4 h-4 mr-1" />Journal</TabsTrigger>
             </TabsList>
             <Suspense fallback={<SectionFallback />}>
-              <TabsContent value="utilisateurs"><GestionUtilisateurs /></TabsContent>
+              {isAdmin && (
+                <TabsContent value="utilisateurs">
+                  <Suspense fallback={<div className="h-32 flex items-center justify-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>}>
+                    <GestionUtilisateurs />
+                  </Suspense>
+                </TabsContent>
+              )}
               <TabsContent value="identite"><IdentiteSociete /></TabsContent>
               <TabsContent value="honoraires"><BaremeHonoraires /></TabsContent>
               <TabsContent value="economique"><ModeleEconomique /></TabsContent>

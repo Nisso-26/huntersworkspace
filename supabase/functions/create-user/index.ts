@@ -43,11 +43,29 @@ Deno.serve(async (req) => {
 
       const redirectTo = `${APP_URL}/reset-password`;
 
-      // Vérifie si l'email existe déjà pour message d'erreur clair
+      // Vérifie si l'email existe déjà. Si l'utilisateur est désactivé (banned)
+      // ou orphelin (pas de profil), on le supprime pour permettre la réinvitation.
       const { data: existingList } = await adminClient.auth.admin.listUsers();
-      const exists = existingList?.users?.some((u) => u.email?.toLowerCase() === email.toLowerCase());
-      if (exists) {
-        throw new Error(`Un utilisateur avec l'email ${email} existe déjà`);
+      const existing = existingList?.users?.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+      if (existing) {
+        const { data: profile } = await adminClient
+          .from("profiles")
+          .select("id, status")
+          .eq("id", existing.id)
+          .maybeSingle();
+        const isBanned = !!(existing as any).banned_until;
+        const isOrphan = !profile;
+        const isInactive = profile?.status === "inactif";
+        if (isBanned || isOrphan || isInactive) {
+          console.log(`[create-user] Suppression utilisateur existant (banned=${isBanned}, orphan=${isOrphan}, inactif=${isInactive}) pour réinvitation: ${email}`);
+          const { error: delError } = await adminClient.auth.admin.deleteUser(existing.id);
+          if (delError) {
+            console.error("[create-user] deleteUser error:", delError);
+            throw new Error(`Impossible de réinitialiser le compte existant: ${delError.message}`);
+          }
+        } else {
+          throw new Error(`Un utilisateur actif avec l'email ${email} existe déjà`);
+        }
       }
 
       const { data, error } = await adminClient.auth.admin.generateLink({

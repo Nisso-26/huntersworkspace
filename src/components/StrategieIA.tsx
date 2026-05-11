@@ -2,14 +2,16 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dossier } from '@/hooks/use-dossiers';
 import { useUpdateDossier } from '@/hooks/use-dossiers';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { ChevronDown, ChevronUp, Loader2, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Info, FileText } from 'lucide-react';
+import { ChevronDown, ChevronUp, Loader2, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Info, FileText, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { exportStrategiePdf } from '@/lib/export-strategie-pdf';
 import {
   parseStrategie,
   STRATEGIE_ERROR_MESSAGES,
@@ -24,8 +26,23 @@ const fmt = (v: number) => v?.toLocaleString('fr-FR') ?? '0';
 
 export default function StrategieIA({ dossier }: Props) {
   const updateMut = useUpdateDossier();
+  const { user } = useAuth();
   const [generating, setGenerating] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [showForm, setShowForm] = useState(false);
+
+  const handleExportPdf = async () => {
+    if (!strategie) return;
+    setExporting(true);
+    try {
+      const conseiller = user?.user_metadata?.full_name || user?.email || 'Hunters Immobilier';
+      await exportStrategiePdf(strategie, dossier.client_name, conseiller);
+    } catch (e) {
+      toast.error('Erreur lors de l\'export PDF');
+    } finally {
+      setExporting(false);
+    }
+  };
   const [expanded, setExpanded] = useState<number | null>(0);
 
   // Parsing strict, tolérant et non-bloquant — voir src/lib/strategie-parser.ts
@@ -64,6 +81,19 @@ export default function StrategieIA({ dossier }: Props) {
     delai_decision: '',
   });
 
+  const handleExportPdf = async () => {
+    if (!strategie) return;
+    setExporting(true);
+    try {
+      const conseiller = user?.user_metadata?.full_name || user?.email || 'Hunters Immobilier';
+      await exportStrategiePdf(strategie, dossier.client_name, conseiller);
+    } catch (e) {
+      console.error('Export PDF error:', e);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const handleGenerate = async () => {
     setGenerating(true);
     try {
@@ -100,14 +130,28 @@ export default function StrategieIA({ dossier }: Props) {
           <TrendingUp className="w-4 h-4 text-accent" />
           Stratégie patrimoniale
         </h3>
-        <Button
-          size="sm"
-          onClick={() => setShowForm(!showForm)}
-          className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
-        >
-          <FileText className="w-3.5 h-3.5" />
-          {strategie ? 'Régénérer' : 'Générer la stratégie'}
-        </Button>
+        <div className="flex gap-2">
+          {strategie && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleExportPdf}
+              disabled={exporting}
+              className="gap-2 border-border/60"
+            >
+              <Download className="w-3.5 h-3.5" />
+              {exporting ? 'Export...' : 'PDF'}
+            </Button>
+          )}
+          <Button
+            size="sm"
+            onClick={() => setShowForm(!showForm)}
+            className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            {strategie ? 'Régénérer' : 'Générer la stratégie'}
+          </Button>
+        </div>
       </div>
 
       {/* Formulaire de saisie */}

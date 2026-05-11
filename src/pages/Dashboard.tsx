@@ -5,6 +5,9 @@ import { useDossiers } from '@/hooks/use-dossiers';
 import { useMandataires } from '@/hooks/use-mandataires';
 import { useAuth } from '@/contexts/AuthContext';
 import { FolderOpen, TrendingUp, Users, FileCheck, ArrowUpRight, Building2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import OnboardingWizard from '@/components/OnboardingWizard';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
@@ -15,7 +18,23 @@ const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transiti
 export default function Dashboard() {
   const { data: dossiers = [], isLoading: loadingD } = useDossiers();
   const { data: mandataires = [], isLoading: loadingM } = useMandataires();
-  const { isAdmin, user } = useAuth();
+  const { isAdmin, user, role } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Afficher l'onboarding pour les nouveaux conseillers sans dossiers
+  useEffect(() => {
+    if (!isAdmin && role === 'mandataire' && !isLoading && dossiers.length === 0) {
+      const key = `onboarding_done_${user?.id}`;
+      if (!localStorage.getItem(key)) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [isAdmin, role, isLoading, dossiers.length, user?.id]);
+
+  const handleOnboardingComplete = () => {
+    if (user?.id) localStorage.setItem(`onboarding_done_${user.id}`, '1');
+    setShowOnboarding(false);
+  };
 
   const caTotal = dossiers
     .filter(d => ['signe', 'compromis'].includes(d.status))
@@ -24,13 +43,30 @@ export default function Dashboard() {
   const dossiersSigne = dossiers.filter(d => d.status === 'signe').length;
   const mandatairesActifs = mandataires.filter(m => m.status === 'actif').length;
   const recentDossiers = [...dossiers].slice(0, 6);
+
+  // Données CA mensuel sur 6 mois
+  const caMonthly = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - (5 - i));
+    const month = d.toLocaleDateString('fr-FR', { month: 'short' });
+    const ca = dossiers
+      .filter(dos => {
+        if (!['signe', 'compromis'].includes(dos.status)) return false;
+        const updated = new Date(dos.updated_at || dos.created_at || '');
+        return updated.getMonth() === d.getMonth() && updated.getFullYear() === d.getFullYear();
+      })
+      .reduce((sum, dos) => sum + (dos.honoraires || 0), 0);
+    return { month, ca };
+  });
   const topMandataires = [...mandataires].sort((a, b) => b.ca_total - a.ca_total).slice(0, 5);
   const isLoading = loadingD || loadingM;
 
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || '';
 
   return (
-    <AppLayout>
+    <>
+      {showOnboarding && <OnboardingWizard onComplete={handleOnboardingComplete} />}
+      <AppLayout>
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
 
         {/* Header */}
@@ -92,6 +128,39 @@ export default function Dashboard() {
             </>
           )}
         </motion.div>
+
+        {/* Graphique CA mensuel — directeur uniquement */}
+        {isAdmin && !isLoading && (
+          <motion.div variants={item}>
+            <div className="bg-card rounded-xl border border-border/60 shadow-card p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="font-heading font-bold text-foreground text-sm">Évolution du CA</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Honoraires encaissés sur 6 mois</p>
+                </div>
+                <TrendingUp className="w-4 h-4 text-primary" />
+              </div>
+              <ResponsiveContainer width="100%" height={140}>
+                <AreaChart data={caMonthly} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="caGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(147,49%,20%)" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="hsl(147,49%,20%)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(40,12%,88%)" />
+                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(0,0%,48%)' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 9, fill: 'hsl(0,0%,48%)' }} axisLine={false} tickLine={false} tickFormatter={v => v > 0 ? `${(v/1000).toFixed(0)}k` : '0'} />
+                  <Tooltip
+                    formatter={(v: number) => [`${v.toLocaleString('fr-FR')} €`, 'CA']}
+                    contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid hsl(40,12%,88%)' }}
+                  />
+                  <Area type="monotone" dataKey="ca" stroke="hsl(147,49%,20%)" strokeWidth={2} fill="url(#caGradient)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        )}
 
         {/* Corps principal */}
         <div className={`grid ${isAdmin ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-6`}>
@@ -216,5 +285,6 @@ export default function Dashboard() {
         </div>
       </motion.div>
     </AppLayout>
+    </>
   );
 }

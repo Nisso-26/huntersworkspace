@@ -107,6 +107,18 @@ export async function fetchPortalData(token: string) {
   // Fetch events
   const { data: evenements } = await supabase.from('evenements').select('*').eq('dossier_id', dossierId).order('date_debut', { ascending: true });
 
+  // Parse strategie IA si disponible
+  let strategie = null;
+  try {
+    const raw = dossier?.strategie;
+    if (raw && typeof raw === 'object' && (raw as any).synthese) {
+      strategie = raw;
+    } else if (typeof raw === 'string' && raw.startsWith('{')) {
+      const parsed = JSON.parse(raw);
+      if (parsed.synthese) strategie = parsed;
+    }
+  } catch { strategie = null; }
+
   return {
     token: tokenData,
     dossier,
@@ -115,5 +127,6 @@ export async function fetchPortalData(token: string) {
     lots,
     documents: documents || [],
     evenements: evenements || [],
+    strategie,
   };
 }

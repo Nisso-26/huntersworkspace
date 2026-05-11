@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, CheckCircle2, Clock, FileText, Home, HardHat, Calculator, Calendar, MessageSquare, TrendingUp } from 'lucide-react';
+import { Loader2, CheckCircle2, FileText, Home, HardHat, Calculator, Calendar, MessageSquare, TrendingUp, Star, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import huntersLogo from '@/assets/hunters-logo.jpg';
@@ -52,6 +52,7 @@ export default function ClientPortal() {
   const [duree, setDuree] = useState(20);
   const [charges, setCharges] = useState(200);
   const [vacance, setVacance] = useState(5);
+  const [expandedRec, setExpandedRec] = useState<number | null>(0);
 
   useEffect(() => {
     if (!token) return;
@@ -190,11 +191,11 @@ export default function ClientPortal() {
         <Tabs defaultValue="biens" className="w-full">
           <TabsList className="w-full grid grid-cols-5 bg-card border border-border/60 shadow-card p-1 rounded-xl h-auto">
             {[
+              { value: 'strategie', icon: TrendingUp, label: 'Stratégie' },
               { value: 'biens', icon: Home, label: 'Biens' },
               { value: 'simulation', icon: Calculator, label: 'Simulation' },
               { value: 'chantier', icon: HardHat, label: 'Travaux' },
               { value: 'documents', icon: FileText, label: 'Docs' },
-              { value: 'echeances', icon: Calendar, label: 'Agenda' },
             ].map(tab => (
               <TabsTrigger
                 key={tab.value}
@@ -206,6 +207,104 @@ export default function ClientPortal() {
               </TabsTrigger>
             ))}
           </TabsList>
+
+
+          {/* Stratégie d'investissement */}
+          <TabsContent value="strategie" className="mt-4">
+            {!data.strategie ? (
+              <div className="bg-card rounded-xl border border-border/60 shadow-card p-8 text-center">
+                <TrendingUp className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-foreground mb-1">Stratégie en cours d'élaboration</p>
+                <p className="text-xs text-muted-foreground">Votre conseiller Hunters prépare une stratégie personnalisée basée sur votre profil.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Synthèse */}
+                <div className="bg-card rounded-xl border border-border/60 shadow-card p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Star className="w-3.5 h-3.5 text-primary" />
+                    </div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-primary">Synthèse de votre stratégie</p>
+                  </div>
+                  <p className="text-sm text-foreground leading-relaxed">{data.strategie.synthese}</p>
+                  {data.strategie.profil_investisseur && (
+                    <p className="text-xs text-muted-foreground italic mt-2">{data.strategie.profil_investisseur}</p>
+                  )}
+                </div>
+
+                {/* Indicateurs */}
+                {data.strategie.indicateurs_cles && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: 'Capacité d'emprunt', value: `${(data.strategie.indicateurs_cles.capacite_emprunt_estimee || 0).toLocaleString('fr-FR')} €` },
+                      { label: 'Cash-flow libre', value: `${(data.strategie.indicateurs_cles.cash_flow_mensuel_libre || 0).toLocaleString('fr-FR')} €/mois` },
+                    ].map(ind => (
+                      <div key={ind.label} className="bg-secondary/50 rounded-xl p-3 text-center border border-border/40">
+                        <p className="text-[10px] text-muted-foreground">{ind.label}</p>
+                        <p className="text-sm font-bold text-foreground mt-0.5">{ind.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Recommandations */}
+                {data.strategie.recommandations?.map((rec: any, idx: number) => (
+                  <div key={idx} className="bg-card rounded-xl border border-border/60 shadow-card overflow-hidden">
+                    <button
+                      onClick={() => setExpandedRec(expandedRec === idx ? null : idx)}
+                      className="w-full flex items-center justify-between p-4 text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="w-6 h-6 rounded-full bg-accent text-accent-foreground text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+                          {rec.rang}
+                        </span>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{rec.titre}</p>
+                          <p className="text-xs text-muted-foreground">{rec.dispositif}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-accent">{rec.rendement_brut_estime_pct}%</span>
+                        {expandedRec === idx ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                      </div>
+                    </button>
+                    {expandedRec === idx && (
+                      <div className="px-4 pb-4 space-y-3 border-t border-border/40 bg-secondary/10">
+                        <p className="text-sm text-foreground leading-relaxed pt-3">{rec.description}</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { label: 'Budget', value: `${(rec.budget_acquisition_total || 0).toLocaleString('fr-FR')} €` },
+                            { label: 'Apport', value: `${(rec.apport_recommande || 0).toLocaleString('fr-FR')} €` },
+                            { label: 'Cash-flow net', value: `${(rec.cash_flow_net_mensuel_estime || 0).toLocaleString('fr-FR')} €/mois` },
+                            { label: 'Éco. fiscale/an', value: `${(rec.economie_fiscale_annuelle_estimee || 0).toLocaleString('fr-FR')} €` },
+                          ].map(item => (
+                            <div key={item.label} className="bg-card border border-border/40 rounded-lg p-2">
+                              <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                              <p className="text-sm font-semibold text-foreground">{item.value}</p>
+                            </div>
+                          ))}
+                        </div>
+                        {rec.avantages?.length > 0 && (
+                          <div>
+                            <p className="text-[10px] font-semibold text-green-600 mb-1">✓ Avantages</p>
+                            <ul className="space-y-0.5">
+                              {rec.avantages.map((a: string, i: number) => <li key={i} className="text-xs text-foreground">• {a}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Disclaimer */}
+                <p className="text-[10px] text-muted-foreground italic text-center px-4">
+                  Cette analyse est fournie à titre indicatif par Hunters Immobilier dans le cadre d'un accompagnement personnalisé.
+                </p>
+              </div>
+            )}
+          </TabsContent>
 
           {/* Biens */}
           <TabsContent value="biens" className="mt-4 space-y-3">

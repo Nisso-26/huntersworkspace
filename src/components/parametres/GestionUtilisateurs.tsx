@@ -68,7 +68,7 @@ export default function GestionUtilisateurs() {
     setCreating(true);
     try {
       const res = await supabase.functions.invoke('create-user', {
-        body: { email, password, full_name: fullName, role },
+        body: { email, password, full_name: fullName, role, app_url: window.location.origin },
       });
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);

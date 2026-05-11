@@ -96,6 +96,7 @@ export default function Conseillers() {
           last_name: form.last_name.trim(),
           full_name: `${form.first_name.trim()} ${form.last_name.trim()}`,
           role: 'mandataire',
+          app_url: window.location.origin,
         },
       });
       if (error) throw error;

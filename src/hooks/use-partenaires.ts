@@ -18,14 +18,22 @@ export interface Partenaire {
 }
 
 export function usePartenaires() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   return useQuery({
-    queryKey: ['partenaires'],
+    queryKey: ['partenaires', user?.id, isAdmin],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Super admin voit tous les prescripteurs
+      // Conseiller voit uniquement ceux qu'il a créés
+      let query = supabase
         .from('partenaires' as any)
         .select('*')
         .order('nom');
+
+      if (!isAdmin && user?.id) {
+        query = query.eq('created_by', user.id);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
 
       // Count dossiers per partenaire
@@ -41,13 +49,18 @@ export function usePartenaires() {
 
 export function useCreatePartenaire() {
   const qc = useQueryClient();
+  const { user } = useAuth();
   return useMutation({
     mutationFn: async (p: Partial<Partenaire>) => {
-      const { data, error } = await supabase.from('partenaires' as any).insert(p as any).select().single();
+      const { data, error } = await supabase
+        .from('partenaires' as any)
+        .insert({ ...p, created_by: user?.id } as any)
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['partenaires'] }); toast.success('Partenaire ajouté'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['partenaires'] }); toast.success('Prescripteur ajouté avec succès'); },
     onError: (e: any) => toast.error(e.message),
   });
 }

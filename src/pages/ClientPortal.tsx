@@ -237,7 +237,7 @@ export default function ClientPortal() {
                 {data.strategie.indicateurs_cles && (
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { label: 'Capacité d'emprunt', value: `${(data.strategie.indicateurs_cles.capacite_emprunt_estimee || 0).toLocaleString('fr-FR')} €` },
+                      { label: "Capacité d'emprunt", value: `${(data.strategie.indicateurs_cles.capacite_emprunt_estimee || 0).toLocaleString('fr-FR')} €` },
                       { label: 'Cash-flow libre', value: `${(data.strategie.indicateurs_cles.cash_flow_mensuel_libre || 0).toLocaleString('fr-FR')} €/mois` },
                     ].map(ind => (
                       <div key={ind.label} className="bg-secondary/50 rounded-xl p-3 text-center border border-border/40">

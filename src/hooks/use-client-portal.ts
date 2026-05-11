@@ -110,7 +110,7 @@ export async function fetchPortalData(token: string) {
   // Parse strategie IA si disponible
   let strategie = null;
   try {
-    const raw = dossier?.strategie;
+    const raw = (dossier as any)?.strategie;
     if (raw && typeof raw === 'object' && (raw as any).synthese) {
       strategie = raw;
     } else if (typeof raw === 'string' && raw.startsWith('{')) {

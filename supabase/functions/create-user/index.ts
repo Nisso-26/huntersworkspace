@@ -29,11 +29,11 @@ Deno.serve(async (req) => {
     const { mode, email, password, full_name, first_name, last_name, role, app_url } = body;
     const adminClient = createClient(supabaseUrl, serviceKey);
 
-    // Détermine l'URL de redirection : priorité au app_url envoyé par le client
-    // (window.location.origin), fallback sur le domaine personnalisé.
-    const APP_URL = (app_url && typeof app_url === "string" && app_url.startsWith("http"))
-      ? app_url.replace(/\/$/, "")
-      : "https://workspace.huntersimmobilier.fr";
+    // URL de redirection forcée vers le domaine de production.
+    // app_url est ignoré pour garantir que les liens d'invitation pointent
+    // toujours vers https://workspace.huntersimmobilier.fr/reset-password.
+    const APP_URL = "https://workspace.huntersimmobilier.fr";
+    void app_url;
 
     // ---- Invite mode : génère un lien d'activation, pas de mot de passe ----
     if (mode === "invite") {

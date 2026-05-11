@@ -31,18 +31,6 @@ export default function StrategieIA({ dossier }: Props) {
   const [exporting, setExporting] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
-  const handleExportPdf = async () => {
-    if (!strategie) return;
-    setExporting(true);
-    try {
-      const conseiller = user?.user_metadata?.full_name || user?.email || 'Hunters Immobilier';
-      await exportStrategiePdf(strategie, dossier.client_name, conseiller);
-    } catch (e) {
-      toast.error('Erreur lors de l\'export PDF');
-    } finally {
-      setExporting(false);
-    }
-  };
   const [expanded, setExpanded] = useState<number | null>(0);
 
   // Parsing strict, tolérant et non-bloquant — voir src/lib/strategie-parser.ts

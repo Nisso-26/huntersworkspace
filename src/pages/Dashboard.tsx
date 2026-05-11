@@ -23,13 +23,13 @@ export default function Dashboard() {
 
   // Afficher l'onboarding pour les nouveaux conseillers sans dossiers
   useEffect(() => {
-    if (!isAdmin && role === 'mandataire' && !isLoading && dossiers.length === 0) {
+    if (!isAdmin && role === 'mandataire' && !loadingD && dossiers.length === 0) {
       const key = `onboarding_done_${user?.id}`;
       if (!localStorage.getItem(key)) {
         setShowOnboarding(true);
       }
     }
-  }, [isAdmin, role, isLoading, dossiers.length, user?.id]);
+  }, [isAdmin, role, loadingD, dossiers.length, user?.id]);
 
   const handleOnboardingComplete = () => {
     if (user?.id) localStorage.setItem(`onboarding_done_${user.id}`, '1');

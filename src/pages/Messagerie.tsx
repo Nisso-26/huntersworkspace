@@ -202,7 +202,7 @@ export default function Messagerie() {
                               size="sm"
                               className={cn('p-0 h-auto text-xs mt-1', isMe ? 'text-primary-foreground' : 'text-primary')}
                               onClick={async () => {
-                                const { data } = supabase.storage.from('documents du dossier').getPublicUrl(m.file_path!);
+                                const { data } = supabase.storage.from('documents du dossier').createSignedUrl(m.file_path!, 3600).then(r => r.data?.signedUrl || '');
                                 window.open(data.publicUrl, '_blank');
                               }}
                             >

@@ -113,7 +113,10 @@ export function ClientComments({ dossierId }: { dossierId: string }) {
       .eq('dossier_id', dossierId)
       .order('created_at', { ascending: false })
       .limit(20)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          console.warn('[ClientComments] table client_comments inaccessible:', error.message);
+        }
         setComments(data || []);
         setLoading(false);
       });

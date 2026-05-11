@@ -150,7 +150,7 @@ export function useConvertProspect() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['prospects'] });
       qc.invalidateQueries({ queryKey: ['dossiers'] });
-      toast.success('Prospect converti en dossier');
+      toast.success('Contact converti en dossier client');
     },
     onError: (e: Error) => toast.error(e.message),
   });

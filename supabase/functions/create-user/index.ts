@@ -85,9 +85,8 @@ Deno.serve(async (req) => {
       if (role && invitedUserId && role !== "mandataire") {
         const { error: roleError } = await adminClient
           .from("user_roles")
-          .update({ role })
-          .eq("user_id", invitedUserId);
-        if (roleError) console.error("[create-user] role update error:", roleError);
+          .upsert({ user_id: invitedUserId, role }, { onConflict: "user_id" });
+        if (roleError) console.error("[create-user] role upsert error:", roleError);
       }
 
       return new Response(
@@ -115,7 +114,7 @@ Deno.serve(async (req) => {
     }
 
     if (role && role !== "mandataire" && newUser.user) {
-      await adminClient.from("user_roles").update({ role }).eq("user_id", newUser.user.id);
+      await adminClient.from("user_roles").upsert({ user_id: newUser.user.id, role }, { onConflict: "user_id" });
     }
 
     return new Response(JSON.stringify({ id: newUser.user?.id, email }), {

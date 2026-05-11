@@ -19,7 +19,7 @@ import { motion } from 'framer-motion';
 
 const statutLabels: Record<string, string> = {
   contact_entrant: 'Contact entrant', qualification: 'Qualification', rdv_planifie: 'RDV planifié',
-  mandat_en_cours: 'Mandat en cours', converti: 'Converti', perdu: 'Perdu',
+  mandat_en_cours: 'Mandat signé', converti: 'Converti', perdu: 'Perdu',
 };
 const statutStyles: Record<string, string> = {
   contact_entrant: 'bg-muted text-muted-foreground',

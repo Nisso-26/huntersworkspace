@@ -30,8 +30,8 @@ const typeLabels: Record<string, string> = {
 };
 
 const statutOptions = [
-  { label: 'Brouillon', value: 'brouillon' },
-  { label: 'Émise', value: 'emise' },
+  
+  
   { label: 'En attente', value: 'en_attente' },
   { label: 'Payée', value: 'payee' },
   { label: 'Impayée', value: 'impayee' },

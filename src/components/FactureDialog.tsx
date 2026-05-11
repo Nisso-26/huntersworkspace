@@ -17,8 +17,6 @@ const typeOptions = [
 ];
 
 const statutOptions = [
-  { value: 'brouillon', label: 'Brouillon' },
-  { value: 'emise', label: 'Émise' },
   { value: 'en_attente', label: 'En attente' },
   { value: 'payee', label: 'Payée' },
   { value: 'impayee', label: 'Impayée' },
@@ -43,7 +41,7 @@ export default function FactureDialog() {
     montant: '',
     tva_taux: '20',
     type: 'honoraires',
-    statut: 'emise',
+    statut: 'en_attente',
     reference: genRef(),
     client_name: '',
   });

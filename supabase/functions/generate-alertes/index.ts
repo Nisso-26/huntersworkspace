@@ -190,7 +190,7 @@ Deno.serve(async (req) => {
     if (!existing?.length) {
       const { data: profile } = await supabase
         .from("profiles")
-        .select("full_name")
+        .select("full_name, email")
         .eq("id", f.mandataire_id || "")
         .single();
       alerts.push({
@@ -199,6 +199,68 @@ Deno.serve(async (req) => {
         title: `Impayé pack ${profile?.full_name || ""}`,
         detail: `Facture pack non réglée depuis plus de 5 jours`,
       });
+      // Email mandataire
+      if (profile?.email) {
+        try {
+          await supabase.functions.invoke("send-notification", {
+            body: {
+              to: profile.email,
+              subject: "Pack mensuel en attente de paiement",
+              body: `<h2 style="color:#1A4D2E;margin:0 0 16px;">Pack mensuel impayé</h2>
+                <p>Bonjour ${profile.full_name || ''},</p>
+                <p>Votre pack mensuel est en attente de paiement (référence ${f.reference || ''}).</p>
+                <p>Merci de régulariser votre situation rapidement depuis votre espace Hunters.</p>`,
+            },
+          });
+        } catch (e) { console.error("pack email", e); }
+      }
+    }
+  }
+
+  // 6. Dossier inactif depuis 30 jours (tous statuts hors nouveau/signe/cloture)
+  const { data: staleDossiers } = await supabase
+    .from("dossiers")
+    .select("id, client_name, mandataire_id, updated_at")
+    .not("status", "in", "(nouveau,signe,acte_signe,cloture)")
+    .lt("updated_at", thirtyDaysAgo);
+
+  for (const d of staleDossiers || []) {
+    if (!d.mandataire_id) continue;
+    const { data: existing } = await supabase
+      .from("alertes")
+      .select("id")
+      .eq("dossier_id", d.id)
+      .ilike("title", "%inactif%")
+      .eq("is_read", false)
+      .limit(1);
+    if (existing?.length) continue;
+
+    alerts.push({
+      user_id: d.mandataire_id,
+      type: "warning",
+      title: `Dossier inactif : ${d.client_name}`,
+      detail: "Aucune mise à jour depuis plus de 30 jours",
+      dossier_id: d.id,
+    });
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", d.mandataire_id)
+      .single();
+    if (profile?.email) {
+      try {
+        await supabase.functions.invoke("send-notification", {
+          body: {
+            to: profile.email,
+            subject: `Dossier inactif : ${d.client_name}`,
+            body: `<h2 style="color:#1A4D2E;margin:0 0 16px;">Dossier inactif</h2>
+              <p>Bonjour ${profile.full_name || ''},</p>
+              <p>Le dossier <strong>${d.client_name}</strong> n'a pas été mis à jour depuis 30 jours.</p>
+              <p>Pensez à le relancer ou à mettre à jour son statut depuis votre espace Hunters.</p>`,
+          },
+        });
+      } catch (e) { console.error("inactif email", e); }
     }
   }
 

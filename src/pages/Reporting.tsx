@@ -1,8 +1,9 @@
 import AppLayout from '@/components/AppLayout';
 import StatCard from '@/components/StatCard';
-import { TrendingUp, Users, Target, Wallet } from 'lucide-react';
+import { TrendingUp, Users, Target, Wallet, Package, LineChart } from 'lucide-react';
 import { useDossiers } from '@/hooks/use-dossiers';
 import { useMandataires } from '@/hooks/use-mandataires';
+import { useFactures } from '@/hooks/use-factures';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useMemo } from 'react';

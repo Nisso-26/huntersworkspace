@@ -89,11 +89,34 @@ Deno.serve(async (req) => {
         if (roleError) console.error("[create-user] role upsert error:", roleError);
       }
 
+      const invitationLink = data.properties?.action_link ?? null;
+
+      // Notification email d'invitation
+      if (invitationLink) {
+        try {
+          await adminClient.functions.invoke("send-notification", {
+            body: {
+              to: email,
+              subject: "Bienvenue chez Hunters Immobilier — Activez votre compte",
+              body: `<h2 style="color:#1A4D2E;margin:0 0 16px;">Bienvenue ${composedName} !</h2>
+                <p>Vous avez été invité(e) à rejoindre l'espace de travail Hunters Immobilier.</p>
+                <p>Cliquez sur le bouton ci-dessous pour activer votre compte et définir votre mot de passe :</p>
+                <p style="text-align:center;margin:28px 0;">
+                  <a href="${invitationLink}" style="background:#1A4D2E;color:#fff;text-decoration:none;padding:12px 28px;border-radius:2px;display:inline-block;font-weight:600;">Activer mon compte</a>
+                </p>
+                <p style="font-size:12px;color:#888;">Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br/><span style="word-break:break-all;">${invitationLink}</span></p>`,
+            },
+          });
+        } catch (e) {
+          console.error("[create-user] send-notification error:", e);
+        }
+      }
+
       return new Response(
         JSON.stringify({
           id: invitedUserId,
           email,
-          invitation_link: data.properties?.action_link ?? null,
+          invitation_link: invitationLink,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );

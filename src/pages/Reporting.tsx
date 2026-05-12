@@ -34,8 +34,19 @@ export default function Reporting() {
       return s + (Number(d.honoraires) || 0) * taux;
     }, 0);
 
-    return { caMois, actifs, tauxConv, commMois };
-  }, [dossiers, mandataires, monthStart]);
+    // Packs mensuels (factures type "pack" sur le mois en cours)
+    const packsMois = factures.filter(f => f.type === 'pack' && new Date(f.date_emission) >= monthStart);
+    const packsPayes = packsMois
+      .filter(f => f.statut === 'payee' || f.statut === 'payée')
+      .reduce((s, f) => s + (Number(f.montant_ttc) || Number(f.montant) || 0), 0);
+    const packsAttente = packsMois
+      .filter(f => f.statut === 'en_attente')
+      .reduce((s, f) => s + (Number(f.montant_ttc) || Number(f.montant) || 0), 0);
+
+    const projectionAnnuelle = caMois * 12;
+
+    return { caMois, actifs, tauxConv, commMois, packsPayes, packsAttente, projectionAnnuelle };
+  }, [dossiers, mandataires, factures, monthStart]);
 
   const perfRows = useMemo(() => {
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);

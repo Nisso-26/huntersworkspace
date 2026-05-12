@@ -76,6 +76,33 @@ export type Database = {
           },
         ]
       }
+      activites: {
+        Row: {
+          auteur_id: string
+          commentaire: string
+          created_at: string
+          dossier_id: string
+          id: string
+          type: string
+        }
+        Insert: {
+          auteur_id: string
+          commentaire: string
+          created_at?: string
+          dossier_id: string
+          id?: string
+          type?: string
+        }
+        Update: {
+          auteur_id?: string
+          commentaire?: string
+          created_at?: string
+          dossier_id?: string
+          id?: string
+          type?: string
+        }
+        Relationships: []
+      }
       alertes: {
         Row: {
           created_at: string

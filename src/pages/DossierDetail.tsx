@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/AppLayout';
 import StatusBadge from '@/components/StatusBadge';
 import DocumentsSection from '@/components/DocumentsSection';
+import JournalActivite from '@/components/JournalActivite';
 import SignatureSection from '@/components/SignatureSection';
 import ClientPortalSection, { ClientComments } from '@/components/ClientPortalSection';
 import StrategieIA from '@/components/StrategieIA';
@@ -225,6 +226,9 @@ export default function DossierDetail() {
                   <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={4} />
                 </div>
               </div>
+            </div>
+            <div className="mt-4">
+              <JournalActivite dossierId={dossier.id} />
             </div>
           </TabsContent>
 

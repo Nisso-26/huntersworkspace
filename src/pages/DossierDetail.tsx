@@ -5,6 +5,7 @@ import AppLayout from '@/components/AppLayout';
 import StatusBadge from '@/components/StatusBadge';
 import DocumentsSection from '@/components/DocumentsSection';
 import JournalActivite from '@/components/JournalActivite';
+import RapportConseilButton from '@/components/RapportConseilButton';
 import SignatureSection from '@/components/SignatureSection';
 import ClientPortalSection, { ClientComments } from '@/components/ClientPortalSection';
 import StrategieIA from '@/components/StrategieIA';
@@ -133,7 +134,8 @@ export default function DossierDetail() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <RapportConseilButton dossier={dossier} />
             <Button
               variant="outline"
               size="sm"

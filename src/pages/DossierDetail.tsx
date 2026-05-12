@@ -227,6 +227,9 @@ export default function DossierDetail() {
                 </div>
               </div>
             </div>
+            <div className="mt-4">
+              <JournalActivite dossierId={dossier.id} />
+            </div>
           </TabsContent>
 
           {/* Stratégie */}

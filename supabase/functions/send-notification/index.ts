@@ -5,7 +5,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const FROM = "Hunters Workspace <noreply@workspace.huntersimmobilier.fr>";
+// TODO: rebasculer sur "Hunters Workspace <noreply@workspace.huntersimmobilier.fr>" une fois le domaine vérifié dans Resend.
+const FROM = "Hunters Workspace <onboarding@resend.dev>";
 const HUNTERS_GREEN = "#1A4D2E";
 const HUNTERS_GOLD = "#F5A800";
 

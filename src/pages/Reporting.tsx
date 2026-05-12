@@ -1,8 +1,9 @@
 import AppLayout from '@/components/AppLayout';
 import StatCard from '@/components/StatCard';
-import { TrendingUp, Users, Target, Wallet } from 'lucide-react';
+import { TrendingUp, Users, Target, Wallet, Package, LineChart } from 'lucide-react';
 import { useDossiers } from '@/hooks/use-dossiers';
 import { useMandataires } from '@/hooks/use-mandataires';
+import { useFactures } from '@/hooks/use-factures';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useMemo } from 'react';
@@ -13,6 +14,7 @@ const fmtEur = (n: number) =>
 export default function Reporting() {
   const { data: dossiers = [], isLoading: dLoad } = useDossiers();
   const { data: mandataires = [], isLoading: mLoad } = useMandataires();
+  const { data: factures = [], isLoading: fLoad } = useFactures();
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -32,8 +34,19 @@ export default function Reporting() {
       return s + (Number(d.honoraires) || 0) * taux;
     }, 0);
 
-    return { caMois, actifs, tauxConv, commMois };
-  }, [dossiers, mandataires, monthStart]);
+    // Packs mensuels (factures type "pack" sur le mois en cours)
+    const packsMois = factures.filter(f => f.type === 'pack' && new Date(f.date_emission) >= monthStart);
+    const packsPayes = packsMois
+      .filter(f => f.statut === 'payee' || f.statut === 'payée')
+      .reduce((s, f) => s + (Number(f.montant_ttc) || Number(f.montant) || 0), 0);
+    const packsAttente = packsMois
+      .filter(f => f.statut === 'en_attente')
+      .reduce((s, f) => s + (Number(f.montant_ttc) || Number(f.montant) || 0), 0);
+
+    const projectionAnnuelle = caMois * 12;
+
+    return { caMois, actifs, tauxConv, commMois, packsPayes, packsAttente, projectionAnnuelle };
+  }, [dossiers, mandataires, factures, monthStart]);
 
   const perfRows = useMemo(() => {
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -62,7 +75,7 @@ export default function Reporting() {
     }).sort((a, b) => b.ca - a.ca);
   }, [dossiers, mandataires, monthStart, now]);
 
-  const loading = dLoad || mLoad;
+  const loading = dLoad || mLoad || fLoad;
 
   return (
     <AppLayout>
@@ -73,15 +86,43 @@ export default function Reporting() {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           {loading ? (
-            Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-xl" />)
+            Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-xl" />)
           ) : (
             <>
               <StatCard label="CA réseau du mois" value={fmtEur(stats.caMois)} icon={TrendingUp} variant="gold" />
               <StatCard label="Dossiers actifs" value={stats.actifs} icon={Users} variant="info" />
               <StatCard label="Taux de conversion" value={`${stats.tauxConv.toFixed(1)}%`} icon={Target} variant="success" />
               <StatCard label="Commissions dues ce mois" value={fmtEur(stats.commMois)} icon={Wallet} />
+
+              {/* Packs mensuels */}
+              <div className="relative rounded-xl p-5 bg-card shadow-card border border-border/60 card-hover overflow-hidden">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Packs mensuels</p>
+                    <p className="text-2xl font-bold font-heading leading-none text-foreground">{fmtEur(stats.packsPayes)}</p>
+                    <p className="text-xs text-destructive font-medium mt-1">{fmtEur(stats.packsAttente)} en attente</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ml-3 bg-primary/8">
+                    <Package className="w-5 h-5 text-primary" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Projection CA annuel */}
+              <div className="relative rounded-xl p-5 bg-card shadow-card border border-border/60 card-hover overflow-hidden">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Projection CA annuel</p>
+                    <p className="text-2xl font-bold font-heading leading-none text-foreground">{fmtEur(stats.projectionAnnuelle)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Basé sur le mois en cours</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ml-3 bg-primary/8">
+                    <LineChart className="w-5 h-5 text-primary" />
+                  </div>
+                </div>
+              </div>
             </>
           )}
         </div>

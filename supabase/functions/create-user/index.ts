@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
         JSON.stringify({
           id: invitedUserId,
           email,
-          invitation_link: data.properties?.action_link ?? null,
+          invitation_link: invitationLink,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );

@@ -65,12 +65,38 @@ export function useDossiers() {
   });
 }
 
+async function notifyAssignment(mandataireId: string, clientName: string) {
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('email, full_name')
+      .eq('id', mandataireId)
+      .maybeSingle();
+    if (!profile?.email) return;
+    await supabase.functions.invoke('send-notification', {
+      body: {
+        to: profile.email,
+        subject: `Nouveau dossier assigné : ${clientName}`,
+        body: `<h2 style="color:#1A4D2E;margin:0 0 16px;">Nouveau dossier assigné</h2>
+          <p>Bonjour ${profile.full_name || ''},</p>
+          <p>Un nouveau dossier vous a été assigné : <strong>${clientName}</strong>.</p>
+          <p>Connectez-vous à votre espace Hunters pour le consulter.</p>`,
+      },
+    });
+  } catch (e) {
+    console.error('notifyAssignment failed', e);
+  }
+}
+
 export function useCreateDossier() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (dossier: Partial<Dossier>) => {
       const { data, error } = await supabase.from('dossiers').insert(dossier as any).select().single();
       if (error) throw error;
+      if (data?.mandataire_id && data?.client_name) {
+        notifyAssignment(data.mandataire_id, data.client_name);
+      }
       return data;
     },
     onSuccess: () => {
@@ -85,6 +111,15 @@ export function useUpdateDossier() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Dossier> & { id: string }) => {
+      let previousMandataireId: string | null = null;
+      if ('mandataire_id' in updates) {
+        const { data: prev } = await supabase
+          .from('dossiers')
+          .select('mandataire_id')
+          .eq('id', id)
+          .maybeSingle();
+        previousMandataireId = prev?.mandataire_id ?? null;
+      }
       const { data, error } = await supabase
         .from('dossiers')
         .update({ ...updates, updated_at: new Date().toISOString() } as any)
@@ -92,6 +127,14 @@ export function useUpdateDossier() {
         .select()
         .single();
       if (error) throw error;
+      if (
+        'mandataire_id' in updates &&
+        data?.mandataire_id &&
+        data.mandataire_id !== previousMandataireId &&
+        data.client_name
+      ) {
+        notifyAssignment(data.mandataire_id, data.client_name);
+      }
       return data;
     },
     onSuccess: () => {

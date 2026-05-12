@@ -25,6 +25,7 @@ const Prospects = lazy(() => import("./pages/Prospects"));
 const Partenaires = lazy(() => import("./pages/Partenaires"));
 const Messagerie = lazy(() => import("./pages/Messagerie"));
 const ExportComptable = lazy(() => import("./pages/ExportComptable"));
+const Reporting = lazy(() => import("./pages/Reporting"));
 const Login = lazy(() => import("./pages/Login"));
 
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="/chantiers" element={<ProtectedRoute><Chantiers /></ProtectedRoute>} />
               <Route path="/facturation" element={<ProtectedRoute requiredRole="super_admin"><Facturation /></ProtectedRoute>} />
               <Route path="/export-comptable" element={<ProtectedRoute requiredRole="super_admin"><ExportComptable /></ProtectedRoute>} />
+              <Route path="/reporting" element={<ProtectedRoute requiredRole="super_admin"><Reporting /></ProtectedRoute>} />
               <Route path="/alertes" element={<ProtectedRoute><Alertes /></ProtectedRoute>} />
               <Route path="/messagerie" element={<ProtectedRoute><Messagerie /></ProtectedRoute>} />
               <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />

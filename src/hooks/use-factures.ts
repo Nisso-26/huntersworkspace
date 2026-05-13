@@ -23,6 +23,7 @@ export interface Facture {
   created_at: string;
   mandataire_name?: string;
   mandataire_zone?: string;
+  dossier_numero?: string | null;
 }
 
 export function useFactures() {

@@ -53,8 +53,7 @@ export function useFactures() {
       const dossierIds = [...new Set((data || []).map((f: any) => f.dossier_id).filter(Boolean))];
       let dossierMap: Record<string, string | null> = {};
       if (dossierIds.length > 0) {
-        const { data: dossiers } = await supabase
-          .from('dossiers')
+        const { data: dossiers } = await (supabase.from('dossiers') as any)
           .select('id, numero_dossier')
           .in('id', dossierIds);
         (dossiers || []).forEach((d: any) => { dossierMap[d.id] = d.numero_dossier; });

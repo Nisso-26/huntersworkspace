@@ -219,6 +219,13 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
   doc.text(`Référence : ${facture.reference || '—'}`, 15, 67);
   doc.text(`Date d'émission : ${new Date(facture.date_emission).toLocaleDateString('fr-FR')}`, 15, 73);
   doc.text(`Date d'échéance : ${facture.date_echeance ? new Date(facture.date_echeance).toLocaleDateString('fr-FR') : 'J+30'}`, 15, 79);
+  if (facture.dossier_numero) {
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(green[0], green[1], green[2]);
+    doc.text(`Réf. dossier : ${facture.dossier_numero}`, 15, 85);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+  }
 
   // ───── Émetteur (right) ─────
   doc.setTextColor(green[0], green[1], green[2]);

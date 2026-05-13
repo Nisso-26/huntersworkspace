@@ -85,7 +85,7 @@ export default function SignatureSection({ dossierId, clientName, clientEmail, n
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Demande de signature</DialogTitle>
+              <DialogTitle>Demande de signature{numeroDossier ? ` — Réf. ${numeroDossier}` : ''}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3 pt-2">
               <div>

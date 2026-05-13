@@ -14,6 +14,7 @@ interface Props {
   dossierId: string;
   clientName: string;
   clientEmail: string;
+  numeroDossier?: string | null;
 }
 
 const statusIcons: Record<string, any> = {

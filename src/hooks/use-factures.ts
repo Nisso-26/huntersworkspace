@@ -50,6 +50,16 @@ export function useFactures() {
         (profiles || []).forEach((p: any) => { profilesMap[p.id] = p; });
       }
 
+      const dossierIds = [...new Set((data || []).map((f: any) => f.dossier_id).filter(Boolean))];
+      let dossierMap: Record<string, string | null> = {};
+      if (dossierIds.length > 0) {
+        const { data: dossiers } = await supabase
+          .from('dossiers')
+          .select('id, numero_dossier')
+          .in('id', dossierIds);
+        (dossiers || []).forEach((d: any) => { dossierMap[d.id] = d.numero_dossier; });
+      }
+
       return (data || []).map((f: any) => ({
         ...f,
         montant: Number(f.montant) || 0,
@@ -57,6 +67,7 @@ export function useFactures() {
         montant_ttc: Number(f.montant_ttc) || 0,
         mandataire_name: profilesMap[f.mandataire_id]?.full_name || 'N/A',
         mandataire_zone: profilesMap[f.mandataire_id]?.zone || '',
+        dossier_numero: f.dossier_id ? dossierMap[f.dossier_id] || null : null,
       })) as Facture[];
     },
     enabled: !!user,

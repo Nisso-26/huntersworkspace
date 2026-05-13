@@ -1,7 +1,7 @@
 // Export PDF de la stratégie d'investissement
 // Utilise jsPDF chargé dynamiquement
 
-export async function exportStrategiePdf(strategie: any, clientName: string, conseiller: string) {
+export async function exportStrategiePdf(strategie: any, clientName: string, conseiller: string, numeroDossier?: string | null) {
   const { default: jsPDF } = await import('jspdf');
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 

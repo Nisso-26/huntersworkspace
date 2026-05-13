@@ -81,7 +81,7 @@ export async function fetchPortalData(token: string) {
 
   // Fetch dossier via secure RPC (excludes PII like email/phone)
   const { data: dossier } = await supabase.rpc('get_dossier_for_portal', { _dossier_id: dossierId });
-  const { data: dossierExtra } = await supabase.from('dossiers').select('numero_dossier').eq('id', dossierId).maybeSingle();
+  const { data: dossierExtra } = await (supabase.from('dossiers') as any).select('numero_dossier').eq('id', dossierId).maybeSingle();
   const dossierWithNumero = dossier ? { ...(dossier as any), numero_dossier: dossierExtra?.numero_dossier || null } : dossier;
   
   // Fetch biens

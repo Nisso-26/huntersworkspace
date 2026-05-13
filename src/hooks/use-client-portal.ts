@@ -123,7 +123,7 @@ export async function fetchPortalData(token: string) {
 
   return {
     token: tokenData,
-    dossier,
+    dossier: dossierWithNumero,
     biens: biens || [],
     chantiers,
     lots,

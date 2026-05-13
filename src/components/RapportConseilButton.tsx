@@ -588,7 +588,7 @@ export default function RapportConseilButton({ dossier }: Props) {
         doc.setTextColor(...GOLD);
         doc.text('HUNTERS IMMOBILIER', M + 8, H - 5.5);
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(200, 200, 200);
+        doc.setTextColor(255, 255, 255);
         doc.text('Cabinet de conseil en investissement immobilier · Tours', W / 2, H - 5.5, { align: 'center' });
         doc.text(`Page ${p} / ${total}`, W - M, H - 5.5, { align: 'right' });
       }

@@ -258,7 +258,7 @@ export default function DossierDetail() {
           {/* Signature */}
           <TabsContent value="signature" className="mt-4">
             <div className="bg-card border rounded-xl p-6">
-              <SignatureSection dossierId={dossier.id} clientName={form.client_name} clientEmail={form.email} />
+              <SignatureSection dossierId={dossier.id} clientName={form.client_name} clientEmail={form.email} numeroDossier={dossier.numero_dossier} />
             </div>
           </TabsContent>
 

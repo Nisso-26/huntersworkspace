@@ -100,6 +100,7 @@ function drawPageHeader(
   W: number,
   GOLD: [number, number, number],
   GREEN: [number, number, number],
+  numeroDossier?: string | null,
 ): number {
   doc.setFillColor(...GREEN);
   doc.rect(0, 0, W, 14, 'F');
@@ -110,6 +111,12 @@ function drawPageHeader(
   doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.text('HUNTERS IMMOBILIER', M + 13, 8);
+  if (numeroDossier) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(255, 255, 255);
+    doc.text(`Réf. ${numeroDossier}`, W - M, 8, { align: 'right' });
+  }
   doc.setFillColor(...GOLD);
   doc.rect(0, 14, W, 0.6, 'F');
   return 22;

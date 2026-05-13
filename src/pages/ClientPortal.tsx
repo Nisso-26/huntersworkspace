@@ -132,6 +132,9 @@ export default function ClientPortal() {
           </div>
           <div className="text-right">
             <p className="text-white/90 text-xs font-semibold">{data.token.client_name}</p>
+            {data.dossier?.numero_dossier && (
+              <p className="text-accent text-[10px] font-mono font-semibold">Réf. {data.dossier.numero_dossier}</p>
+            )}
             <p className="text-white/50 text-[10px]">Espace client sécurisé</p>
           </div>
         </div>

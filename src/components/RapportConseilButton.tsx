@@ -391,7 +391,8 @@ export default function RapportConseilButton({ dossier }: Props) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9.5);
       SECTION_TITLES.forEach((t, i) => {
-        doc.setTextColor(i % 2 === 0 ? ...GREEN : ...TEXT);
+        const c = i % 2 === 0 ? GREEN : TEXT;
+        doc.setTextColor(c[0], c[1], c[2]);
         doc.text(`${i + 1 < 10 ? '0' + (i + 1) : i + 1}  ·  ${t.replace(/^\d+\.\s+/, '')}`, M + 4, y);
         y += 6;
       });
@@ -587,7 +588,7 @@ export default function RapportConseilButton({ dossier }: Props) {
         doc.setTextColor(...GOLD);
         doc.text('HUNTERS IMMOBILIER', M + 8, H - 5.5);
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(200, 200, 200);
+        doc.setTextColor(255, 255, 255);
         doc.text('Cabinet de conseil en investissement immobilier · Tours', W / 2, H - 5.5, { align: 'center' });
         doc.text(`Page ${p} / ${total}`, W - M, H - 5.5, { align: 'right' });
       }

@@ -362,7 +362,7 @@ export default function RapportConseilButton({ dossier }: Props) {
 
       // ══ PAGE 2 — DISCLAIMER + SOMMAIRE ══
       doc.addPage();
-      let y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN);
+      let y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN, dossier.numero_dossier);
 
       doc.setTextColor(...GREEN);
       doc.setFont('helvetica', 'bold');
@@ -406,12 +406,12 @@ export default function RapportConseilButton({ dossier }: Props) {
 
       // ══ PAGES SECTIONS ══
       doc.addPage();
-      y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN);
+      y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN, dossier.numero_dossier);
 
       const ensure = (h: number) => {
         if (y + h > H - 22) {
           doc.addPage();
-          y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN);
+          y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN, dossier.numero_dossier);
         }
       };
 

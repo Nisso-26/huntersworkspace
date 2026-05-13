@@ -31,9 +31,11 @@ export default function Dossiers() {
   const [statusFilter, setStatusFilter] = useState('');
 
   const filtered = dossiers.filter(d => {
-    const matchSearch = d.client_name.toLowerCase().includes(search.toLowerCase()) ||
-      (d.ville || '').toLowerCase().includes(search.toLowerCase()) ||
-      (d.mandataire_name || '').toLowerCase().includes(search.toLowerCase());
+    const s = search.toLowerCase();
+    const matchSearch = d.client_name.toLowerCase().includes(s) ||
+      (d.ville || '').toLowerCase().includes(s) ||
+      (d.mandataire_name || '').toLowerCase().includes(s) ||
+      (d.numero_dossier || '').toLowerCase().includes(s);
     const matchStatus = !statusFilter || d.status === statusFilter;
     return matchSearch && matchStatus;
   });

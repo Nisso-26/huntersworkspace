@@ -319,7 +319,7 @@ export default function RapportConseilButton({ dossier }: Props) {
       doc.setTextColor(150, 150, 150);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7.5);
-      doc.text(`Réf. dossier · ${dossier.id?.slice(0, 8).toUpperCase() || 'N/A'}`, W / 2, 150, { align: 'center' });
+      doc.text(`Réf. dossier · ${dossier.numero_dossier || dossier.id?.slice(0, 8).toUpperCase() || 'N/A'}`, W / 2, 150, { align: 'center' });
 
       // Bloc signataire
       doc.setFillColor(240, 246, 242);

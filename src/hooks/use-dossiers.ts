@@ -99,7 +99,7 @@ export function useCreateDossier() {
       const { data, error } = await supabase.from('dossiers').insert(dossier as any).select().single();
       if (error) throw error;
       if (data?.mandataire_id && data?.client_name) {
-        notifyAssignment(data.mandataire_id, data.client_name);
+        notifyAssignment(data.mandataire_id, data.client_name, (data as any).numero_dossier);
       }
       return data;
     },

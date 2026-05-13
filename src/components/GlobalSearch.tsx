@@ -36,9 +36,20 @@ export default function GlobalSearch() {
 
   const results = q.length < 2 ? [] : [
     ...dossiers
-      .filter(d => d.client_name.toLowerCase().includes(q) || (d.ville || '').toLowerCase().includes(q))
-      .slice(0, 4)
-      .map(d => ({ type: 'dossier', label: d.client_name, sub: d.ville || '', href: `/dossiers/${d.id}`, icon: FolderOpen })),
+      .filter(d =>
+        d.client_name.toLowerCase().includes(q) ||
+        (d.ville || '').toLowerCase().includes(q) ||
+        (d.numero_dossier || '').toLowerCase().includes(q)
+      )
+      .slice(0, 6)
+      .map(d => ({
+        type: 'dossier',
+        label: d.client_name,
+        sub: [d.numero_dossier, d.ville, d.mandataire_name, `${(d.budget || 0).toLocaleString('fr-FR')} €`, d.status]
+          .filter(Boolean).join(' · '),
+        href: `/dossiers/${d.id}`,
+        icon: FolderOpen,
+      })),
     ...mandataires
       .filter(m => (m.full_name || '').toLowerCase().includes(q) || (m.zone || '').toLowerCase().includes(q))
       .slice(0, 3)

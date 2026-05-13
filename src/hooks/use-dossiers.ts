@@ -6,6 +6,7 @@ import { fetchAllPaginated } from '@/lib/supabase-pagination';
 
 export interface Dossier {
   id: string;
+  numero_dossier: string | null;
   client_name: string;
   email: string | null;
   phone: string | null;

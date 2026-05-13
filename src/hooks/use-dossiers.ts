@@ -137,7 +137,7 @@ export function useUpdateDossier() {
         data.mandataire_id !== previousMandataireId &&
         data.client_name
       ) {
-        notifyAssignment(data.mandataire_id, data.client_name);
+        notifyAssignment(data.mandataire_id, data.client_name, (data as any).numero_dossier);
       }
       return data;
     },

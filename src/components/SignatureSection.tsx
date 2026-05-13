@@ -14,6 +14,7 @@ interface Props {
   dossierId: string;
   clientName: string;
   clientEmail: string;
+  numeroDossier?: string | null;
 }
 
 const statusIcons: Record<string, any> = {
@@ -34,7 +35,7 @@ const statusColors: Record<string, string> = {
   expire: 'bg-muted text-muted-foreground',
 };
 
-export default function SignatureSection({ dossierId, clientName, clientEmail }: Props) {
+export default function SignatureSection({ dossierId, clientName, clientEmail, numeroDossier }: Props) {
   const { user } = useAuth();
   const { data: requests = [] } = useSignatureRequests(dossierId);
   const createMut = useCreateSignatureRequest();
@@ -84,7 +85,7 @@ export default function SignatureSection({ dossierId, clientName, clientEmail }:
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Demande de signature</DialogTitle>
+              <DialogTitle>Demande de signature{numeroDossier ? ` — Réf. ${numeroDossier}` : ''}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3 pt-2">
               <div>

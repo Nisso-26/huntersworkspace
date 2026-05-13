@@ -100,6 +100,7 @@ function drawPageHeader(
   W: number,
   GOLD: [number, number, number],
   GREEN: [number, number, number],
+  numeroDossier?: string | null,
 ): number {
   doc.setFillColor(...GREEN);
   doc.rect(0, 0, W, 14, 'F');
@@ -110,6 +111,12 @@ function drawPageHeader(
   doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.text('HUNTERS IMMOBILIER', M + 13, 8);
+  if (numeroDossier) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(255, 255, 255);
+    doc.text(`Réf. ${numeroDossier}`, W - M, 8, { align: 'right' });
+  }
   doc.setFillColor(...GOLD);
   doc.rect(0, 14, W, 0.6, 'F');
   return 22;
@@ -312,7 +319,7 @@ export default function RapportConseilButton({ dossier }: Props) {
       doc.setTextColor(150, 150, 150);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7.5);
-      doc.text(`Réf. dossier · ${dossier.id?.slice(0, 8).toUpperCase() || 'N/A'}`, W / 2, 150, { align: 'center' });
+      doc.text(`Réf. dossier · ${dossier.numero_dossier || dossier.id?.slice(0, 8).toUpperCase() || 'N/A'}`, W / 2, 150, { align: 'center' });
 
       // Bloc signataire
       doc.setFillColor(240, 246, 242);
@@ -355,7 +362,7 @@ export default function RapportConseilButton({ dossier }: Props) {
 
       // ══ PAGE 2 — DISCLAIMER + SOMMAIRE ══
       doc.addPage();
-      let y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN);
+      let y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN, dossier.numero_dossier);
 
       doc.setTextColor(...GREEN);
       doc.setFont('helvetica', 'bold');
@@ -399,12 +406,12 @@ export default function RapportConseilButton({ dossier }: Props) {
 
       // ══ PAGES SECTIONS ══
       doc.addPage();
-      y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN);
+      y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN, dossier.numero_dossier);
 
       const ensure = (h: number) => {
         if (y + h > H - 22) {
           doc.addPage();
-          y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN);
+          y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN, dossier.numero_dossier);
         }
       };
 

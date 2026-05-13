@@ -74,7 +74,7 @@ export default function StrategieIA({ dossier }: Props) {
     setExporting(true);
     try {
       const conseiller = user?.user_metadata?.full_name || user?.email || 'Hunters Immobilier';
-      await exportStrategiePdf(strategie, dossier.client_name, conseiller);
+      await exportStrategiePdf(strategie, dossier.client_name, conseiller, dossier.numero_dossier);
     } catch (e) {
       console.error('Export PDF error:', e);
     } finally {

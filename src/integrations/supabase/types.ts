@@ -591,6 +591,21 @@ export type Database = {
           },
         ]
       }
+      dossier_counters: {
+        Row: {
+          last_number: number
+          year: number
+        }
+        Insert: {
+          last_number?: number
+          year: number
+        }
+        Update: {
+          last_number?: number
+          year?: number
+        }
+        Relationships: []
+      }
       dossiers: {
         Row: {
           budget: number | null
@@ -602,6 +617,7 @@ export type Database = {
           id: string
           mandataire_id: string | null
           notes: string | null
+          numero_dossier: string | null
           phone: string | null
           status: string
           strategie: string | null
@@ -618,6 +634,7 @@ export type Database = {
           id?: string
           mandataire_id?: string | null
           notes?: string | null
+          numero_dossier?: string | null
           phone?: string | null
           status?: string
           strategie?: string | null
@@ -634,6 +651,7 @@ export type Database = {
           id?: string
           mandataire_id?: string | null
           notes?: string | null
+          numero_dossier?: string | null
           phone?: string | null
           status?: string
           strategie?: string | null

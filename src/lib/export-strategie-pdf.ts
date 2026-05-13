@@ -1,7 +1,7 @@
 // Export PDF de la stratégie d'investissement
 // Utilise jsPDF chargé dynamiquement
 
-export async function exportStrategiePdf(strategie: any, clientName: string, conseiller: string) {
+export async function exportStrategiePdf(strategie: any, clientName: string, conseiller: string, numeroDossier?: string | null) {
   const { default: jsPDF } = await import('jspdf');
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
@@ -46,7 +46,8 @@ export async function exportStrategiePdf(strategie: any, clientName: string, con
   doc.text('HUNTERS IMMOBILIER · TOURS', MARGIN, 42);
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(9);
-  doc.text(`Préparée pour : ${clientName}`, MARGIN, 50);
+  const refSuffix = numeroDossier ? `   ·   Réf. ${numeroDossier}` : '';
+  doc.text(`Préparée pour : ${clientName}${refSuffix}`, MARGIN, 50);
   doc.text(`Conseiller : ${conseiller}  ·  ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}`, MARGIN, 56);
 
   y = 72;

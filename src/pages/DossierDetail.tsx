@@ -123,9 +123,16 @@ export default function DossierDetail() {
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-heading font-bold text-foreground">
-                {dossier.client_name}
-              </h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl font-heading font-bold text-foreground">
+                  {dossier.client_name}
+                </h1>
+                {dossier.numero_dossier && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-sm bg-primary text-primary-foreground text-[11px] font-mono font-semibold tracking-wide">
+                    {dossier.numero_dossier}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2 mt-1">
                 <StatusBadge status={dossier.status as any} />
                 <span className="text-xs text-muted-foreground">{dossier.ville}</span>
@@ -251,7 +258,7 @@ export default function DossierDetail() {
           {/* Signature */}
           <TabsContent value="signature" className="mt-4">
             <div className="bg-card border rounded-xl p-6">
-              <SignatureSection dossierId={dossier.id} clientName={form.client_name} clientEmail={form.email} />
+              <SignatureSection dossierId={dossier.id} clientName={form.client_name} clientEmail={form.email} numeroDossier={dossier.numero_dossier} />
             </div>
           </TabsContent>
 

@@ -6,6 +6,7 @@ import { fetchAllPaginated } from '@/lib/supabase-pagination';
 
 export interface Dossier {
   id: string;
+  numero_dossier: string | null;
   client_name: string;
   email: string | null;
   phone: string | null;
@@ -65,7 +66,7 @@ export function useDossiers() {
   });
 }
 
-async function notifyAssignment(mandataireId: string, clientName: string) {
+async function notifyAssignment(mandataireId: string, clientName: string, numeroDossier?: string | null) {
   try {
     const { data: profile } = await supabase
       .from('profiles')
@@ -73,13 +74,16 @@ async function notifyAssignment(mandataireId: string, clientName: string) {
       .eq('id', mandataireId)
       .maybeSingle();
     if (!profile?.email) return;
+    const refLine = numeroDossier ? `<p style="margin:0 0 8px;color:#555;font-size:13px;">Référence dossier : <strong>${numeroDossier}</strong></p>` : '';
     await supabase.functions.invoke('send-notification', {
       body: {
         to: profile.email,
-        subject: `Nouveau dossier assigné : ${clientName}`,
+        subject: `Nouveau dossier assigné : ${clientName}${numeroDossier ? ` (${numeroDossier})` : ''}`,
+        numero_dossier: numeroDossier || null,
         body: `<h2 style="color:#1A4D2E;margin:0 0 16px;">Nouveau dossier assigné</h2>
+          ${refLine}
           <p>Bonjour ${profile.full_name || ''},</p>
-          <p>Un nouveau dossier vous a été assigné : <strong>${clientName}</strong>.</p>
+          <p>Un nouveau dossier vous a été assigné : <strong>${clientName}</strong>${numeroDossier ? ` — réf. <strong>${numeroDossier}</strong>` : ''}.</p>
           <p>Connectez-vous à votre espace Hunters pour le consulter.</p>`,
       },
     });
@@ -95,7 +99,7 @@ export function useCreateDossier() {
       const { data, error } = await supabase.from('dossiers').insert(dossier as any).select().single();
       if (error) throw error;
       if (data?.mandataire_id && data?.client_name) {
-        notifyAssignment(data.mandataire_id, data.client_name);
+        notifyAssignment(data.mandataire_id, data.client_name, (data as any).numero_dossier);
       }
       return data;
     },
@@ -133,7 +137,7 @@ export function useUpdateDossier() {
         data.mandataire_id !== previousMandataireId &&
         data.client_name
       ) {
-        notifyAssignment(data.mandataire_id, data.client_name);
+        notifyAssignment(data.mandataire_id, data.client_name, (data as any).numero_dossier);
       }
       return data;
     },

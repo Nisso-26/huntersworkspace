@@ -31,9 +31,11 @@ export default function Dossiers() {
   const [statusFilter, setStatusFilter] = useState('');
 
   const filtered = dossiers.filter(d => {
-    const matchSearch = d.client_name.toLowerCase().includes(search.toLowerCase()) ||
-      (d.ville || '').toLowerCase().includes(search.toLowerCase()) ||
-      (d.mandataire_name || '').toLowerCase().includes(search.toLowerCase());
+    const s = search.toLowerCase();
+    const matchSearch = d.client_name.toLowerCase().includes(s) ||
+      (d.ville || '').toLowerCase().includes(s) ||
+      (d.mandataire_name || '').toLowerCase().includes(s) ||
+      (d.numero_dossier || '').toLowerCase().includes(s);
     const matchStatus = !statusFilter || d.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -102,6 +104,9 @@ export default function Dossiers() {
                       >
                         <td className="px-5 py-3.5">
                           <p className="text-sm font-medium text-foreground">{d.client_name}</p>
+                          {d.numero_dossier && (
+                            <p className="text-[11px] text-muted-foreground font-mono">{d.numero_dossier}</p>
+                          )}
                           <p className="text-xs text-muted-foreground">{d.email}</p>
                         </td>
                         <td className="px-5 py-3.5 text-sm text-foreground hidden md:table-cell">{d.mandataire_name}</td>

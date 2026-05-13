@@ -23,6 +23,7 @@ export interface Facture {
   created_at: string;
   mandataire_name?: string;
   mandataire_zone?: string;
+  dossier_numero?: string | null;
 }
 
 export function useFactures() {
@@ -49,6 +50,15 @@ export function useFactures() {
         (profiles || []).forEach((p: any) => { profilesMap[p.id] = p; });
       }
 
+      const dossierIds = [...new Set((data || []).map((f: any) => f.dossier_id).filter(Boolean))];
+      let dossierMap: Record<string, string | null> = {};
+      if (dossierIds.length > 0) {
+        const { data: dossiers } = await (supabase.from('dossiers') as any)
+          .select('id, numero_dossier')
+          .in('id', dossierIds);
+        (dossiers || []).forEach((d: any) => { dossierMap[d.id] = d.numero_dossier; });
+      }
+
       return (data || []).map((f: any) => ({
         ...f,
         montant: Number(f.montant) || 0,
@@ -56,6 +66,7 @@ export function useFactures() {
         montant_ttc: Number(f.montant_ttc) || 0,
         mandataire_name: profilesMap[f.mandataire_id]?.full_name || 'N/A',
         mandataire_zone: profilesMap[f.mandataire_id]?.zone || '',
+        dossier_numero: f.dossier_id ? dossierMap[f.dossier_id] || null : null,
       })) as Facture[];
     },
     enabled: !!user,
@@ -207,6 +218,13 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
   doc.text(`Référence : ${facture.reference || '—'}`, 15, 67);
   doc.text(`Date d'émission : ${new Date(facture.date_emission).toLocaleDateString('fr-FR')}`, 15, 73);
   doc.text(`Date d'échéance : ${facture.date_echeance ? new Date(facture.date_echeance).toLocaleDateString('fr-FR') : 'J+30'}`, 15, 79);
+  if (facture.dossier_numero) {
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(green[0], green[1], green[2]);
+    doc.text(`Réf. dossier : ${facture.dossier_numero}`, 15, 85);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+  }
 
   // ───── Émetteur (right) ─────
   doc.setTextColor(green[0], green[1], green[2]);

@@ -104,7 +104,7 @@ function drawPageHeader(
   doc.setFillColor(...GREEN);
   doc.rect(0, 0, W, 14, 'F');
   if (logoBase64) {
-    try { doc.addImage(logoBase64, 'JPEG', M, 2, 10, 10); } catch { }
+    try { doc.addImage(logoBase64, 'JPEG', M, 2, 10, 10); } catch { /* ignore */ }
   }
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
@@ -258,7 +258,7 @@ export default function RapportConseilButton({ dossier }: Props) {
 
       // Logo dans le bandeau vert
       if (logoBase64) {
-        try { doc.addImage(logoBase64, 'JPEG', M, 10, 28, 28); } catch { }
+        try { doc.addImage(logoBase64, 'JPEG', M, 10, 28, 28); } catch { /* ignore */ }
       }
 
       // Nom cabinet dans le bandeau
@@ -344,7 +344,7 @@ export default function RapportConseilButton({ dossier }: Props) {
 
       // Logo bas page de garde
       if (logoBase64) {
-        try { doc.addImage(logoBase64, 'JPEG', W / 2 - 8, 240, 16, 16); } catch { }
+        try { doc.addImage(logoBase64, 'JPEG', W / 2 - 8, 240, 16, 16); } catch { /* ignore */ }
       }
 
       // Tagline
@@ -558,7 +558,7 @@ export default function RapportConseilButton({ dossier }: Props) {
         doc.setTextColor(130, 130, 130);
         doc.text(label, M, y);
         y += 3;
-        try { doc.addImage(img, 'PNG', M, y, CW, 76); } catch { }
+        try { doc.addImage(img, 'PNG', M, y, CW, 76); } catch { /* ignore */ }
         y += 80;
       };
 
@@ -581,7 +581,7 @@ export default function RapportConseilButton({ dossier }: Props) {
         doc.setFillColor(...GOLD);
         doc.rect(0, H - 12, W, 0.6, 'F');
         if (logoBase64) {
-          try { doc.addImage(logoBase64, 'JPEG', M, H - 10, 6, 6); } catch { }
+          try { doc.addImage(logoBase64, 'JPEG', M, H - 10, 6, 6); } catch { /* ignore */ }
         }
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(6.5);

@@ -35,7 +35,7 @@ const statusColors: Record<string, string> = {
   expire: 'bg-muted text-muted-foreground',
 };
 
-export default function SignatureSection({ dossierId, clientName, clientEmail }: Props) {
+export default function SignatureSection({ dossierId, clientName, clientEmail, numeroDossier }: Props) {
   const { user } = useAuth();
   const { data: requests = [] } = useSignatureRequests(dossierId);
   const createMut = useCreateSignatureRequest();

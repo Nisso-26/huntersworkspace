@@ -252,6 +252,7 @@ export default function DossierDetail() {
           <TabsContent value="documents" className="mt-4">
             <div className="bg-card border rounded-xl p-6">
               <DocumentsSection dossierId={dossier.id} />
+              <RapportsGeneresList dossier={dossier} />
             </div>
           </TabsContent>
 

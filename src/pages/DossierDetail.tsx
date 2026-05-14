@@ -5,6 +5,7 @@ import AppLayout from '@/components/AppLayout';
 import StatusBadge from '@/components/StatusBadge';
 import DocumentsSection from '@/components/DocumentsSection';
 import JournalActivite from '@/components/JournalActivite';
+import HistoriqueStatuts from '@/components/HistoriqueStatuts';
 import RapportConseilButton from '@/components/RapportConseilButton';
 import RapportsGeneresList from '@/components/RapportsGeneresList';
 import SignatureSection from '@/components/SignatureSection';
@@ -239,6 +240,9 @@ export default function DossierDetail() {
             </div>
             <div className="mt-4">
               <JournalActivite dossierId={dossier.id} />
+            </div>
+            <div className="mt-4">
+              <HistoriqueStatuts dossierId={dossier.id} />
             </div>
           </TabsContent>
 

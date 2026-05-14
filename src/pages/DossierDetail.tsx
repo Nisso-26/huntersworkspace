@@ -6,6 +6,7 @@ import StatusBadge from '@/components/StatusBadge';
 import DocumentsSection from '@/components/DocumentsSection';
 import JournalActivite from '@/components/JournalActivite';
 import RapportConseilButton from '@/components/RapportConseilButton';
+import RapportsGeneresList from '@/components/RapportsGeneresList';
 import SignatureSection from '@/components/SignatureSection';
 import ClientPortalSection, { ClientComments } from '@/components/ClientPortalSection';
 import StrategieIA from '@/components/StrategieIA';

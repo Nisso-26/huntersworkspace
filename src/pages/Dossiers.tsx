@@ -78,6 +78,7 @@ export default function Dossiers() {
           placeholder="Rechercher un dossier..."
           filters={[
             { label: 'Tous les statuts', value: statusFilter, options: statusOptions, onChange: setStatusFilter },
+            ...(isAdmin ? [{ label: 'Tous les conseillers', value: conseillerFilter, options: conseillerOptions, onChange: setConseillerFilter }] : []),
           ]}
         />
 

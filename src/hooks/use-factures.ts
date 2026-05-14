@@ -7,6 +7,7 @@ import type { CompanySettings } from './use-company-settings';
 
 export interface Facture {
   id: string;
+  numero_facture: string | null;
   mandataire_id: string | null;
   dossier_id: string | null;
   montant: number;
@@ -215,7 +216,7 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
-  doc.text(`Référence : ${facture.reference || '—'}`, 15, 67);
+  doc.text(`N° facture : ${facture.numero_facture || facture.reference || '—'}`, 15, 67);
   doc.text(`Date d'émission : ${new Date(facture.date_emission).toLocaleDateString('fr-FR')}`, 15, 73);
   doc.text(`Date d'échéance : ${facture.date_echeance ? new Date(facture.date_echeance).toLocaleDateString('fr-FR') : 'J+30'}`, 15, 79);
   if (facture.dossier_numero) {
@@ -335,5 +336,5 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
     yF += 4.5;
   });
 
-  doc.save(`${facture.reference || 'facture'}.pdf`);
+  doc.save(`${facture.numero_facture || facture.reference || 'facture'}.pdf`);
 }

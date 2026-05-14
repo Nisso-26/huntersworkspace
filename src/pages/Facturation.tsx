@@ -186,7 +186,7 @@ export default function Facturation() {
                   ) : (
                     filtered.map((f) => (
                       <tr key={f.id} className="hover:bg-secondary/50 transition-colors">
-                        <td className="px-5 py-3.5 text-sm font-medium text-foreground">{f.reference || '—'}</td>
+                        <td className="px-5 py-3.5 text-sm font-medium text-foreground font-mono">{f.numero_facture || f.reference || '—'}</td>
                         <td className="px-5 py-3.5 text-sm text-foreground hidden md:table-cell">{f.mandataire_name}</td>
                         <td className="px-5 py-3.5 text-sm text-muted-foreground hidden sm:table-cell">{typeLabels[f.type] || f.type}</td>
                         <td className="px-5 py-3.5 text-sm font-medium text-foreground">{f.montant.toLocaleString('fr-FR')} €</td>

@@ -1,6 +1,8 @@
 import AppLayout from '@/components/AppLayout';
 import StatusBadge from '@/components/StatusBadge';
 import { useDossiers, useDeleteDossier } from '@/hooks/use-dossiers';
+import { useMandataires } from '@/hooks/use-mandataires';
+import { useAuth } from '@/contexts/AuthContext';
 import DossierDialog from '@/components/DossierDialog';
 import SearchFilter from '@/components/SearchFilter';
 import ExportButton, { exportToCSV } from '@/components/ExportButton';
@@ -25,10 +27,13 @@ const statusOptions = [
 
 export default function Dossiers() {
   const { data: dossiers = [], isLoading } = useDossiers();
+  const { isAdmin } = useAuth();
+  const { data: mandataires = [] } = useMandataires();
   const deleteMut = useDeleteDossier();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [conseillerFilter, setConseillerFilter] = useState('');
 
   const filtered = dossiers.filter(d => {
     const s = search.toLowerCase();
@@ -37,7 +42,8 @@ export default function Dossiers() {
       (d.mandataire_name || '').toLowerCase().includes(s) ||
       (d.numero_dossier || '').toLowerCase().includes(s);
     const matchStatus = !statusFilter || d.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchConseiller = !conseillerFilter || d.mandataire_id === conseillerFilter;
+    return matchSearch && matchStatus && matchConseiller;
   });
 
   const handleExport = () => {
@@ -47,6 +53,10 @@ export default function Dossiers() {
       'dossiers_hunters'
     );
   };
+
+  const conseillerOptions = mandataires
+    .filter(m => m.status !== 'résilie' && m.status !== 'suspendu')
+    .map(m => ({ label: m.full_name || m.email || '—', value: m.id }));
 
   return (
     <AppLayout>
@@ -68,6 +78,7 @@ export default function Dossiers() {
           placeholder="Rechercher un dossier..."
           filters={[
             { label: 'Tous les statuts', value: statusFilter, options: statusOptions, onChange: setStatusFilter },
+            ...(isAdmin ? [{ label: 'Tous les conseillers', value: conseillerFilter, options: conseillerOptions, onChange: setConseillerFilter }] : []),
           ]}
         />
 

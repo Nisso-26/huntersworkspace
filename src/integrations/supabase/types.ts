@@ -323,6 +323,8 @@ export type Database = {
           expires_at: string
           id: string
           is_active: boolean
+          last_relance_at: string | null
+          last_viewed_at: string | null
           token: string
         }
         Insert: {
@@ -334,6 +336,8 @@ export type Database = {
           expires_at?: string
           id?: string
           is_active?: boolean
+          last_relance_at?: string | null
+          last_viewed_at?: string | null
           token?: string
         }
         Update: {
@@ -345,6 +349,8 @@ export type Database = {
           expires_at?: string
           id?: string
           is_active?: boolean
+          last_relance_at?: string | null
+          last_viewed_at?: string | null
           token?: string
         }
         Relationships: [
@@ -591,6 +597,36 @@ export type Database = {
           },
         ]
       }
+      documents_generes: {
+        Row: {
+          conseiller_id: string | null
+          created_at: string
+          date_generation: string
+          dossier_id: string
+          id: string
+          numero_dossier: string | null
+          type: string
+        }
+        Insert: {
+          conseiller_id?: string | null
+          created_at?: string
+          date_generation?: string
+          dossier_id: string
+          id?: string
+          numero_dossier?: string | null
+          type?: string
+        }
+        Update: {
+          conseiller_id?: string | null
+          created_at?: string
+          date_generation?: string
+          dossier_id?: string
+          id?: string
+          numero_dossier?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
       dossier_counters: {
         Row: {
           last_number: number
@@ -716,6 +752,21 @@ export type Database = {
           },
         ]
       }
+      facture_counters: {
+        Row: {
+          last_number: number
+          year: number
+        }
+        Insert: {
+          last_number?: number
+          year: number
+        }
+        Update: {
+          last_number?: number
+          year?: number
+        }
+        Relationships: []
+      }
       factures: {
         Row: {
           client_name: string | null
@@ -729,6 +780,7 @@ export type Database = {
           mandataire_id: string | null
           montant: number
           montant_ttc: number | null
+          numero_facture: string | null
           reference: string | null
           statut: string
           tva_taux: number | null
@@ -746,6 +798,7 @@ export type Database = {
           mandataire_id?: string | null
           montant?: number
           montant_ttc?: number | null
+          numero_facture?: string | null
           reference?: string | null
           statut?: string
           tva_taux?: number | null
@@ -763,6 +816,7 @@ export type Database = {
           mandataire_id?: string | null
           montant?: number
           montant_ttc?: number | null
+          numero_facture?: string | null
           reference?: string | null
           statut?: string
           tva_taux?: number | null
@@ -777,6 +831,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      historique_statuts: {
+        Row: {
+          ancien_statut: string | null
+          date_changement: string
+          dossier_id: string
+          id: string
+          modifie_par: string | null
+          nouveau_statut: string
+        }
+        Insert: {
+          ancien_statut?: string | null
+          date_changement?: string
+          dossier_id: string
+          id?: string
+          modifie_par?: string | null
+          nouveau_statut: string
+        }
+        Update: {
+          ancien_statut?: string | null
+          date_changement?: string
+          dossier_id?: string
+          id?: string
+          modifie_par?: string | null
+          nouveau_statut?: string
+        }
+        Relationships: []
       }
       honoraires_tranches: {
         Row: {

@@ -73,9 +73,16 @@ export async function fetchPortalData(token: string) {
     .single();
 
   if (tokenError || !tokenData) throw new Error('Lien invalide ou expiré');
-  
+
   const now = new Date();
   if (new Date(tokenData.expires_at) < now) throw new Error('Lien expiré');
+
+  // Marque la consultation pour le suivi de relance automatique (best-effort)
+  try {
+    await (supabase.from('client_tokens') as any)
+      .update({ last_viewed_at: new Date().toISOString() })
+      .eq('id', tokenData.id);
+  } catch (_) { /* ignore */ }
 
   const dossierId = tokenData.dossier_id;
 

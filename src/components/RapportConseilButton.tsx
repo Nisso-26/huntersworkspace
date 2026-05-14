@@ -601,6 +601,21 @@ export default function RapportConseilButton({ dossier }: Props) {
       }
 
       doc.save(`Rapport_Conseil_${dossier.client_name.replace(/\s+/g, '_')}_${new Date().getFullYear()}.pdf`);
+
+      // Archivage: trace l'export dans documents_generes
+      try {
+        const { data: u } = await supabase.auth.getUser();
+        await (supabase.from('documents_generes') as any).insert({
+          dossier_id: dossier.id,
+          type: 'rapport_conseil',
+          numero_dossier: (dossier as any).numero_dossier || null,
+          conseiller_id: u?.user?.id || null,
+        });
+        window.dispatchEvent(new CustomEvent('rapport-genere', { detail: { dossierId: dossier.id } }));
+      } catch (archErr) {
+        console.warn('Archivage rapport échoué:', archErr);
+      }
+
       toast.success('PDF généré avec succès');
     } catch (e: any) {
       toast.error(e.message || 'Erreur export PDF');

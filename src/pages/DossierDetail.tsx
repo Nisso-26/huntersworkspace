@@ -5,7 +5,9 @@ import AppLayout from '@/components/AppLayout';
 import StatusBadge from '@/components/StatusBadge';
 import DocumentsSection from '@/components/DocumentsSection';
 import JournalActivite from '@/components/JournalActivite';
+import HistoriqueStatuts from '@/components/HistoriqueStatuts';
 import RapportConseilButton from '@/components/RapportConseilButton';
+import RapportsGeneresList from '@/components/RapportsGeneresList';
 import SignatureSection from '@/components/SignatureSection';
 import ClientPortalSection, { ClientComments } from '@/components/ClientPortalSection';
 import StrategieIA from '@/components/StrategieIA';
@@ -239,6 +241,9 @@ export default function DossierDetail() {
             <div className="mt-4">
               <JournalActivite dossierId={dossier.id} />
             </div>
+            <div className="mt-4">
+              <HistoriqueStatuts dossierId={dossier.id} />
+            </div>
           </TabsContent>
 
           {/* Stratégie */}
@@ -252,6 +257,7 @@ export default function DossierDetail() {
           <TabsContent value="documents" className="mt-4">
             <div className="bg-card border rounded-xl p-6">
               <DocumentsSection dossierId={dossier.id} />
+              <RapportsGeneresList dossier={dossier} />
             </div>
           </TabsContent>
 

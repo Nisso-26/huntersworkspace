@@ -655,8 +655,10 @@ export type Database = {
           notes: string | null
           numero_dossier: string | null
           phone: string | null
+          services_souscrits: Json | null
           status: string
           strategie: string | null
+          type_accompagnement: string | null
           updated_at: string
           ville: string | null
         }
@@ -672,8 +674,10 @@ export type Database = {
           notes?: string | null
           numero_dossier?: string | null
           phone?: string | null
+          services_souscrits?: Json | null
           status?: string
           strategie?: string | null
+          type_accompagnement?: string | null
           updated_at?: string
           ville?: string | null
         }
@@ -689,8 +693,10 @@ export type Database = {
           notes?: string | null
           numero_dossier?: string | null
           phone?: string | null
+          services_souscrits?: Json | null
           status?: string
           strategie?: string | null
+          type_accompagnement?: string | null
           updated_at?: string
           ville?: string | null
         }

@@ -131,7 +131,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
               <div className="grid grid-cols-3 gap-3 text-center">
                 {[
                   { icon: '📁', label: 'Dossiers clients' },
-                  { icon: '🤖', label: 'Stratégie IA' },
+                  { icon: '📈', label: 'Stratégie patrimoniale' },
                   { icon: '📊', label: 'Suivi missions' },
                 ].map(f => (
                   <div key={f.label} className="bg-secondary/40 rounded-xl p-3">

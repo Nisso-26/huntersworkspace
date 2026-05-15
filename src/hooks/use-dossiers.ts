@@ -18,6 +18,8 @@ export interface Dossier {
   honoraires: number;
   etape: number;
   notes: string | null;
+  type_accompagnement?: string | null;
+  services_souscrits?: Record<string, boolean> | null;
   created_at: string;
   updated_at: string;
   // joined

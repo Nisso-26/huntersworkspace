@@ -246,6 +246,12 @@ export default function DossierDetail() {
                   <Label>Notes</Label>
                   <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={4} />
                 </div>
+                <AccompagnementSection
+                  type={form.type_accompagnement}
+                  services={form.services_souscrits}
+                  onTypeChange={v => setForm(f => ({ ...f, type_accompagnement: v }))}
+                  onServicesChange={s => setForm(f => ({ ...f, services_souscrits: s }))}
+                />
               </div>
             </div>
             <div className="mt-4">

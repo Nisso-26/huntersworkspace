@@ -169,6 +169,9 @@ export default function DossierDetail() {
           </div>
         </div>
 
+        {/* Workflow progression */}
+        <WorkflowProgress dossier={dossier} />
+
         {/* Onglets */}
         <Tabs defaultValue="infos">
           <TabsList className="w-full grid grid-cols-5">

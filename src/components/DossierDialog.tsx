@@ -14,6 +14,8 @@ import ClientPortalSection from '@/components/ClientPortalSection';
 import SignatureSection from '@/components/SignatureSection';
 import StrategieIA from '@/components/StrategieIA';
 import { ClientComments } from '@/components/ClientPortalSection';
+import AccompagnementSection from '@/components/AccompagnementSection';
+import { ALL_SERVICES_TRUE } from '@/lib/workflow';
 
 interface Props {
   dossier?: Dossier;

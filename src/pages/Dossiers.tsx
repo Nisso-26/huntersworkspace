@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { summarizeStrategie } from '@/lib/strategie-parser';
+import { progressFromStatus } from '@/lib/workflow';
 
 const statusOptions = [
   { label: 'Nouveau', value: 'nouveau' },

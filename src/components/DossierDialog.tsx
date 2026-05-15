@@ -41,6 +41,8 @@ export default function DossierDialog({ dossier, trigger }: Props) {
     strategie: typeof dossier?.strategie === 'string' ? dossier.strategie : '',
     honoraires: dossier?.honoraires?.toString() || '',
     notes: dossier?.notes || '',
+    type_accompagnement: dossier?.type_accompagnement || 'cle_en_main',
+    services_souscrits: (dossier?.services_souscrits as Record<string, boolean>) || { ...ALL_SERVICES_TRUE, gestion_locative: false },
   });
 
   const handleSubmit = async (e: React.FormEvent) => {

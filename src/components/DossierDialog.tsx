@@ -154,6 +154,14 @@ export default function DossierDialog({ dossier, trigger }: Props) {
               <Label>Notes</Label>
               <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} />
             </div>
+            <div className="col-span-2">
+              <AccompagnementSection
+                type={form.type_accompagnement}
+                services={form.services_souscrits}
+                onTypeChange={v => setForm(f => ({ ...f, type_accompagnement: v }))}
+                onServicesChange={s => setForm(f => ({ ...f, services_souscrits: s }))}
+              />
+            </div>
           </div>
           {isEdit && dossier?.id && (
             <>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Dossier } from '@/hooks/use-dossiers';
-import { getWorkflowSteps, type WorkflowStep, getServices } from '@/lib/workflow';
+import { getWorkflowSteps, type WorkflowStep } from '@/lib/workflow';
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import { toast } from 'sonner';

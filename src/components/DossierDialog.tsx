@@ -14,6 +14,8 @@ import ClientPortalSection from '@/components/ClientPortalSection';
 import SignatureSection from '@/components/SignatureSection';
 import StrategieIA from '@/components/StrategieIA';
 import { ClientComments } from '@/components/ClientPortalSection';
+import AccompagnementSection from '@/components/AccompagnementSection';
+import { ALL_SERVICES_TRUE } from '@/lib/workflow';
 
 interface Props {
   dossier?: Dossier;
@@ -39,11 +41,13 @@ export default function DossierDialog({ dossier, trigger }: Props) {
     strategie: typeof dossier?.strategie === 'string' ? dossier.strategie : '',
     honoraires: dossier?.honoraires?.toString() || '',
     notes: dossier?.notes || '',
+    type_accompagnement: dossier?.type_accompagnement || 'cle_en_main',
+    services_souscrits: (dossier?.services_souscrits as Record<string, boolean>) || { ...ALL_SERVICES_TRUE, gestion_locative: false },
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = {
+    const payload: any = {
       ...form,
       budget: Number(form.budget) || 0,
       honoraires: Number(form.honoraires) || 0,
@@ -149,6 +153,14 @@ export default function DossierDialog({ dossier, trigger }: Props) {
             <div className="space-y-2 col-span-2">
               <Label>Notes</Label>
               <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} />
+            </div>
+            <div className="col-span-2">
+              <AccompagnementSection
+                type={form.type_accompagnement}
+                services={form.services_souscrits}
+                onTypeChange={v => setForm(f => ({ ...f, type_accompagnement: v }))}
+                onServicesChange={s => setForm(f => ({ ...f, services_souscrits: s }))}
+              />
             </div>
           </div>
           {isEdit && dossier?.id && (

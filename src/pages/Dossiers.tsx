@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { summarizeStrategie } from '@/lib/strategie-parser';
+import { progressFromStatus } from '@/lib/workflow';
 
 const statusOptions = [
   { label: 'Nouveau', value: 'nouveau' },
@@ -126,7 +127,14 @@ export default function Dossiers() {
                         <td className="px-5 py-3.5 text-sm text-muted-foreground hidden lg:table-cell">
                           {summarizeStrategie(d.strategie)}
                         </td>
-                        <td className="px-5 py-3.5"><StatusBadge status={d.status as any} /></td>
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-2">
+                            <StatusBadge status={d.status as any} />
+                            {(() => { const p = progressFromStatus(d); return (
+                              <span className="text-[11px] font-medium text-muted-foreground whitespace-nowrap">Étape {p.current}/{p.total}</span>
+                            ); })()}
+                          </div>
+                        </td>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-1">
                             <DossierDialog dossier={d} />

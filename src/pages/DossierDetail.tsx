@@ -22,6 +22,9 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import { ArrowLeft, Save, Trash2, User, TrendingUp, FileText, PenTool, Globe } from 'lucide-react';
 import { useMandataires } from '@/hooks/use-mandataires';
+import WorkflowProgress from '@/components/WorkflowProgress';
+import AccompagnementSection from '@/components/AccompagnementSection';
+import { ALL_SERVICES_TRUE } from '@/lib/workflow';
 
 const statuses = [
   { value: 'nouveau', label: 'Nouveau' },
@@ -55,6 +58,8 @@ export default function DossierDetail() {
     ville: '',
     honoraires: '',
     notes: '',
+    type_accompagnement: 'cle_en_main',
+    services_souscrits: { ...ALL_SERVICES_TRUE, gestion_locative: false } as Record<string, boolean>,
   });
 
   // Sync form quand le dossier charge — une seule fois
@@ -71,6 +76,8 @@ export default function DossierDetail() {
       ville: dossier.ville || '',
       honoraires: dossier.honoraires?.toString() || '',
       notes: dossier.notes || '',
+      type_accompagnement: dossier.type_accompagnement || 'cle_en_main',
+      services_souscrits: (dossier.services_souscrits as Record<string, boolean>) || { ...ALL_SERVICES_TRUE, gestion_locative: false },
     });
   }
 
@@ -81,7 +88,7 @@ export default function DossierDetail() {
       ...form,
       budget: Number(form.budget) || 0,
       honoraires: Number(form.honoraires) || 0,
-    });
+    } as any);
     toast.success('Dossier enregistré');
   };
 
@@ -162,6 +169,9 @@ export default function DossierDetail() {
           </div>
         </div>
 
+        {/* Workflow progression */}
+        <WorkflowProgress dossier={dossier} />
+
         {/* Onglets */}
         <Tabs defaultValue="infos">
           <TabsList className="w-full grid grid-cols-5">
@@ -236,6 +246,12 @@ export default function DossierDetail() {
                   <Label>Notes</Label>
                   <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={4} />
                 </div>
+                <AccompagnementSection
+                  type={form.type_accompagnement}
+                  services={form.services_souscrits}
+                  onTypeChange={v => setForm(f => ({ ...f, type_accompagnement: v }))}
+                  onServicesChange={s => setForm(f => ({ ...f, services_souscrits: s }))}
+                />
               </div>
             </div>
             <div className="mt-4">

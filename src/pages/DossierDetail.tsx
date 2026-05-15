@@ -22,6 +22,9 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import { ArrowLeft, Save, Trash2, User, TrendingUp, FileText, PenTool, Globe } from 'lucide-react';
 import { useMandataires } from '@/hooks/use-mandataires';
+import WorkflowProgress from '@/components/WorkflowProgress';
+import AccompagnementSection from '@/components/AccompagnementSection';
+import { ALL_SERVICES_TRUE } from '@/lib/workflow';
 
 const statuses = [
   { value: 'nouveau', label: 'Nouveau' },

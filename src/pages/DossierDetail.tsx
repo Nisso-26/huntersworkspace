@@ -58,6 +58,8 @@ export default function DossierDetail() {
     ville: '',
     honoraires: '',
     notes: '',
+    type_accompagnement: 'cle_en_main',
+    services_souscrits: { ...ALL_SERVICES_TRUE, gestion_locative: false } as Record<string, boolean>,
   });
 
   // Sync form quand le dossier charge — une seule fois
@@ -74,6 +76,8 @@ export default function DossierDetail() {
       ville: dossier.ville || '',
       honoraires: dossier.honoraires?.toString() || '',
       notes: dossier.notes || '',
+      type_accompagnement: dossier.type_accompagnement || 'cle_en_main',
+      services_souscrits: (dossier.services_souscrits as Record<string, boolean>) || { ...ALL_SERVICES_TRUE, gestion_locative: false },
     });
   }
 
@@ -84,7 +88,7 @@ export default function DossierDetail() {
       ...form,
       budget: Number(form.budget) || 0,
       honoraires: Number(form.honoraires) || 0,
-    });
+    } as any);
     toast.success('Dossier enregistré');
   };
 

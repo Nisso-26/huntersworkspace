@@ -47,7 +47,7 @@ export default function DossierDialog({ dossier, trigger }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = {
+    const payload: any = {
       ...form,
       budget: Number(form.budget) || 0,
       honoraires: Number(form.honoraires) || 0,

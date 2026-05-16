@@ -272,38 +272,71 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
     doc.text(`Suivi par ${facture.mandataire_name}`, 15, 108);
   }
 
-  // ───── Table ─────
+  // ───── Table (multi-lignes si fourni) ─────
+  const lignes: FactureLigne[] = (facture as any).lignes && (facture as any).lignes.length
+    ? (facture as any).lignes
+    : [{
+        label: typeLabels[facture.type] || facture.type,
+        tarif_base: montantHT,
+        remise_pct: 0,
+        remise_montant: 0,
+        montant_ht: montantHT,
+        tva_taux: tvaTaux,
+      }];
+
   const tableTop = 122;
   doc.setFillColor(green[0], green[1], green[2]);
   doc.rect(15, tableTop - 6, 180, 9, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.text('Désignation', 18, tableTop);
-  doc.text('Qté', 115, tableTop, { align: 'center' });
-  doc.text('P.U. HT', 145, tableTop, { align: 'right' });
-  doc.text('Montant HT', 192, tableTop, { align: 'right' });
+  doc.text('Tarif HT', 105, tableTop, { align: 'right' });
+  doc.text('Remise', 135, tableTop, { align: 'right' });
+  doc.text('TVA', 158, tableTop, { align: 'right' });
+  doc.text('Net HT', 192, tableTop, { align: 'right' });
 
-  // Row
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
-  doc.setFontSize(10);
-  doc.text(typeLabels[facture.type] || facture.type, 18, tableTop + 11);
-  doc.text('1', 115, tableTop + 11, { align: 'center' });
-  doc.text(`${montantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 145, tableTop + 11, { align: 'right' });
-  doc.text(`${montantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, tableTop + 11, { align: 'right' });
+  doc.setFontSize(9);
+  let yT = tableTop + 9;
+  lignes.forEach((l, idx) => {
+    if (idx % 2 === 0) {
+      doc.setFillColor(248, 248, 248);
+      doc.rect(15, yT - 5, 180, 7, 'F');
+    }
+    const labelLines = doc.splitTextToSize(l.label, 80);
+    doc.text(labelLines, 18, yT);
+    doc.text(`${l.tarif_base.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 105, yT, { align: 'right' });
+    doc.text(l.remise_pct > 0 ? `-${l.remise_pct}% (-${l.remise_montant.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €)` : '—', 135, yT, { align: 'right' });
+    doc.text(`${l.tva_taux}%`, 158, yT, { align: 'right' });
+    doc.text(`${l.montant_ht.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, yT, { align: 'right' });
+    yT += Math.max(7, labelLines.length * 5);
+  });
 
   doc.setDrawColor(220, 220, 220);
-  doc.line(15, tableTop + 16, 195, tableTop + 16);
+  doc.line(15, yT + 1, 195, yT + 1);
+
+  const totalHTReel = lignes.reduce((s, l) => s + l.montant_ht, 0);
+  const totalTVAReel = lignes.reduce((s, l) => s + l.montant_ht * (l.tva_taux / 100), 0);
+  const totalRemise = lignes.reduce((s, l) => s + l.remise_montant, 0);
+  const ttcReel = totalHTReel + totalTVAReel;
 
   // ───── Totaux ─────
-  const totalsTop = tableTop + 26;
+  const totalsTop = yT + 10;
   doc.setTextColor(80, 80, 80);
   doc.setFontSize(10);
+  if (totalRemise > 0) {
+    doc.setTextColor(green[0], green[1], green[2]);
+    doc.setFont('helvetica', 'italic');
+    doc.text(`Remise commerciale accordée : -${totalRemise.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 15, totalsTop);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+  }
   doc.text('Total HT', 130, totalsTop);
-  doc.text(`${montantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, totalsTop, { align: 'right' });
-  doc.text(`TVA (${tvaTaux}%)`, 130, totalsTop + 7);
-  doc.text(`${tvaAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, totalsTop + 7, { align: 'right' });
+  doc.text(`${totalHTReel.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, totalsTop, { align: 'right' });
+  doc.text(`TVA`, 130, totalsTop + 7);
+  doc.text(`${totalTVAReel.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, totalsTop + 7, { align: 'right' });
 
   doc.setFillColor(green[0], green[1], green[2]);
   doc.rect(125, totalsTop + 11, 70, 11, 'F');
@@ -311,7 +344,7 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.text('Total TTC', 130, totalsTop + 18);
-  doc.text(`${ttc.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, totalsTop + 18, { align: 'right' });
+  doc.text(`${ttcReel.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, totalsTop + 18, { align: 'right' });
 
   // ───── Règlement ─────
   const payTop = totalsTop + 36;

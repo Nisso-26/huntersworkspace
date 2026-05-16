@@ -5,6 +5,16 @@ import { toast } from 'sonner';
 import { fetchAllPaginated } from '@/lib/supabase-pagination';
 import type { CompanySettings } from './use-company-settings';
 
+export interface FactureLigne {
+  service_key?: string;
+  label: string;
+  tarif_base: number;
+  remise_pct: number;
+  remise_montant: number;
+  montant_ht: number;
+  tva_taux: number;
+}
+
 export interface Facture {
   id: string;
   numero_facture: string | null;
@@ -22,6 +32,11 @@ export interface Facture {
   client_name: string | null;
   dossier_client_name: string | null;
   created_at: string;
+  remise_pct?: number | null;
+  remise_montant?: number | null;
+  lignes?: FactureLigne[] | null;
+  jalon_id?: string | null;
+  mode_facturation?: string | null;
   mandataire_name?: string;
   mandataire_zone?: string;
   dossier_numero?: string | null;

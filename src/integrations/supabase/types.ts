@@ -627,6 +627,36 @@ export type Database = {
         }
         Relationships: []
       }
+      documents_generiques: {
+        Row: {
+          created_at: string
+          date_generation: string
+          dossier_id: string
+          genere_par: string | null
+          id: string
+          numero_dossier: string | null
+          type_export: string
+        }
+        Insert: {
+          created_at?: string
+          date_generation?: string
+          dossier_id: string
+          genere_par?: string | null
+          id?: string
+          numero_dossier?: string | null
+          type_export: string
+        }
+        Update: {
+          created_at?: string
+          date_generation?: string
+          dossier_id?: string
+          genere_par?: string | null
+          id?: string
+          numero_dossier?: string | null
+          type_export?: string
+        }
+        Relationships: []
+      }
       dossier_counters: {
         Row: {
           last_number: number
@@ -783,11 +813,16 @@ export type Database = {
           dossier_client_name: string | null
           dossier_id: string | null
           id: string
+          jalon_id: string | null
+          lignes: Json | null
           mandataire_id: string | null
+          mode_facturation: string | null
           montant: number
           montant_ttc: number | null
           numero_facture: string | null
           reference: string | null
+          remise_montant: number | null
+          remise_pct: number | null
           statut: string
           tva_taux: number | null
           type: string
@@ -801,11 +836,16 @@ export type Database = {
           dossier_client_name?: string | null
           dossier_id?: string | null
           id?: string
+          jalon_id?: string | null
+          lignes?: Json | null
           mandataire_id?: string | null
+          mode_facturation?: string | null
           montant?: number
           montant_ttc?: number | null
           numero_facture?: string | null
           reference?: string | null
+          remise_montant?: number | null
+          remise_pct?: number | null
           statut?: string
           tva_taux?: number | null
           type?: string
@@ -819,11 +859,16 @@ export type Database = {
           dossier_client_name?: string | null
           dossier_id?: string | null
           id?: string
+          jalon_id?: string | null
+          lignes?: Json | null
           mandataire_id?: string | null
+          mode_facturation?: string | null
           montant?: number
           montant_ttc?: number | null
           numero_facture?: string | null
           reference?: string | null
+          remise_montant?: number | null
+          remise_pct?: number | null
           statut?: string
           tva_taux?: number | null
           type?: string
@@ -892,6 +937,42 @@ export type Database = {
           prix_max?: number | null
           prix_min?: number
           taux?: number
+        }
+        Relationships: []
+      }
+      jalons_facturation: {
+        Row: {
+          created_at: string
+          dossier_id: string
+          facture_id: string | null
+          id: string
+          libelle: string
+          ordre: number
+          pourcentage: number
+          statut: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dossier_id: string
+          facture_id?: string | null
+          id?: string
+          libelle: string
+          ordre?: number
+          pourcentage?: number
+          statut?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dossier_id?: string
+          facture_id?: string | null
+          id?: string
+          libelle?: string
+          ordre?: number
+          pourcentage?: number
+          statut?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1354,6 +1435,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tarifs_services: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          ordre: number
+          service_key: string
+          tarif_base: number
+          tva_taux: number
+          unite: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          ordre?: number
+          service_key: string
+          tarif_base?: number
+          tva_taux?: number
+          unite?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          ordre?: number
+          service_key?: string
+          tarif_base?: number
+          tva_taux?: number
+          unite?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

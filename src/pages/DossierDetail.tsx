@@ -20,10 +20,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { ArrowLeft, Save, Trash2, User, TrendingUp, FileText, PenTool, Globe } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, User, TrendingUp, FileText, PenTool, Globe, Receipt } from 'lucide-react';
 import { useMandataires } from '@/hooks/use-mandataires';
 import WorkflowProgress from '@/components/WorkflowProgress';
 import AccompagnementSection from '@/components/AccompagnementSection';
+import DossierExportMenu from '@/components/DossierExportMenu';
+import FacturationSection from '@/components/FacturationSection';
 import { ALL_SERVICES_TRUE } from '@/lib/workflow';
 
 const statuses = [
@@ -151,6 +153,7 @@ export default function DossierDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            <DossierExportMenu dossier={dossier} />
             <RapportConseilButton dossier={dossier} />
             <Button
               variant="outline"
@@ -174,12 +177,15 @@ export default function DossierDetail() {
 
         {/* Onglets */}
         <Tabs defaultValue="infos">
-          <TabsList className="w-full grid grid-cols-5">
+          <TabsList className="w-full grid grid-cols-6">
             <TabsTrigger value="infos" className="gap-1.5 text-xs">
               <User className="w-3.5 h-3.5" />Infos
             </TabsTrigger>
             <TabsTrigger value="strategie" className="gap-1.5 text-xs">
               <TrendingUp className="w-3.5 h-3.5" />Stratégie
+            </TabsTrigger>
+            <TabsTrigger value="facturation" className="gap-1.5 text-xs">
+              <Receipt className="w-3.5 h-3.5" />Facturation
             </TabsTrigger>
             <TabsTrigger value="documents" className="gap-1.5 text-xs">
               <FileText className="w-3.5 h-3.5" />Documents
@@ -267,6 +273,11 @@ export default function DossierDetail() {
             <div className="bg-card border rounded-xl p-6">
               <StrategieIA dossier={dossier} />
             </div>
+          </TabsContent>
+
+          {/* Facturation */}
+          <TabsContent value="facturation" className="mt-4">
+            <FacturationSection dossier={dossier} />
           </TabsContent>
 
           {/* Documents */}

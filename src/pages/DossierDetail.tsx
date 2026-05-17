@@ -26,6 +26,8 @@ import WorkflowProgress from '@/components/WorkflowProgress';
 import AccompagnementSection from '@/components/AccompagnementSection';
 import DossierExportMenu from '@/components/DossierExportMenu';
 import FacturationSection from '@/components/FacturationSection';
+import FicheClientFields from '@/components/FicheClientFields';
+import { emptyFicheValues, loadFicheFromDossier, serializeFicheForSave, type FicheValues } from '@/lib/fiche-client-fields';
 import { ALL_SERVICES_TRUE } from '@/lib/workflow';
 
 const statuses = [
@@ -64,6 +66,8 @@ export default function DossierDetail() {
     services_souscrits: { ...ALL_SERVICES_TRUE, gestion_locative: false } as Record<string, boolean>,
   });
 
+  const [fiche, setFiche] = useState<FicheValues>(emptyFicheValues());
+
   // Sync form quand le dossier charge — une seule fois
   const [formInitialized, setFormInitialized] = useState(false);
   if (dossier && !formInitialized && !isLoading) {
@@ -81,6 +85,7 @@ export default function DossierDetail() {
       type_accompagnement: dossier.type_accompagnement || 'cle_en_main',
       services_souscrits: (dossier.services_souscrits as Record<string, boolean>) || { ...ALL_SERVICES_TRUE, gestion_locative: false },
     });
+    setFiche(loadFicheFromDossier(dossier as any));
   }
 
   const handleSave = async () => {
@@ -88,6 +93,7 @@ export default function DossierDetail() {
     await updateMut.mutateAsync({
       id: dossier.id,
       ...form,
+      ...serializeFicheForSave(fiche),
       budget: Number(form.budget) || 0,
       honoraires: Number(form.honoraires) || 0,
     } as any);
@@ -258,6 +264,9 @@ export default function DossierDetail() {
                   onTypeChange={v => setForm(f => ({ ...f, type_accompagnement: v }))}
                   onServicesChange={s => setForm(f => ({ ...f, services_souscrits: s }))}
                 />
+              </div>
+              <div className="mt-2 border-t pt-4">
+                <FicheClientFields values={fiche} onChange={patch => setFiche(f => ({ ...f, ...patch }))} />
               </div>
             </div>
             <div className="mt-4">

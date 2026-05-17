@@ -15,6 +15,8 @@ import SignatureSection from '@/components/SignatureSection';
 import StrategieIA from '@/components/StrategieIA';
 import { ClientComments } from '@/components/ClientPortalSection';
 import AccompagnementSection from '@/components/AccompagnementSection';
+import FicheClientFields from '@/components/FicheClientFields';
+import { emptyFicheValues, loadFicheFromDossier, serializeFicheForSave, type FicheValues } from '@/lib/fiche-client-fields';
 import { ALL_SERVICES_TRUE } from '@/lib/workflow';
 
 interface Props {
@@ -45,10 +47,15 @@ export default function DossierDialog({ dossier, trigger }: Props) {
     services_souscrits: (dossier?.services_souscrits as Record<string, boolean>) || { ...ALL_SERVICES_TRUE, gestion_locative: false },
   });
 
+  const [fiche, setFiche] = useState<FicheValues>(
+    dossier ? loadFicheFromDossier(dossier as any) : emptyFicheValues()
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload: any = {
       ...form,
+      ...serializeFicheForSave(fiche),
       budget: Number(form.budget) || 0,
       honoraires: Number(form.honoraires) || 0,
     };
@@ -82,7 +89,7 @@ export default function DossierDialog({ dossier, trigger }: Props) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Modifier le dossier' : 'Nouveau dossier'}</DialogTitle>
           <DialogDescription>
@@ -162,6 +169,9 @@ export default function DossierDialog({ dossier, trigger }: Props) {
                 onServicesChange={s => setForm(f => ({ ...f, services_souscrits: s }))}
               />
             </div>
+          </div>
+          <div className="border-t pt-4">
+            <FicheClientFields values={fiche} onChange={patch => setFiche(f => ({ ...f, ...patch }))} />
           </div>
           {isEdit && dossier?.id && (
             <>

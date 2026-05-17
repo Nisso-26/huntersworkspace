@@ -674,59 +674,206 @@ export type Database = {
       }
       dossiers: {
         Row: {
+          ages_enfants: string | null
+          anciennete_emploi: string | null
+          appetence_risque: string | null
+          apport_disponible: number | null
+          assujetti_ifi: boolean | null
+          autres_actifs: string | null
+          autres_revenus: number | null
+          aversion_gestion: string | null
+          banque_principale: string | null
+          biens_locatifs_existants: Json | null
           budget: number | null
+          capacite_emprunt_estimee: number | null
+          capacite_epargne_mensuelle: number | null
+          charges_mensuelles_fixes: number | null
           client_name: string
+          contraintes_geographiques: string | null
+          contraintes_particulieres: string | null
           created_at: string
+          credits_en_cours: Json | null
+          date_naissance: string | null
+          deficits_fonciers_existants: number | null
+          deja_rencontre_banque: boolean | null
+          delai_concretisation: string | null
+          dispositifs_fiscaux_en_cours: string | null
+          duree_credit_souhaitee: number | null
           email: string | null
+          epargne_disponible: number | null
+          epargne_financiere: Json | null
           etape: number | null
           honoraires: number | null
+          horizon_investissement: string | null
           id: string
+          impot_revenu_paye: number | null
           mandataire_id: string | null
+          nationalite: string | null
+          nombre_enfants: number | null
           notes: string | null
           numero_dossier: string | null
+          objectif_fiscal: string | null
+          objectif_principal: string | null
+          passif_total: number | null
           phone: string | null
+          preference_taux: string | null
+          profession: string | null
+          regime_matrimonial: string | null
+          residence_principale: string | null
+          residence_principale_crd: number | null
+          residence_principale_valeur: number | null
+          revenus_conjoint: number | null
+          revenus_fiscaux_reference: number | null
+          revenus_locatifs_existants: number | null
+          revenus_nets_mensuels: number | null
+          secteur_activite: string | null
           services_souscrits: Json | null
+          situation_familiale: string | null
+          source_recommandation: string | null
           status: string
+          statut_professionnel: string | null
           strategie: string | null
+          taux_endettement_actuel: number | null
+          tmi: number | null
           type_accompagnement: string | null
+          type_bien_souhaite: string | null
+          type_location_souhaite: string | null
           updated_at: string
           ville: string | null
         }
         Insert: {
+          ages_enfants?: string | null
+          anciennete_emploi?: string | null
+          appetence_risque?: string | null
+          apport_disponible?: number | null
+          assujetti_ifi?: boolean | null
+          autres_actifs?: string | null
+          autres_revenus?: number | null
+          aversion_gestion?: string | null
+          banque_principale?: string | null
+          biens_locatifs_existants?: Json | null
           budget?: number | null
+          capacite_emprunt_estimee?: number | null
+          capacite_epargne_mensuelle?: number | null
+          charges_mensuelles_fixes?: number | null
           client_name: string
+          contraintes_geographiques?: string | null
+          contraintes_particulieres?: string | null
           created_at?: string
+          credits_en_cours?: Json | null
+          date_naissance?: string | null
+          deficits_fonciers_existants?: number | null
+          deja_rencontre_banque?: boolean | null
+          delai_concretisation?: string | null
+          dispositifs_fiscaux_en_cours?: string | null
+          duree_credit_souhaitee?: number | null
           email?: string | null
+          epargne_disponible?: number | null
+          epargne_financiere?: Json | null
           etape?: number | null
           honoraires?: number | null
+          horizon_investissement?: string | null
           id?: string
+          impot_revenu_paye?: number | null
           mandataire_id?: string | null
+          nationalite?: string | null
+          nombre_enfants?: number | null
           notes?: string | null
           numero_dossier?: string | null
+          objectif_fiscal?: string | null
+          objectif_principal?: string | null
+          passif_total?: number | null
           phone?: string | null
+          preference_taux?: string | null
+          profession?: string | null
+          regime_matrimonial?: string | null
+          residence_principale?: string | null
+          residence_principale_crd?: number | null
+          residence_principale_valeur?: number | null
+          revenus_conjoint?: number | null
+          revenus_fiscaux_reference?: number | null
+          revenus_locatifs_existants?: number | null
+          revenus_nets_mensuels?: number | null
+          secteur_activite?: string | null
           services_souscrits?: Json | null
+          situation_familiale?: string | null
+          source_recommandation?: string | null
           status?: string
+          statut_professionnel?: string | null
           strategie?: string | null
+          taux_endettement_actuel?: number | null
+          tmi?: number | null
           type_accompagnement?: string | null
+          type_bien_souhaite?: string | null
+          type_location_souhaite?: string | null
           updated_at?: string
           ville?: string | null
         }
         Update: {
+          ages_enfants?: string | null
+          anciennete_emploi?: string | null
+          appetence_risque?: string | null
+          apport_disponible?: number | null
+          assujetti_ifi?: boolean | null
+          autres_actifs?: string | null
+          autres_revenus?: number | null
+          aversion_gestion?: string | null
+          banque_principale?: string | null
+          biens_locatifs_existants?: Json | null
           budget?: number | null
+          capacite_emprunt_estimee?: number | null
+          capacite_epargne_mensuelle?: number | null
+          charges_mensuelles_fixes?: number | null
           client_name?: string
+          contraintes_geographiques?: string | null
+          contraintes_particulieres?: string | null
           created_at?: string
+          credits_en_cours?: Json | null
+          date_naissance?: string | null
+          deficits_fonciers_existants?: number | null
+          deja_rencontre_banque?: boolean | null
+          delai_concretisation?: string | null
+          dispositifs_fiscaux_en_cours?: string | null
+          duree_credit_souhaitee?: number | null
           email?: string | null
+          epargne_disponible?: number | null
+          epargne_financiere?: Json | null
           etape?: number | null
           honoraires?: number | null
+          horizon_investissement?: string | null
           id?: string
+          impot_revenu_paye?: number | null
           mandataire_id?: string | null
+          nationalite?: string | null
+          nombre_enfants?: number | null
           notes?: string | null
           numero_dossier?: string | null
+          objectif_fiscal?: string | null
+          objectif_principal?: string | null
+          passif_total?: number | null
           phone?: string | null
+          preference_taux?: string | null
+          profession?: string | null
+          regime_matrimonial?: string | null
+          residence_principale?: string | null
+          residence_principale_crd?: number | null
+          residence_principale_valeur?: number | null
+          revenus_conjoint?: number | null
+          revenus_fiscaux_reference?: number | null
+          revenus_locatifs_existants?: number | null
+          revenus_nets_mensuels?: number | null
+          secteur_activite?: string | null
           services_souscrits?: Json | null
+          situation_familiale?: string | null
+          source_recommandation?: string | null
           status?: string
+          statut_professionnel?: string | null
           strategie?: string | null
+          taux_endettement_actuel?: number | null
+          tmi?: number | null
           type_accompagnement?: string | null
+          type_bien_souhaite?: string | null
+          type_location_souhaite?: string | null
           updated_at?: string
           ville?: string | null
         }

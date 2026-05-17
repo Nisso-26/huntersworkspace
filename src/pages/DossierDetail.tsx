@@ -265,6 +265,9 @@ export default function DossierDetail() {
                   onServicesChange={s => setForm(f => ({ ...f, services_souscrits: s }))}
                 />
               </div>
+              <div className="mt-2 border-t pt-4">
+                <FicheClientFields values={fiche} onChange={patch => setFiche(f => ({ ...f, ...patch }))} />
+              </div>
             </div>
             <div className="mt-4">
               <JournalActivite dossierId={dossier.id} />

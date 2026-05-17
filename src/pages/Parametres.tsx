@@ -18,6 +18,7 @@ const ModeleEconomique = lazy(() => import('@/components/parametres/ModeleEconom
 const ModelesDocuments = lazy(() => import('@/components/parametres/ModelesDocuments'));
 const NotificationsSection = lazy(() => import('@/components/parametres/NotificationsSection'));
 const JournalAudit = lazy(() => import('@/components/parametres/JournalAudit'));
+const TarifsServices = lazy(() => import('@/components/parametres/TarifsServices'));
 
 const SectionFallback = () => (
   <div className="space-y-3">

@@ -47,6 +47,7 @@ export default function Parametres() {
               <TabsTrigger value="utilisateurs"><UserPlus className="w-4 h-4 mr-1" />Utilisateurs</TabsTrigger>
               <TabsTrigger value="identite"><Building2 className="w-4 h-4 mr-1" />Société</TabsTrigger>
               <TabsTrigger value="honoraires"><Receipt className="w-4 h-4 mr-1" />Honoraires</TabsTrigger>
+              <TabsTrigger value="tarifs"><Tag className="w-4 h-4 mr-1" />Tarifs services</TabsTrigger>
               <TabsTrigger value="economique"><Network className="w-4 h-4 mr-1" />Réseau</TabsTrigger>
               <TabsTrigger value="documents"><FileText className="w-4 h-4 mr-1" />Documents</TabsTrigger>
               <TabsTrigger value="notifications"><Bell className="w-4 h-4 mr-1" />Alertes</TabsTrigger>

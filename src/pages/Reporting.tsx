@@ -1,6 +1,7 @@
 import AppLayout from '@/components/AppLayout';
 import StatCard from '@/components/StatCard';
-import { TrendingUp, Users, Target, Wallet, Package, LineChart } from 'lucide-react';
+import { TrendingUp, Users, Target, Wallet, Package, LineChart, PieChart as PieIcon } from 'lucide-react';
+import { useTarifsServices } from '@/hooks/use-tarifs-services';
 import { useDossiers } from '@/hooks/use-dossiers';
 import { useMandataires } from '@/hooks/use-mandataires';
 import { useFactures } from '@/hooks/use-factures';

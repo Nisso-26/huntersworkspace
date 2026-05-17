@@ -16,6 +16,7 @@ export default function Reporting() {
   const { data: dossiers = [], isLoading: dLoad } = useDossiers();
   const { data: mandataires = [], isLoading: mLoad } = useMandataires();
   const { data: factures = [], isLoading: fLoad } = useFactures();
+  const { data: tarifs = [] } = useTarifsServices();
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);

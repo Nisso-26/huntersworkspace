@@ -170,6 +170,9 @@ export default function DossierDialog({ dossier, trigger }: Props) {
               />
             </div>
           </div>
+          <div className="border-t pt-4">
+            <FicheClientFields values={fiche} onChange={patch => setFiche(f => ({ ...f, ...patch }))} />
+          </div>
           {isEdit && dossier?.id && (
             <>
               <div className="border-t pt-4">

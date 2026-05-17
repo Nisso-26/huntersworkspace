@@ -63,6 +63,7 @@ export default function Parametres() {
               )}
               <TabsContent value="identite"><IdentiteSociete /></TabsContent>
               <TabsContent value="honoraires"><BaremeHonoraires /></TabsContent>
+              <TabsContent value="tarifs"><TarifsServices /></TabsContent>
               <TabsContent value="economique"><ModeleEconomique /></TabsContent>
               <TabsContent value="documents"><ModelesDocuments /></TabsContent>
               <TabsContent value="notifications"><NotificationsSection /></TabsContent>

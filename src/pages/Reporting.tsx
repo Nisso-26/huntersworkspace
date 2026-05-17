@@ -1,6 +1,7 @@
 import AppLayout from '@/components/AppLayout';
 import StatCard from '@/components/StatCard';
-import { TrendingUp, Users, Target, Wallet, Package, LineChart } from 'lucide-react';
+import { TrendingUp, Users, Target, Wallet, Package, LineChart, PieChart as PieIcon } from 'lucide-react';
+import { useTarifsServices } from '@/hooks/use-tarifs-services';
 import { useDossiers } from '@/hooks/use-dossiers';
 import { useMandataires } from '@/hooks/use-mandataires';
 import { useFactures } from '@/hooks/use-factures';
@@ -15,6 +16,7 @@ export default function Reporting() {
   const { data: dossiers = [], isLoading: dLoad } = useDossiers();
   const { data: mandataires = [], isLoading: mLoad } = useMandataires();
   const { data: factures = [], isLoading: fLoad } = useFactures();
+  const { data: tarifs = [] } = useTarifsServices();
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -74,6 +76,27 @@ export default function Reporting() {
       };
     }).sort((a, b) => b.ca - a.ca);
   }, [dossiers, mandataires, monthStart, now]);
+
+  const caParService = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const f of factures) {
+      if (f.statut !== 'payee' && f.statut !== 'payée') continue;
+      const lignes = Array.isArray(f.lignes) ? f.lignes : [];
+      if (lignes.length > 0) {
+        for (const l of lignes as any[]) {
+          const key = l.label || l.service_key || 'Autre';
+          map.set(key, (map.get(key) || 0) + (Number(l.montant_ht) || 0));
+        }
+      } else {
+        const key = f.type || 'Autre';
+        map.set(key, (map.get(key) || 0) + (Number(f.montant) || 0));
+      }
+    }
+    const total = Array.from(map.values()).reduce((s, v) => s + v, 0);
+    return Array.from(map.entries())
+      .map(([label, ca]) => ({ label, ca, pct: total > 0 ? (ca / total) * 100 : 0 }))
+      .sort((a, b) => b.ca - a.ca);
+  }, [factures]);
 
   const loading = dLoad || mLoad || fLoad;
 
@@ -174,6 +197,33 @@ export default function Reporting() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* CA par type de service */}
+        <div className="bg-card border border-border/60 rounded-xl shadow-card overflow-hidden">
+          <div className="px-5 py-4 border-b border-border/60 flex items-center gap-2">
+            <PieIcon className="w-4 h-4 text-accent" />
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground">
+              CA par type de service
+            </h2>
+          </div>
+          <div className="p-5 space-y-3">
+            {caParService.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">Aucune facture payée à ce jour</p>
+            ) : caParService.map(s => (
+              <div key={s.label} className="space-y-1">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium text-foreground">{s.label}</span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {fmtEur(s.ca)} <span className="text-xs">({s.pct.toFixed(1)}%)</span>
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full bg-primary" style={{ width: `${s.pct}%` }} />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

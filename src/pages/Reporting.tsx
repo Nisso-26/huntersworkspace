@@ -77,6 +77,27 @@ export default function Reporting() {
     }).sort((a, b) => b.ca - a.ca);
   }, [dossiers, mandataires, monthStart, now]);
 
+  const caParService = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const f of factures) {
+      if (f.statut !== 'payee' && f.statut !== 'payée') continue;
+      const lignes = Array.isArray(f.lignes) ? f.lignes : [];
+      if (lignes.length > 0) {
+        for (const l of lignes as any[]) {
+          const key = l.label || l.service_key || 'Autre';
+          map.set(key, (map.get(key) || 0) + (Number(l.montant_ht) || 0));
+        }
+      } else {
+        const key = f.type || 'Autre';
+        map.set(key, (map.get(key) || 0) + (Number(f.montant) || 0));
+      }
+    }
+    const total = Array.from(map.values()).reduce((s, v) => s + v, 0);
+    return Array.from(map.entries())
+      .map(([label, ca]) => ({ label, ca, pct: total > 0 ? (ca / total) * 100 : 0 }))
+      .sort((a, b) => b.ca - a.ca);
+  }, [factures]);
+
   const loading = dLoad || mLoad || fLoad;
 
   return (

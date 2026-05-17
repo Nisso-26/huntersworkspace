@@ -199,6 +199,33 @@ export default function Reporting() {
             </table>
           </div>
         </div>
+
+        {/* CA par type de service */}
+        <div className="bg-card border border-border/60 rounded-xl shadow-card overflow-hidden">
+          <div className="px-5 py-4 border-b border-border/60 flex items-center gap-2">
+            <PieIcon className="w-4 h-4 text-accent" />
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground">
+              CA par type de service
+            </h2>
+          </div>
+          <div className="p-5 space-y-3">
+            {caParService.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">Aucune facture payée à ce jour</p>
+            ) : caParService.map(s => (
+              <div key={s.label} className="space-y-1">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium text-foreground">{s.label}</span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {fmtEur(s.ca)} <span className="text-xs">({s.pct.toFixed(1)}%)</span>
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full bg-primary" style={{ width: `${s.pct}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </AppLayout>
   );

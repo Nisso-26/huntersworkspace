@@ -26,6 +26,8 @@ import WorkflowProgress from '@/components/WorkflowProgress';
 import AccompagnementSection from '@/components/AccompagnementSection';
 import DossierExportMenu from '@/components/DossierExportMenu';
 import FacturationSection from '@/components/FacturationSection';
+import FicheClientFields from '@/components/FicheClientFields';
+import { emptyFicheValues, loadFicheFromDossier, serializeFicheForSave, type FicheValues } from '@/lib/fiche-client-fields';
 import { ALL_SERVICES_TRUE } from '@/lib/workflow';
 
 const statuses = [

@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Bell, Building2, Receipt, Network, FileText, History, UserPlus,
+  Bell, Building2, Receipt, Network, FileText, History, UserPlus, Tag,
 } from 'lucide-react';
 
 // Section profil chargée en eager (visible pour tous les rôles)

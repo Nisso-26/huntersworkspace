@@ -47,10 +47,15 @@ export default function DossierDialog({ dossier, trigger }: Props) {
     services_souscrits: (dossier?.services_souscrits as Record<string, boolean>) || { ...ALL_SERVICES_TRUE, gestion_locative: false },
   });
 
+  const [fiche, setFiche] = useState<FicheValues>(
+    dossier ? loadFicheFromDossier(dossier as any) : emptyFicheValues()
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload: any = {
       ...form,
+      ...serializeFicheForSave(fiche),
       budget: Number(form.budget) || 0,
       honoraires: Number(form.honoraires) || 0,
     };

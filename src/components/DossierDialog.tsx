@@ -15,6 +15,8 @@ import SignatureSection from '@/components/SignatureSection';
 import StrategieIA from '@/components/StrategieIA';
 import { ClientComments } from '@/components/ClientPortalSection';
 import AccompagnementSection from '@/components/AccompagnementSection';
+import FicheClientFields from '@/components/FicheClientFields';
+import { emptyFicheValues, loadFicheFromDossier, serializeFicheForSave, type FicheValues } from '@/lib/fiche-client-fields';
 import { ALL_SERVICES_TRUE } from '@/lib/workflow';
 
 interface Props {

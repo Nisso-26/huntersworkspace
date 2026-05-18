@@ -25,7 +25,7 @@ async function loadLogoBase64(): Promise<string | null> {
 function header(doc: any, logo: string | null, numero: string | null) {
   doc.setFillColor(...GREEN);
   doc.rect(0, 0, 210, 14, 'F');
-  if (logo) { try { doc.addImage(logo, 'JPEG', 15, 2, 10, 10); } catch {} }
+  if (logo) { try { doc.addImage(logo, 'JPEG', 15, 2, 10, 10); } catch { /* ignore */ } }
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(...GOLD);
@@ -100,7 +100,7 @@ export async function exportFicheClient(dossier: Dossier) {
   doc.rect(0, 0, 210, 60, 'F');
   doc.setFillColor(...GOLD);
   doc.rect(0, 60, 210, 1.2, 'F');
-  if (logo) { try { doc.addImage(logo, 'JPEG', 95, 12, 20, 20); } catch {} }
+  if (logo) { try { doc.addImage(logo, 'JPEG', 95, 12, 20, 20); } catch { /* ignore */ } }
   doc.setTextColor(...GOLD);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
@@ -328,7 +328,7 @@ export async function exportDossierIntegral(dossier: Dossier, conseillerNom: str
   doc.setFillColor(...GOLD);
   doc.rect(0, 0, 210, 3, 'F');
   doc.rect(0, 294, 210, 3, 'F');
-  if (logo) { try { doc.addImage(logo, 'JPEG', 95, 35, 20, 20); } catch {} }
+  if (logo) { try { doc.addImage(logo, 'JPEG', 95, 35, 20, 20); } catch { /* ignore */ } }
   doc.setTextColor(...GOLD);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);

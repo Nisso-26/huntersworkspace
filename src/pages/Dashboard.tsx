@@ -90,9 +90,9 @@ export default function Dashboard() {
         </motion.div>
 
         {/* KPI Cards */}
-        <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {isLoading ? (
-            Array.from({ length: isAdmin ? 4 : 3 }).map((_, i) => (
+            Array.from({ length: isAdmin ? 5 : 4 }).map((_, i) => (
               <Skeleton key={i} className="h-28 rounded-xl" />
             ))
           ) : (
@@ -103,6 +103,13 @@ export default function Dashboard() {
                 icon={TrendingUp}
                 variant="gold"
                 subtitle="Honoraires encaissés"
+              />
+              <StatCard
+                label="Nouveaux prospects"
+                value={dossiersNouveau}
+                icon={Sparkles}
+                variant="info"
+                subtitle="À qualifier"
               />
               <StatCard
                 label={isAdmin ? 'Dossiers actifs' : 'Mes dossiers actifs'}

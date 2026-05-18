@@ -111,7 +111,7 @@ export function useMandataires() {
           parrain_name: parrainProfile?.full_name ?? null,
           date_entree: p.date_entree ?? null,
           pack_status: p.pack_status ?? 'actif',
-          pack_montant: Number(p.pack_montant) || 99,
+          pack_montant: Number(p.pack_montant) || 149,
           iban: p.iban ?? null,
           dossiers_count: activeDossiers.length,
           ca_total: caTotal,

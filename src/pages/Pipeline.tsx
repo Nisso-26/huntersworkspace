@@ -73,6 +73,11 @@ function DraggableCard({ dossier, idx }: { dossier: Dossier; idx: number }) {
             </button>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{dossier.client_name}</p>
+              {dossier.numero_dossier && (
+                <p className="text-[11px] text-muted-foreground font-mono flex items-center gap-1 mt-0.5">
+                  <Hash className="w-3 h-3" />{dossier.numero_dossier}
+                </p>
+              )}
               <p className="text-xs text-muted-foreground mt-1 truncate">{dossier.ville || '—'}</p>
               <div className="flex items-center justify-between mt-2">
                 <span className="text-xs font-bold text-accent">

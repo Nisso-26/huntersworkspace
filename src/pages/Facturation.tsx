@@ -55,8 +55,17 @@ export default function Facturation() {
   const [typeFilter, setTypeFilter] = useState('');
 
   const filtered = factures.filter(f => {
-    const matchSearch = (f.reference || '').toLowerCase().includes(search.toLowerCase()) ||
-      (f.mandataire_name || '').toLowerCase().includes(search.toLowerCase());
+    const q = search.toLowerCase().trim();
+    const dateLabel = new Date(f.date_emission).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }).toLowerCase();
+    const matchSearch = !q || [
+      f.reference,
+      f.numero_facture,
+      f.mandataire_name,
+      (f as any).dossier_client_name,
+      f.client_name,
+      (f as any).dossier_numero,
+      dateLabel,
+    ].some(v => (v || '').toString().toLowerCase().includes(q));
     const matchStatut = !statutFilter || f.statut === statutFilter;
     const matchType = !typeFilter || f.type === typeFilter;
     return matchSearch && matchStatut && matchType;

@@ -26,7 +26,7 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
 };
 
 const EVENT_TYPE_COLORS: Record<string, string> = {
-  visite_bien: 'bg-blue-500/20 text-blue-700 border-blue-300',
+  visite_bien: 'bg-[#E8F2EC] text-[#1A4D2E] border-[#1A4D2E]/30',
   rdv_client: 'bg-primary/20 text-primary border-primary/30',
   visite_chantier: 'bg-orange-500/20 text-orange-700 border-orange-300',
   rdv_notaire: 'bg-purple-500/20 text-purple-700 border-purple-300',

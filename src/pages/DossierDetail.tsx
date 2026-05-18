@@ -150,8 +150,14 @@ export default function DossierDetail() {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <StatusBadge status={dossier.status as any} />
+                {dossier.created_at && (
+                  <span className="text-xs text-muted-foreground">
+                    Créé le {new Date(dossier.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </span>
+                )}
+                <span className="text-xs text-muted-foreground">·</span>
                 <span className="text-xs text-muted-foreground">{dossier.ville}</span>
                 <span className="text-xs text-muted-foreground">·</span>
                 <span className="text-xs text-muted-foreground">{dossier.budget.toLocaleString('fr-FR')} €</span>
@@ -188,7 +194,7 @@ export default function DossierDetail() {
               <User className="w-3.5 h-3.5" />Infos
             </TabsTrigger>
             <TabsTrigger value="strategie" className="gap-1.5 text-xs">
-              <TrendingUp className="w-3.5 h-3.5" />Stratégie
+              <TrendingUp className="w-3.5 h-3.5" />Stratégie patrimoniale
             </TabsTrigger>
             <TabsTrigger value="facturation" className="gap-1.5 text-xs">
               <Receipt className="w-3.5 h-3.5" />Facturation

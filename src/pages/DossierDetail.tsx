@@ -194,7 +194,7 @@ export default function DossierDetail() {
               <User className="w-3.5 h-3.5" />Infos
             </TabsTrigger>
             <TabsTrigger value="strategie" className="gap-1.5 text-xs">
-              <TrendingUp className="w-3.5 h-3.5" />Stratégie
+              <TrendingUp className="w-3.5 h-3.5" />Stratégie patrimoniale
             </TabsTrigger>
             <TabsTrigger value="facturation" className="gap-1.5 text-xs">
               <Receipt className="w-3.5 h-3.5" />Facturation

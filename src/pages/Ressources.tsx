@@ -140,7 +140,7 @@ const DOCS: Doc[] = [
 
 // ── Métadonnées catégories ──
 const CAT_META = {
-  client: { label: 'Documents clients', icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50', desc: 'Remis et signés avec le client à chaque étape' },
+  client: { label: 'Documents clients', icon: FileText, color: 'text-[#1A4D2E]', bg: 'bg-[#E8F2EC]', desc: 'Remis et signés avec le client à chaque étape' },
   proc:   { label: 'Procédures internes', icon: Wrench, color: 'text-purple-600', bg: 'bg-purple-50', desc: 'Référentiels opérationnels — usage conseiller' },
   fin:    { label: 'Outils financiers', icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-50', desc: 'Calcul, analyse et pilotage d\'activité' },
 };

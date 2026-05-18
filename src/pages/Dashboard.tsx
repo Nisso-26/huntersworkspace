@@ -4,7 +4,7 @@ import StatusBadge from '@/components/StatusBadge';
 import { useDossiers } from '@/hooks/use-dossiers';
 import { useMandataires } from '@/hooks/use-mandataires';
 import { useAuth } from '@/contexts/AuthContext';
-import { FolderOpen, TrendingUp, Users, FileCheck, ArrowUpRight, Building2 } from 'lucide-react';
+import { FolderOpen, TrendingUp, Users, FileCheck, ArrowUpRight, Building2, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import OnboardingWizard from '@/components/OnboardingWizard';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';

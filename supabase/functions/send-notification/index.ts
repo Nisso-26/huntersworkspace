@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 // TODO: rebasculer sur "Hunters Workspace <noreply@workspace.huntersimmobilier.fr>" une fois le domaine vérifié dans Resend.
-const FROM = "Hunters Workspace <onboarding@resend.dev>";
+const FROM = "Hunters Workspace <noreply@workspace.huntersimmobilier.fr>";
 const HUNTERS_GREEN = "#1A4D2E";
 const HUNTERS_GOLD = "#F5A800";
 

@@ -345,7 +345,7 @@ export default function Ressources() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Documents total', value: counts.all, icon: BookOpen, color: 'text-primary' },
-            { label: 'Docs clients', value: counts.client, icon: FileText, color: 'text-blue-600' },
+            { label: 'Docs clients', value: counts.client, icon: FileText, color: 'text-[#1A4D2E]' },
             { label: 'Procédures', value: counts.proc, icon: Wrench, color: 'text-purple-600' },
             { label: 'Outils financiers', value: counts.fin, icon: TrendingUp, color: 'text-amber-600' },
           ].map(stat => (

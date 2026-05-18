@@ -78,10 +78,10 @@ export async function exportStrategiePdf(strategie: any, clientName: string, con
     y += 6;
 
     const inds = [
-      { label: 'Revenus nets/mois', value: `${(strategie.indicateurs_cles.revenus_nets_totaux_mensuels || 0).toLocaleString('fr-FR')} €` },
+      { label: 'Revenus nets/mois', value: `${(strategie.indicateurs_cles.revenus_nets_totaux_mensuels || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €` },
       { label: 'Taux d\'endettement', value: `${strategie.indicateurs_cles.taux_effort_actuel_pct || 0}%` },
-      { label: 'Capacité d\'emprunt', value: `${(strategie.indicateurs_cles.capacite_emprunt_estimee || 0).toLocaleString('fr-FR')} €` },
-      { label: 'Cash-flow libre', value: `${(strategie.indicateurs_cles.cash_flow_mensuel_libre || 0).toLocaleString('fr-FR')} €/mois` },
+      { label: 'Capacité d\'emprunt', value: `${(strategie.indicateurs_cles.capacite_emprunt_estimee || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €` },
+      { label: 'Cash-flow libre', value: `${(strategie.indicateurs_cles.cash_flow_mensuel_libre || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €/mois` },
     ];
 
     const colW = CONTENT_W / 2 - 3;
@@ -134,12 +134,12 @@ export async function exportStrategiePdf(strategie: any, clientName: string, con
 
     // Chiffres clés
     const chiffres = [
-      { label: 'Budget total', value: `${(rec.budget_acquisition_total || 0).toLocaleString('fr-FR')} €` },
-      { label: 'Apport recommandé', value: `${(rec.apport_recommande || 0).toLocaleString('fr-FR')} €` },
-      { label: 'Mensualité crédit', value: `${(rec.mensualite_credit_estimee || 0).toLocaleString('fr-FR')} €/mois` },
-      { label: 'Cash-flow net', value: `${(rec.cash_flow_net_mensuel_estime || 0).toLocaleString('fr-FR')} €/mois` },
-      { label: 'Loyer brut estimé', value: `${(rec.loyer_brut_mensuel_estime || 0).toLocaleString('fr-FR')} €/mois` },
-      { label: 'Éco. fiscale/an', value: `${(rec.economie_fiscale_annuelle_estimee || 0).toLocaleString('fr-FR')} €` },
+      { label: 'Budget total', value: `${(rec.budget_acquisition_total || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €` },
+      { label: 'Apport recommandé', value: `${(rec.apport_recommande || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €` },
+      { label: 'Mensualité crédit', value: `${(rec.mensualite_credit_estimee || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €/mois` },
+      { label: 'Cash-flow net', value: `${(rec.cash_flow_net_mensuel_estime || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €/mois` },
+      { label: 'Loyer brut estimé', value: `${(rec.loyer_brut_mensuel_estime || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €/mois` },
+      { label: 'Éco. fiscale/an', value: `${(rec.economie_fiscale_annuelle_estimee || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €` },
     ];
 
     checkSpace(24);

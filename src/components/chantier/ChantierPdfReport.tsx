@@ -111,10 +111,10 @@ export async function generateChantierPdf(chantier: Chantier) {
     checkPage(6);
     doc.text(lot.designation.substring(0, 20), cols[0], y);
     doc.text((lot.artisan || '—').substring(0, 18), cols[1], y);
-    doc.text(lot.montant_devis.toLocaleString('fr-FR'), cols[2], y);
-    doc.text(lot.montant_engage.toLocaleString('fr-FR'), cols[3], y);
-    doc.text(lot.montant_facture.toLocaleString('fr-FR'), cols[4], y);
-    doc.text((lot.montant_devis - lot.montant_facture).toLocaleString('fr-FR'), cols[5], y);
+    doc.text(lot.montant_devis.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[2], y);
+    doc.text(lot.montant_engage.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[3], y);
+    doc.text(lot.montant_facture.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[4], y);
+    doc.text((lot.montant_devis - lot.montant_facture).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[5], y);
     doc.text(`${lot.avancement}%`, cols[6], y);
     y += 5;
   });
@@ -126,14 +126,14 @@ export async function generateChantierPdf(chantier: Chantier) {
   y += 4;
   doc.setFont('helvetica', 'bold');
   doc.text('TOTAL', cols[0], y);
-  doc.text(totalDevis.toLocaleString('fr-FR'), cols[2], y);
-  doc.text(totalEngage.toLocaleString('fr-FR'), cols[3], y);
-  doc.text(totalFacture.toLocaleString('fr-FR'), cols[4], y);
-  doc.text((totalDevis - totalFacture).toLocaleString('fr-FR'), cols[5], y);
+  doc.text(totalDevis.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[2], y);
+  doc.text(totalEngage.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[3], y);
+  doc.text(totalFacture.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[4], y);
+  doc.text((totalDevis - totalFacture).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[5], y);
   y += 5;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.text(`Budget alloué: ${budgetAlloue.toLocaleString('fr-FR')} € | Déco: ${(chantier.total_deco || 0).toLocaleString('fr-FR')} €`, 14, y);
+  doc.text(`Budget alloué: ${budgetAlloue.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} € | Déco: ${(chantier.total_deco || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €`, 14, y);
   y += 10;
 
   // Visites

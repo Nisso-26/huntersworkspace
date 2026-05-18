@@ -73,8 +73,8 @@ function kv(doc: any, x: number, y: number, label: string, value: string) {
   doc.text(value || '—', x, y + 4.5);
 }
 
-const fmtEur = (n: number) =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n || 0);
+import { pdfEuro } from './pdf-format';
+const fmtEur = (n: number) => pdfEuro(n);
 
 async function archive(dossierId: string, type: string, numero: string | null) {
   try {

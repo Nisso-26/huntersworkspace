@@ -39,7 +39,8 @@ export default function Dashboard() {
   const caTotal = dossiers
     .filter(d => ['signe', 'compromis'].includes(d.status))
     .reduce((sum, d) => sum + (d.honoraires || 0), 0);
-  const dossiersActifs = dossiers.filter(d => !['cloture', 'signe'].includes(d.status)).length;
+  const dossiersActifs = dossiers.filter(d => !['cloture', 'signe', 'nouveau'].includes(d.status)).length;
+  const dossiersNouveau = dossiers.filter(d => d.status === 'nouveau').length;
   const dossiersSigne = dossiers.filter(d => d.status === 'signe').length;
   const mandatairesActifs = mandataires.filter(m => m.status === 'actif').length;
   const recentDossiers = [...dossiers].slice(0, 6);

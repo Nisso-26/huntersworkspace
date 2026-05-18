@@ -24,7 +24,7 @@ import {
   useSensors,
   closestCenter,
 } from '@dnd-kit/core';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Hash } from 'lucide-react';
 import {
   shouldTriggerHonoraires,
   commissionRateForLevel,

@@ -146,7 +146,7 @@ const CAT_META = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  docx: 'bg-blue-100 text-blue-700 border border-blue-200',
+  docx: 'bg-[#E8F2EC] text-[#1A4D2E] border border-[#1A4D2E]/20',
   xlsx: 'bg-green-100 text-green-700 border border-green-200',
   html: 'bg-orange-100 text-orange-700 border border-orange-200',
   pdf:  'bg-red-100 text-red-700 border border-red-200',

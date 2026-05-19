@@ -285,10 +285,16 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
   doc.setTextColor(60, 60, 60);
   doc.setFontSize(10);
   doc.text(facture.dossier_client_name || facture.client_name || '—', 15, 102);
+  let yC = 108;
+  doc.setFontSize(9);
+  doc.setTextColor(90, 90, 90);
+  if (clientEmail) { doc.text(clientEmail, 15, yC); yC += 4.5; }
+  if (clientPhone) { doc.text(`Tél. ${clientPhone}`, 15, yC); yC += 4.5; }
+  if (clientVille) { doc.text(clientVille, 15, yC); yC += 4.5; }
   if (facture.mandataire_name) {
     doc.setFontSize(9);
     doc.setTextColor(120, 120, 120);
-    doc.text(`Suivi par ${facture.mandataire_name}`, 15, 108);
+    doc.text(`Suivi par ${facture.mandataire_name}`, 15, yC);
   }
 
   // ───── Table (multi-lignes si fourni) ─────

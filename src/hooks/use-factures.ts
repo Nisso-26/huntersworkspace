@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { fetchAllPaginated } from '@/lib/supabase-pagination';
 import type { CompanySettings } from './use-company-settings';
+import { fmtPdfEur } from '@/lib/pdf-utils';
 
 export interface FactureLigne {
   service_key?: string;
@@ -307,10 +308,10 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
     }
     const labelLines = doc.splitTextToSize(l.label, 80);
     doc.text(labelLines, 18, yT);
-    doc.text(`${l.tarif_base.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 105, yT, { align: 'right' });
-    doc.text(l.remise_pct > 0 ? `-${l.remise_pct}% (-${l.remise_montant.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €)` : '—', 135, yT, { align: 'right' });
+    doc.text(fmtPdfEur(l.tarif_base), 105, yT, { align: 'right' });
+    doc.text(l.remise_pct > 0 ? `-${l.remise_pct}% (-${fmtPdfEur(l.remise_montant)})` : '—', 135, yT, { align: 'right' });
     doc.text(`${l.tva_taux}%`, 158, yT, { align: 'right' });
-    doc.text(`${l.montant_ht.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, yT, { align: 'right' });
+    doc.text(fmtPdfEur(l.montant_ht), 192, yT, { align: 'right' });
     yT += Math.max(7, labelLines.length * 5);
   });
 
@@ -329,14 +330,14 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
   if (totalRemise > 0) {
     doc.setTextColor(green[0], green[1], green[2]);
     doc.setFont('helvetica', 'italic');
-    doc.text(`Remise commerciale accordée : -${totalRemise.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 15, totalsTop);
+    doc.text(`Remise commerciale accordée : -${fmtPdfEur(totalRemise)}`, 15, totalsTop);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(80, 80, 80);
   }
   doc.text('Total HT', 130, totalsTop);
-  doc.text(`${totalHTReel.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, totalsTop, { align: 'right' });
+  doc.text(fmtPdfEur(totalHTReel), 192, totalsTop, { align: 'right' });
   doc.text(`TVA`, 130, totalsTop + 7);
-  doc.text(`${totalTVAReel.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, totalsTop + 7, { align: 'right' });
+  doc.text(fmtPdfEur(totalTVAReel), 192, totalsTop + 7, { align: 'right' });
 
   doc.setFillColor(green[0], green[1], green[2]);
   doc.rect(125, totalsTop + 11, 70, 11, 'F');
@@ -344,7 +345,7 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.text('Total TTC', 130, totalsTop + 18);
-  doc.text(`${ttcReel.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, totalsTop + 18, { align: 'right' });
+  doc.text(fmtPdfEur(ttcReel), 192, totalsTop + 18, { align: 'right' });
 
   // ───── Règlement ─────
   const payTop = totalsTop + 36;

@@ -326,17 +326,35 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
   doc.setFontSize(9);
   let yT = tableTop + 9;
   lignes.forEach((l, idx) => {
+    const isCleEnMain = l.service_key === 'cle_en_main' || /clé en main/i.test(l.label || '');
+    const rowHeight = isCleEnMain ? 12 : 7;
     if (idx % 2 === 0) {
       doc.setFillColor(248, 248, 248);
-      doc.rect(15, yT - 5, 180, 7, 'F');
+      doc.rect(15, yT - 5, 180, rowHeight, 'F');
     }
     const labelLines = doc.splitTextToSize(l.label, 80);
+    doc.setFontSize(9);
+    doc.setTextColor(60, 60, 60);
+    doc.setFont('helvetica', 'normal');
     doc.text(labelLines, 18, yT);
     doc.text(fmtPdfEur(l.tarif_base), 105, yT, { align: 'right' });
     doc.text(l.remise_pct > 0 ? `-${l.remise_pct}% (-${fmtPdfEur(l.remise_montant)})` : '—', 135, yT, { align: 'right' });
     doc.text(`${l.tva_taux}%`, 158, yT, { align: 'right' });
     doc.text(fmtPdfEur(l.montant_ht), 192, yT, { align: 'right' });
-    yT += Math.max(7, labelLines.length * 5);
+    let extraY = Math.max(7, labelLines.length * 5);
+    if (isCleEnMain) {
+      doc.setFontSize(7.5);
+      doc.setTextColor(130, 130, 130);
+      doc.setFont('helvetica', 'italic');
+      doc.text(
+        'Inclus : Conseil en investissement · Chasse immobilière · AMO · Décoration / Ameublement',
+        18,
+        yT + extraY - 2,
+      );
+      doc.setFont('helvetica', 'normal');
+      extraY += 4;
+    }
+    yT += extraY;
   });
 
   doc.setDrawColor(220, 220, 220);

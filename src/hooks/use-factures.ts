@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { fetchAllPaginated } from '@/lib/supabase-pagination';
 import type { CompanySettings } from './use-company-settings';
+import { fmtPdfEur } from '@/lib/pdf-utils';
 
 export interface FactureLigne {
   service_key?: string;

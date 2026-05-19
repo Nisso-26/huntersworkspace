@@ -170,6 +170,24 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
   const doc = new jsPDF();
   const s = settings || {};
 
+  // Récupère les coordonnées du client depuis le dossier (email / téléphone / ville)
+  let clientEmail = '';
+  let clientPhone = '';
+  let clientVille = '';
+  if (facture.dossier_id) {
+    try {
+      const { data: dRow } = await (supabase.from('dossiers') as any)
+        .select('email, phone, ville')
+        .eq('id', facture.dossier_id)
+        .maybeSingle();
+      if (dRow) {
+        clientEmail = dRow.email || '';
+        clientPhone = dRow.phone || '';
+        clientVille = dRow.ville || '';
+      }
+    } catch { /* ignore */ }
+  }
+
   const green = hexToRgb(s.couleur_primaire, [26, 77, 46]);
   const gold = hexToRgb(s.couleur_secondaire, [245, 168, 0]);
 

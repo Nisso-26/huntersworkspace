@@ -110,7 +110,11 @@ export async function generateChantierPdf(chantier: Chantier) {
   lots.forEach(lot => {
     checkPage(6);
     doc.text(lot.designation.substring(0, 20), cols[0], y);
-    doc.text((lot.artisan || '—').substring(0, 18), cols[1], y);fmtPdfNum(doc.text(lot.montant_devis, 0), cols[2], y);fmtPdfNum(doc.text(lot.montant_engage, 0), cols[3], y);fmtPdfNum(doc.text(lot.montant_facture, 0), cols[4], y);fmtPdfNum(doc.text((lot.montant_devis - lot.montant_facture), 0), cols[5], y);
+    doc.text((lot.artisan || '—').substring(0, 18), cols[1], y);
+    doc.text(fmtPdfNum(lot.montant_devis, 0), cols[2], y);
+    doc.text(fmtPdfNum(lot.montant_engage, 0), cols[3], y);
+    doc.text(fmtPdfNum(lot.montant_facture, 0), cols[4], y);
+    doc.text(fmtPdfNum(lot.montant_devis - lot.montant_facture, 0), cols[5], y);
     doc.text(`${lot.avancement}%`, cols[6], y);
     y += 5;
   });

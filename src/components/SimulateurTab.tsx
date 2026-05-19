@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { FileDown } from 'lucide-react';
 import { toast } from 'sonner';
+import { fmtPdfEur, fmtPdfEurInt } from '@/lib/pdf-utils';
 
 interface Props {
   prixRevient: number;

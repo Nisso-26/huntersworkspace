@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Chantier } from '@/hooks/use-chantiers';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { fmtPdfEur, fmtPdfNum } from '@/lib/pdf-utils';
 
 const GREEN = [26, 77, 46] as const;
 const GOLD = [212, 160, 23] as const;
@@ -111,10 +112,10 @@ export async function generateChantierPdf(chantier: Chantier) {
     checkPage(6);
     doc.text(lot.designation.substring(0, 20), cols[0], y);
     doc.text((lot.artisan || '—').substring(0, 18), cols[1], y);
-    doc.text(lot.montant_devis.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[2], y);
-    doc.text(lot.montant_engage.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[3], y);
-    doc.text(lot.montant_facture.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[4], y);
-    doc.text((lot.montant_devis - lot.montant_facture).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[5], y);
+    doc.text(fmtPdfNum(lot.montant_devis, 0), cols[2], y);
+    doc.text(fmtPdfNum(lot.montant_engage, 0), cols[3], y);
+    doc.text(fmtPdfNum(lot.montant_facture, 0), cols[4], y);
+    doc.text(fmtPdfNum(lot.montant_devis - lot.montant_facture, 0), cols[5], y);
     doc.text(`${lot.avancement}%`, cols[6], y);
     y += 5;
   });
@@ -126,14 +127,14 @@ export async function generateChantierPdf(chantier: Chantier) {
   y += 4;
   doc.setFont('helvetica', 'bold');
   doc.text('TOTAL', cols[0], y);
-  doc.text(totalDevis.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[2], y);
-  doc.text(totalEngage.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[3], y);
-  doc.text(totalFacture.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[4], y);
-  doc.text((totalDevis - totalFacture).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' '), cols[5], y);
+  doc.text(fmtPdfNum(totalDevis, 0), cols[2], y);
+  doc.text(fmtPdfNum(totalEngage, 0), cols[3], y);
+  doc.text(fmtPdfNum(totalFacture, 0), cols[4], y);
+  doc.text(fmtPdfNum(totalDevis - totalFacture, 0), cols[5], y);
   y += 5;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.text(`Budget alloué: ${budgetAlloue.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} € | Déco: ${(chantier.total_deco || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €`, 14, y);
+  doc.text(`Budget alloué: ${fmtPdfEur(budgetAlloue)} | Déco: ${fmtPdfEur(chantier.total_deco || 0)}`, 14, y);
   y += 10;
 
   // Visites

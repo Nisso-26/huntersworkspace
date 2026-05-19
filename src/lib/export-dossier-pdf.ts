@@ -73,8 +73,8 @@ function kv(doc: any, x: number, y: number, label: string, value: string) {
   doc.text(value || '—', x, y + 4.5);
 }
 
-import { pdfEuro } from './pdf-format';
-const fmtEur = (n: number) => pdfEuro(n);
+import { fmtPdfEur } from './pdf-utils';
+const fmtEur = (n: number) => fmtPdfEur(n);
 
 async function archive(dossierId: string, type: string, numero: string | null) {
   try {

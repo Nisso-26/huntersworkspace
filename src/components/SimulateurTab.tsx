@@ -84,30 +84,30 @@ export default function SimulateurTab({ prixRevient, loyerMensuel, reference, ad
       doc.text(`Adresse : ${adresse}`, 15, y); y += 10;
 
       const lines = [
-        ['Prix de revient', `${prixRevient.toLocaleString('fr-FR')} €`],
-        ['Apport personnel', `${apport.toLocaleString('fr-FR')} €`],
-        ['Montant emprunté', `${montantEmprunte.toLocaleString('fr-FR')} €`],
+        ['Prix de revient', fmtPdfEurInt(prixRevient)],
+        ['Apport personnel', fmtPdfEurInt(apport)],
+        ['Montant emprunté', fmtPdfEurInt(montantEmprunte)],
         ['Taux / Durée', `${taux}% / ${duree} ans`],
-        ['Mensualité crédit', `${mensualite.toFixed(0)} €`],
+        ['Mensualité crédit', fmtPdfEur(mensualite)],
         ['Taux d\'endettement', `${tauxEndettement.toFixed(1)}%`],
         ['', ''],
-        ['Loyer mensuel HC', `${loyerMensuel.toLocaleString('fr-FR')} €`],
+        ['Loyer mensuel HC', fmtPdfEurInt(loyerMensuel)],
         ['Charges mensuelles', `${charges} €`],
         ['Vacance locative', `${vacance}%`],
         ['Fiscalité mensuelle', `${fiscalite} €`],
         ['', ''],
-        ['Cash flow mensuel', `${cashFlowMensuel.toFixed(0)} €`],
-        ['Cash flow annuel', `${cashFlowAnnuel.toFixed(0)} €`],
+        ['Cash flow mensuel', fmtPdfEur(cashFlowMensuel)],
+        ['Cash flow annuel', fmtPdfEur(cashFlowAnnuel)],
         ['Rentabilité brute', `${rentaBrute.toFixed(2)}%`],
         ['Rentabilité nette', `${rentaNette.toFixed(2)}%`],
         ['TRI estimé (10 ans)', `${tri.toFixed(2)}%`],
-        ['Effort d\'épargne', effortEpargne > 0 ? `${effortEpargne.toFixed(0)} €/mois` : 'Aucun'],
+        ['Effort d\'épargne', effortEpargne > 0 ? `${fmtPdfEur(effortEpargne)}/mois` : 'Aucun'],
       ];
 
       if (prixRevente > 0) {
-        lines.push(['', ''], ['Prix de revente', `${prixRevente.toLocaleString('fr-FR')} €`]);
-        lines.push(['Plus-value brute', `${pvBrute.toLocaleString('fr-FR')} €`]);
-        lines.push(['Plus-value nette estimée', `${pvNette.toFixed(0)} €`]);
+        lines.push(['', ''], ['Prix de revente', fmtPdfEurInt(prixRevente)]);
+        lines.push(['Plus-value brute', fmtPdfEurInt(pvBrute)]);
+        lines.push(['Plus-value nette estimée', fmtPdfEur(pvNette)]);
       }
 
       for (const [label, val] of lines) {

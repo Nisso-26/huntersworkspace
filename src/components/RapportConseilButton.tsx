@@ -501,11 +501,11 @@ export default function RapportConseilButton({ dossier }: Props) {
         y += 6;
         drawMarkdownTable([
           ['Indicateur', 'Valeur'],
-          ['Revenus nets mensuels', `${strategie.indicateurs_cles.revenus_nets_totaux_mensuels.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €`],
+          ['Revenus nets mensuels', `${fmtPdfEurInt(strategie.indicateurs_cles.revenus_nets_totaux_mensuels)}`],
           ["Taux d'effort actuel", `${strategie.indicateurs_cles.taux_effort_actuel_pct} %`],
-          ["Capacité d'emprunt estimée", `${strategie.indicateurs_cles.capacite_emprunt_estimee.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €`],
-          ['Mensualité max supplémentaire', `${strategie.indicateurs_cles.mensualite_max_supplementaire.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €`],
-          ['Cash-flow mensuel libre', `${strategie.indicateurs_cles.cash_flow_mensuel_libre.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €`],
+          ["Capacité d'emprunt estimée", `${fmtPdfEurInt(strategie.indicateurs_cles.capacite_emprunt_estimee)}`],
+          ['Mensualité max supplémentaire', `${fmtPdfEurInt(strategie.indicateurs_cles.mensualite_max_supplementaire)}`],
+          ['Cash-flow mensuel libre', `${fmtPdfEurInt(strategie.indicateurs_cles.cash_flow_mensuel_libre)}`],
         ]);
         if (strategie.recommandations.length > 0) {
           ensure(10);
@@ -518,10 +518,10 @@ export default function RapportConseilButton({ dossier }: Props) {
           strategie.recommandations.slice(0, 3).forEach(r => {
             recoRows.push([
               r.titre || r.dispositif || '—',
-              `${(r.budget_acquisition_total || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €`,
-              `${(r.mensualite_credit_estimee || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €`,
-              `${(r.loyer_brut_mensuel_estime || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €`,
-              `${(r.cash_flow_net_mensuel_estime || 0).toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} €`,
+              `${fmtPdfEurInt((r.budget_acquisition_total || 0))}`,
+              `${fmtPdfEurInt((r.mensualite_credit_estimee || 0))}`,
+              `${fmtPdfEurInt((r.loyer_brut_mensuel_estime || 0))}`,
+              `${fmtPdfEurInt((r.cash_flow_net_mensuel_estime || 0))}`,
               `${(r.rendement_brut_estime_pct || 0).toFixed(2)} %`,
             ]);
           });

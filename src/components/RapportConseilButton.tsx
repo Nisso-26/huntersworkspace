@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { FileText, Loader2, Download, RefreshCw, X } from 'lucide-react';
 import { parseStrategie, type StrategieData } from '@/lib/strategie-parser';
+import { fmtPdfEur, fmtPdfEurInt } from '@/lib/pdf-utils';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid,
   LineChart, Line, ResponsiveContainer,

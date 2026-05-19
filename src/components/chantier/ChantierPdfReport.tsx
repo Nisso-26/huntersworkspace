@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Chantier } from '@/hooks/use-chantiers';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { fmtPdfEur, fmtPdfNum } from '@/lib/pdf-utils';
 
 const GREEN = [26, 77, 46] as const;
 const GOLD = [212, 160, 23] as const;

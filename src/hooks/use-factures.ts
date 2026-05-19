@@ -308,10 +308,10 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
     }
     const labelLines = doc.splitTextToSize(l.label, 80);
     doc.text(labelLines, 18, yT);
-    doc.text(`${l.tarif_base.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 105, yT, { align: 'right' });
-    doc.text(l.remise_pct > 0 ? `-${l.remise_pct}% (-${l.remise_montant.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €)` : '—', 135, yT, { align: 'right' });
+    doc.text(fmtPdfEur(l.tarif_base), 105, yT, { align: 'right' });
+    doc.text(l.remise_pct > 0 ? `-${l.remise_pct}% (-${fmtPdfEur(l.remise_montant)})` : '—', 135, yT, { align: 'right' });
     doc.text(`${l.tva_taux}%`, 158, yT, { align: 'right' });
-    doc.text(`${l.montant_ht.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, 192, yT, { align: 'right' });
+    doc.text(fmtPdfEur(l.montant_ht), 192, yT, { align: 'right' });
     yT += Math.max(7, labelLines.length * 5);
   });
 

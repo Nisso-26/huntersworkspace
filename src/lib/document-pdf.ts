@@ -112,31 +112,62 @@ function renderFinancier(
   values: Record<string, number>,
   y: number,
   pageWidth: number,
+  pageHeight: number,
+  ctx: DocumentBuildContext,
 ): number {
-  const rows = (section.champs || []).map((c) => {
+  const left = 12;
+  const right = pageWidth - 12;
+  const colLabel = 90; // largeur colonne libellé
+  const colType = 30;  // largeur colonne type (à droite)
+  const colValueX = left + colLabel;
+  const colTypeX = right - colType;
+  const rowH = 6;
+
+  // En-tête de table
+  doc.setFillColor(...HUNTERS_GREEN);
+  doc.rect(left, y, right - left, rowH, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('Poste', left + 2, y + 4);
+  doc.text('Valeur', colTypeX - 2, y + 4, { align: 'right' });
+  doc.text('Type', colTypeX + 2, y + 4);
+  y += rowH;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+
+  let zebra = false;
+  for (const c of section.champs || []) {
+    y = ensureRoom(doc, y, rowH + 2, pageHeight, ctx, pageWidth);
+    if (zebra) {
+      doc.setFillColor(248, 248, 246);
+      doc.rect(left, y, right - left, rowH, 'F');
+    }
+    zebra = !zebra;
     const v = values[c.key] ?? 0;
     const isPct = /(%|pct|taux|rentabilite|vacance)/i.test(c.key);
     const formatted = isPct ? `${fmtPdfNum(v, 2)} %` : fmtPdfEur(v);
-    return [c.label, formatted, c.type === 'calc' ? 'Calculé' : c.type === 'number' ? 'Saisie' : ''];
-  });
+    doc.setTextColor(...TEXT_DARK);
+    doc.setFont('helvetica', 'normal');
+    doc.text(c.label, left + 2, y + 4);
+    doc.setFont('helvetica', 'bold');
+    doc.text(formatted, colTypeX - 2, y + 4, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
+    doc.text(c.type === 'calc' ? 'Calculé' : 'Saisie', colTypeX + 2, y + 4);
+    doc.setFontSize(9);
+    y += rowH;
+  }
+  // Cadre
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.2);
+  doc.rect(left, y - rowH * ((section.champs || []).length + 1), right - left, rowH * ((section.champs || []).length + 1));
 
-  autoTable(doc, {
-    startY: y,
-    head: [['Poste', 'Valeur', 'Type']],
-    body: rows,
-    theme: 'grid',
-    styles: { font: 'helvetica', fontSize: 9, cellPadding: 2.5, textColor: TEXT_DARK },
-    headStyles: { fillColor: HUNTERS_GREEN, textColor: [255, 255, 255], fontStyle: 'bold' },
-    columnStyles: {
-      0: { cellWidth: 90 },
-      1: { halign: 'right', cellWidth: 50, fontStyle: 'bold' },
-      2: { cellWidth: 30, textColor: MUTED, fontSize: 8 },
-    },
-    margin: { left: 12, right: 12 },
-  });
-  // @ts-expect-error - lastAutoTable provided by autoTable
-  return (doc as any).lastAutoTable.finalY + 6;
+  return y + 6;
 }
+
 
 export function buildDocumentPdf(ctx: DocumentBuildContext): jsPDF {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });

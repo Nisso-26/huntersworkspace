@@ -1,7 +1,6 @@
 // Génération PDF pour les documents générés depuis un modèle.
 // Charte Hunters : vert #1A4D2E, or #F5A800, Montserrat (Helvetica en fallback jsPDF).
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { fmtPdfEur, fmtPdfNum } from '@/lib/pdf-utils';
 import { interpolate } from '@/lib/document-template';
 import type { ModeleSection } from '@/hooks/use-modeles-documents';
@@ -11,6 +10,7 @@ const HUNTERS_GREEN: [number, number, number] = [26, 77, 46];
 const HUNTERS_GOLD: [number, number, number] = [245, 168, 0];
 const TEXT_DARK: [number, number, number] = [44, 44, 44];
 const MUTED: [number, number, number] = [120, 120, 120];
+
 
 export interface DocumentBuildContext {
   titre: string;

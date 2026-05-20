@@ -8,15 +8,56 @@ import { useFactures } from '@/hooks/use-factures';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { fetchAllPaginated } from '@/lib/supabase-pagination';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const fmtEur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
+const SERVICE_CATEGORIES = ['Conseil', 'Chasse', 'AMO', 'Déco', 'Clé en main'] as const;
+type ServiceCategory = typeof SERVICE_CATEGORIES[number];
+const HUNTERS_COLORS: Record<ServiceCategory, string> = {
+  'Conseil': '#1A4D2E',
+  'Chasse': '#F5A800',
+  'AMO': '#2A6B40',
+  'Déco': '#FFC94D',
+  'Clé en main': '#E8F2EC',
+};
+
+function categorizeJalon(libelle: string, typeAccompagnement?: string | null): ServiceCategory {
+  const l = (libelle || '').toLowerCase();
+  if (l.includes('conseil')) return 'Conseil';
+  if (l.includes('chasse')) return 'Chasse';
+  if (l.includes('amo')) return 'AMO';
+  if (l.includes('déco') || l.includes('deco')) return 'Déco';
+  if (typeAccompagnement === 'cle_en_main') return 'Clé en main';
+  return 'Clé en main';
+}
+
 export default function Reporting() {
+  const { isAdmin } = useAuth();
   const { data: dossiers = [], isLoading: dLoad } = useDossiers();
   const { data: mandataires = [], isLoading: mLoad } = useMandataires();
   const { data: factures = [], isLoading: fLoad } = useFactures();
   const { data: tarifs = [] } = useTarifsServices();
+
+  const { data: jalons = [] } = useQuery({
+    queryKey: ['jalons_reporting'],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const data = await fetchAllPaginated<any>((from, to) =>
+        (supabase.from('jalons_facturation' as any) as any)
+          .select('id,dossier_id,libelle,pourcentage,statut,facture_id')
+          .in('statut', ['facture', 'paye', 'payee'])
+          .range(from, to),
+      );
+      return data || [];
+    },
+  });
+
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);

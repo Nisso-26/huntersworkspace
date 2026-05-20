@@ -139,7 +139,51 @@ export default function Reporting() {
       .sort((a, b) => b.ca - a.ca);
   }, [factures]);
 
+  const repartitionService = useMemo(() => {
+    const dossiersById = new Map(dossiers.map(d => [d.id, d]));
+    const facturesById = new Map(factures.map(f => [f.id, f]));
+    const buckets: Record<ServiceCategory, { ca: number; dossierIds: Set<string>; remises: number; count: number }> =
+      SERVICE_CATEGORIES.reduce((acc, k) => {
+        acc[k] = { ca: 0, dossierIds: new Set(), remises: 0, count: 0 };
+        return acc;
+      }, {} as any);
+
+    for (const j of jalons as any[]) {
+      const d = dossiersById.get(j.dossier_id);
+      if (!d) continue;
+      const honoraires = Number(d.honoraires) || 0;
+      const pct = Number(j.pourcentage) || 0;
+      const montant = (honoraires * pct) / 100;
+      const cat = categorizeJalon(j.libelle, (d as any).type_accompagnement);
+      buckets[cat].ca += montant;
+      buckets[cat].count += 1;
+      buckets[cat].dossierIds.add(j.dossier_id);
+      if (j.facture_id) {
+        const f = facturesById.get(j.facture_id);
+        if (f) buckets[cat].remises += Number(f.remise_montant || 0);
+      }
+    }
+
+    const total = Object.values(buckets).reduce((s, b) => s + b.ca, 0);
+    return SERVICE_CATEGORIES.map(name => {
+      const b = buckets[name];
+      const nbDoss = b.dossierIds.size;
+      return {
+        name,
+        ca: b.ca,
+        nbDossiers: nbDoss,
+        ticketMoyen: nbDoss > 0 ? b.ca / nbDoss : 0,
+        remises: b.remises,
+        pct: total > 0 ? (b.ca / total) * 100 : 0,
+        color: HUNTERS_COLORS[name],
+      };
+    });
+  }, [jalons, dossiers, factures]);
+
+  const totalRepartition = repartitionService.reduce((s, r) => s + r.ca, 0);
+
   const loading = dLoad || mLoad || fLoad;
+
 
   return (
     <AppLayout>

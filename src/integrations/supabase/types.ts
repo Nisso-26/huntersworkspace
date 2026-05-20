@@ -629,33 +629,59 @@ export type Database = {
       }
       documents_generiques: {
         Row: {
+          contenu: Json | null
           created_at: string
+          date_envoi: string | null
           date_generation: string
           dossier_id: string
+          email_destinataire: string | null
           genere_par: string | null
           id: string
+          modele_id: string | null
           numero_dossier: string | null
+          statut: string
+          titre: string | null
           type_export: string
         }
         Insert: {
+          contenu?: Json | null
           created_at?: string
+          date_envoi?: string | null
           date_generation?: string
           dossier_id: string
+          email_destinataire?: string | null
           genere_par?: string | null
           id?: string
+          modele_id?: string | null
           numero_dossier?: string | null
+          statut?: string
+          titre?: string | null
           type_export: string
         }
         Update: {
+          contenu?: Json | null
           created_at?: string
+          date_envoi?: string | null
           date_generation?: string
           dossier_id?: string
+          email_destinataire?: string | null
           genere_par?: string | null
           id?: string
+          modele_id?: string | null
           numero_dossier?: string | null
+          statut?: string
+          titre?: string | null
           type_export?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "documents_generiques_modele_id_fkey"
+            columns: ["modele_id"]
+            isOneToOne: false
+            referencedRelation: "modeles_documents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       dossier_counters: {
         Row: {
@@ -1216,6 +1242,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      modeles_documents: {
+        Row: {
+          actif: boolean
+          categorie: string
+          contenu_template: Json
+          created_at: string
+          id: string
+          titre: string
+          updated_at: string
+        }
+        Insert: {
+          actif?: boolean
+          categorie: string
+          contenu_template?: Json
+          created_at?: string
+          id?: string
+          titre: string
+          updated_at?: string
+        }
+        Update: {
+          actif?: boolean
+          categorie?: string
+          contenu_template?: Json
+          created_at?: string
+          id?: string
+          titre?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       partenaire_dossiers: {
         Row: {

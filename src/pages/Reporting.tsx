@@ -311,7 +311,80 @@ export default function Reporting() {
             ))}
           </div>
         </div>
+
+        {/* Répartition du CA par type de service (Directeur uniquement) */}
+        {isAdmin && (
+          <div className="bg-card border border-border/60 rounded-xl shadow-card overflow-hidden">
+            <div className="px-5 py-4 border-b border-border/60 flex items-center gap-2">
+              <PieIcon className="w-4 h-4 text-accent" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground">
+                Répartition du CA par type de service
+              </h2>
+            </div>
+            {totalRepartition === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-10">
+                Aucun jalon facturé ou payé à ce jour
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-5">
+                <div className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={repartitionService.filter(r => r.ca > 0)}
+                        dataKey="ca"
+                        nameKey="name"
+                        innerRadius={50}
+                        outerRadius={100}
+                        paddingAngle={2}
+                      >
+                        {repartitionService.filter(r => r.ca > 0).map(r => (
+                          <Cell key={r.name} fill={r.color} stroke="hsl(var(--background))" strokeWidth={2} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number) => fmtEur(Number(value) || 0)}
+                        contentStyle={{ borderRadius: 8, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
+                      />
+                      <Legend verticalAlign="bottom" iconType="circle" />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/40">
+                      <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground">
+                        <th className="px-3 py-2 font-semibold">Service</th>
+                        <th className="px-3 py-2 font-semibold text-right">Dossiers</th>
+                        <th className="px-3 py-2 font-semibold text-right">CA HT</th>
+                        <th className="px-3 py-2 font-semibold text-right">Ticket moyen</th>
+                        <th className="px-3 py-2 font-semibold text-right">Remises</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/50">
+                      {repartitionService.map(r => (
+                        <tr key={r.name} className="hover:bg-muted/20">
+                          <td className="px-3 py-2 font-medium text-foreground">
+                            <span className="inline-flex items-center gap-2">
+                              <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: r.color }} />
+                              {r.name}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums">{r.nbDossiers}</td>
+                          <td className="px-3 py-2 text-right tabular-nums font-semibold">{fmtEur(r.ca)}</td>
+                          <td className="px-3 py-2 text-right tabular-nums">{fmtEur(r.ticketMoyen)}</td>
+                          <td className="px-3 py-2 text-right tabular-nums text-destructive">{fmtEur(r.remises)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
     </AppLayout>
   );
 }

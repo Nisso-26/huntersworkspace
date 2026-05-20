@@ -8,15 +8,56 @@ import { useFactures } from '@/hooks/use-factures';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { fetchAllPaginated } from '@/lib/supabase-pagination';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const fmtEur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
+const SERVICE_CATEGORIES = ['Conseil', 'Chasse', 'AMO', 'Déco', 'Clé en main'] as const;
+type ServiceCategory = typeof SERVICE_CATEGORIES[number];
+const HUNTERS_COLORS: Record<ServiceCategory, string> = {
+  'Conseil': '#1A4D2E',
+  'Chasse': '#F5A800',
+  'AMO': '#2A6B40',
+  'Déco': '#FFC94D',
+  'Clé en main': '#E8F2EC',
+};
+
+function categorizeJalon(libelle: string, typeAccompagnement?: string | null): ServiceCategory {
+  const l = (libelle || '').toLowerCase();
+  if (l.includes('conseil')) return 'Conseil';
+  if (l.includes('chasse')) return 'Chasse';
+  if (l.includes('amo')) return 'AMO';
+  if (l.includes('déco') || l.includes('deco')) return 'Déco';
+  if (typeAccompagnement === 'cle_en_main') return 'Clé en main';
+  return 'Clé en main';
+}
+
 export default function Reporting() {
+  const { isAdmin } = useAuth();
   const { data: dossiers = [], isLoading: dLoad } = useDossiers();
   const { data: mandataires = [], isLoading: mLoad } = useMandataires();
   const { data: factures = [], isLoading: fLoad } = useFactures();
   const { data: tarifs = [] } = useTarifsServices();
+
+  const { data: jalons = [] } = useQuery({
+    queryKey: ['jalons_reporting'],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const data = await fetchAllPaginated<any>((from, to) =>
+        (supabase.from('jalons_facturation' as any) as any)
+          .select('id,dossier_id,libelle,pourcentage,statut,facture_id')
+          .in('statut', ['facture', 'paye', 'payee'])
+          .range(from, to),
+      );
+      return data || [];
+    },
+  });
+
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -98,7 +139,51 @@ export default function Reporting() {
       .sort((a, b) => b.ca - a.ca);
   }, [factures]);
 
+  const repartitionService = useMemo(() => {
+    const dossiersById = new Map(dossiers.map(d => [d.id, d]));
+    const facturesById = new Map(factures.map(f => [f.id, f]));
+    const buckets: Record<ServiceCategory, { ca: number; dossierIds: Set<string>; remises: number; count: number }> =
+      SERVICE_CATEGORIES.reduce((acc, k) => {
+        acc[k] = { ca: 0, dossierIds: new Set(), remises: 0, count: 0 };
+        return acc;
+      }, {} as any);
+
+    for (const j of jalons as any[]) {
+      const d = dossiersById.get(j.dossier_id);
+      if (!d) continue;
+      const honoraires = Number(d.honoraires) || 0;
+      const pct = Number(j.pourcentage) || 0;
+      const montant = (honoraires * pct) / 100;
+      const cat = categorizeJalon(j.libelle, (d as any).type_accompagnement);
+      buckets[cat].ca += montant;
+      buckets[cat].count += 1;
+      buckets[cat].dossierIds.add(j.dossier_id);
+      if (j.facture_id) {
+        const f = facturesById.get(j.facture_id);
+        if (f) buckets[cat].remises += Number(f.remise_montant || 0);
+      }
+    }
+
+    const total = Object.values(buckets).reduce((s, b) => s + b.ca, 0);
+    return SERVICE_CATEGORIES.map(name => {
+      const b = buckets[name];
+      const nbDoss = b.dossierIds.size;
+      return {
+        name,
+        ca: b.ca,
+        nbDossiers: nbDoss,
+        ticketMoyen: nbDoss > 0 ? b.ca / nbDoss : 0,
+        remises: b.remises,
+        pct: total > 0 ? (b.ca / total) * 100 : 0,
+        color: HUNTERS_COLORS[name],
+      };
+    });
+  }, [jalons, dossiers, factures]);
+
+  const totalRepartition = repartitionService.reduce((s, r) => s + r.ca, 0);
+
   const loading = dLoad || mLoad || fLoad;
+
 
   return (
     <AppLayout>
@@ -226,7 +311,80 @@ export default function Reporting() {
             ))}
           </div>
         </div>
+
+        {/* Répartition du CA par type de service (Directeur uniquement) */}
+        {isAdmin && (
+          <div className="bg-card border border-border/60 rounded-xl shadow-card overflow-hidden">
+            <div className="px-5 py-4 border-b border-border/60 flex items-center gap-2">
+              <PieIcon className="w-4 h-4 text-accent" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground">
+                Répartition du CA par type de service
+              </h2>
+            </div>
+            {totalRepartition === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-10">
+                Aucun jalon facturé ou payé à ce jour
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-5">
+                <div className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={repartitionService.filter(r => r.ca > 0)}
+                        dataKey="ca"
+                        nameKey="name"
+                        innerRadius={50}
+                        outerRadius={100}
+                        paddingAngle={2}
+                      >
+                        {repartitionService.filter(r => r.ca > 0).map(r => (
+                          <Cell key={r.name} fill={r.color} stroke="hsl(var(--background))" strokeWidth={2} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number) => fmtEur(Number(value) || 0)}
+                        contentStyle={{ borderRadius: 8, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
+                      />
+                      <Legend verticalAlign="bottom" iconType="circle" />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/40">
+                      <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground">
+                        <th className="px-3 py-2 font-semibold">Service</th>
+                        <th className="px-3 py-2 font-semibold text-right">Dossiers</th>
+                        <th className="px-3 py-2 font-semibold text-right">CA HT</th>
+                        <th className="px-3 py-2 font-semibold text-right">Ticket moyen</th>
+                        <th className="px-3 py-2 font-semibold text-right">Remises</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/50">
+                      {repartitionService.map(r => (
+                        <tr key={r.name} className="hover:bg-muted/20">
+                          <td className="px-3 py-2 font-medium text-foreground">
+                            <span className="inline-flex items-center gap-2">
+                              <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: r.color }} />
+                              {r.name}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums">{r.nbDossiers}</td>
+                          <td className="px-3 py-2 text-right tabular-nums font-semibold">{fmtEur(r.ca)}</td>
+                          <td className="px-3 py-2 text-right tabular-nums">{fmtEur(r.ticketMoyen)}</td>
+                          <td className="px-3 py-2 text-right tabular-nums text-destructive">{fmtEur(r.remises)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
     </AppLayout>
   );
 }

@@ -218,7 +218,7 @@ export function buildDocumentPdf(ctx: DocumentBuildContext): jsPDF {
       y = renderText(doc, text, y, pageWidth, pageHeight, ctx);
     } else if (section.type === 'financier') {
       const values = ctx.financierValues[section.id] || {};
-      y = renderFinancier(doc, section, values, y, pageWidth);
+      y = renderFinancier(doc, section, values, y, pageWidth, pageHeight, ctx);
     } else if (section.type === 'services_conditionnels') {
       const services = ctx.services || {};
       const labels = ctx.serviceLabels || {};

@@ -8,6 +8,8 @@ import JournalActivite from '@/components/JournalActivite';
 import HistoriqueStatuts from '@/components/HistoriqueStatuts';
 import RapportConseilButton from '@/components/RapportConseilButton';
 import RapportsGeneresList from '@/components/RapportsGeneresList';
+import NouveauDocumentButton from '@/components/NouveauDocumentButton';
+import DocumentsContractuelsList from '@/components/DocumentsContractuelsList';
 import SignatureSection from '@/components/SignatureSection';
 import ClientPortalSection, { ClientComments } from '@/components/ClientPortalSection';
 import StrategieIA from '@/components/StrategieIA';
@@ -297,8 +299,13 @@ export default function DossierDetail() {
 
           {/* Documents */}
           <TabsContent value="documents" className="mt-4">
-            <div className="bg-card border rounded-xl p-6">
+            <div className="bg-card border rounded-xl p-6 space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <h3 className="text-sm font-semibold text-foreground">Documents du dossier</h3>
+                <NouveauDocumentButton dossier={dossier} />
+              </div>
               <DocumentsSection dossierId={dossier.id} />
+              <DocumentsContractuelsList dossier={dossier} />
               <RapportsGeneresList dossier={dossier} />
             </div>
           </TabsContent>

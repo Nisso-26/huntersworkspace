@@ -13,6 +13,7 @@ import DocumentsContractuelsList from '@/components/DocumentsContractuelsList';
 import SignatureSection from '@/components/SignatureSection';
 import ClientPortalSection, { ClientComments } from '@/components/ClientPortalSection';
 import StrategieIA from '@/components/StrategieIA';
+import GrilleControleAnalyste, { GrilleStatutBadge } from '@/components/GrilleControleAnalyste';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -287,8 +288,17 @@ export default function DossierDetail() {
 
           {/* Stratégie */}
           <TabsContent value="strategie" className="mt-4">
-            <div className="bg-card border rounded-xl p-6">
+            <div className="bg-card border rounded-xl p-6 space-y-6">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <h3 className="text-sm font-semibold text-foreground">Stratégie patrimoniale</h3>
+                <GrilleStatutBadge statut={(dossier as any).grille_statut} />
+              </div>
               <StrategieIA dossier={dossier} />
+              {dossier.strategie && (
+                <div className="mt-6 border-t pt-6">
+                  <GrilleControleAnalyste dossier={dossier as any} />
+                </div>
+              )}
             </div>
           </TabsContent>
 

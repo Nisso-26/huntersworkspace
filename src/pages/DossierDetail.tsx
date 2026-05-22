@@ -13,6 +13,7 @@ import DocumentsContractuelsList from '@/components/DocumentsContractuelsList';
 import SignatureSection from '@/components/SignatureSection';
 import ClientPortalSection, { ClientComments } from '@/components/ClientPortalSection';
 import StrategieIA from '@/components/StrategieIA';
+import GrilleControleAnalyste, { GrilleStatutBadge } from '@/components/GrilleControleAnalyste';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

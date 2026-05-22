@@ -729,6 +729,11 @@ export type Database = {
           epargne_disponible: number | null
           epargne_financiere: Json | null
           etape: number | null
+          grille_controle: Json | null
+          grille_modifications: Json | null
+          grille_statut: string | null
+          grille_validee_at: string | null
+          grille_validee_par: string | null
           honoraires: number | null
           horizon_investissement: string | null
           id: string
@@ -797,6 +802,11 @@ export type Database = {
           epargne_disponible?: number | null
           epargne_financiere?: Json | null
           etape?: number | null
+          grille_controle?: Json | null
+          grille_modifications?: Json | null
+          grille_statut?: string | null
+          grille_validee_at?: string | null
+          grille_validee_par?: string | null
           honoraires?: number | null
           horizon_investissement?: string | null
           id?: string
@@ -865,6 +875,11 @@ export type Database = {
           epargne_disponible?: number | null
           epargne_financiere?: Json | null
           etape?: number | null
+          grille_controle?: Json | null
+          grille_modifications?: Json | null
+          grille_statut?: string | null
+          grille_validee_at?: string | null
+          grille_validee_par?: string | null
           honoraires?: number | null
           horizon_investissement?: string | null
           id?: string

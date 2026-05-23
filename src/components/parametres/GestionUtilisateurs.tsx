@@ -108,6 +108,7 @@ export default function GestionUtilisateurs() {
     super_admin: 'Directeur',
     mandataire: 'Conseiller',
     decoratrice: 'Décoratrice',
+    analyste: 'Analyste patrimoniale',
   };
 
   return (

@@ -9,9 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { ChevronDown, ChevronUp, Loader2, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Info, FileText, Download } from 'lucide-react';
+import { ChevronDown, ChevronUp, Loader2, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Info, FileText, Download, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { exportStrategiePdf } from '@/lib/export-strategie-pdf';
+import ReferentielFiscal from '@/components/ReferentielFiscal';
 import {
   parseStrategie,
   STRATEGIE_ERROR_MESSAGES,
@@ -26,7 +27,9 @@ const fmt = (v: number) => v?.toLocaleString('fr-FR') ?? '0';
 
 export default function StrategieIA({ dossier }: Props) {
   const updateMut = useUpdateDossier();
-  const { user } = useAuth();
+  const { user, role, isAdmin } = useAuth();
+  const canAccessReferentiel = isAdmin || role === 'analyste';
+  const [referentielOpen, setReferentielOpen] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -118,7 +121,19 @@ export default function StrategieIA({ dossier }: Props) {
           <TrendingUp className="w-4 h-4 text-accent" />
           Stratégie patrimoniale
         </h3>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {canAccessReferentiel && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setReferentielOpen(true)}
+              className="gap-2 border-[#1A4D2E] text-[#1A4D2E] hover:bg-[#1A4D2E] hover:text-white"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              Référentiel fiscal
+            </Button>
+          )}
           {strategie && (
             <Button
               size="sm"
@@ -141,6 +156,10 @@ export default function StrategieIA({ dossier }: Props) {
           </Button>
         </div>
       </div>
+
+      {canAccessReferentiel && (
+        <ReferentielFiscal open={referentielOpen} onOpenChange={setReferentielOpen} />
+      )}
 
       {/* Formulaire de saisie */}
       {showForm && (

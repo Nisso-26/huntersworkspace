@@ -294,10 +294,10 @@ export default function DossierDetail() {
             <div className="bg-card border rounded-xl p-6 space-y-6">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <h3 className="text-sm font-semibold text-foreground">Stratégie patrimoniale</h3>
-                <GrilleStatutBadge statut={(dossier as any).grille_statut} />
+                {canSeeStatut && <BadgeStatutGrille statut={(dossier as any).grille_statut} />}
               </div>
               <StrategieIA dossier={dossier} />
-              {dossier.strategie && (
+              {dossier.strategie && canAccessGrille && (
                 <div className="mt-6 border-t pt-6">
                   <GrilleControleAnalyste dossier={dossier as any} />
                 </div>

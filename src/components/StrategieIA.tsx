@@ -9,9 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { ChevronDown, ChevronUp, Loader2, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Info, FileText, Download } from 'lucide-react';
+import { ChevronDown, ChevronUp, Loader2, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Info, FileText, Download, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { exportStrategiePdf } from '@/lib/export-strategie-pdf';
+import ReferentielFiscal from '@/components/ReferentielFiscal';
 import {
   parseStrategie,
   STRATEGIE_ERROR_MESSAGES,

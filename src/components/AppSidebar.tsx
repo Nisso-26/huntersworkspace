@@ -62,6 +62,7 @@ export default function AppSidebar({ mobile = false }: AppSidebarProps) {
     super_admin: 'Directeur',
     mandataire: 'Conseiller',
     decoratrice: 'Décoratrice',
+    analyste: 'Analyste patrimoniale',
   };
 
   const isCollapsed = mobile ? false : collapsed;

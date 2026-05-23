@@ -146,6 +146,7 @@ export default function GestionUtilisateurs() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="mandataire">Conseiller en investissement</SelectItem>
+                <SelectItem value="analyste">Analyste patrimoniale</SelectItem>
                 <SelectItem value="decoratrice">Décoratrice</SelectItem>
                 <SelectItem value="super_admin">Directeur</SelectItem>
               </SelectContent>

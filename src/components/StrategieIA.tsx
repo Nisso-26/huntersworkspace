@@ -27,7 +27,9 @@ const fmt = (v: number) => v?.toLocaleString('fr-FR') ?? '0';
 
 export default function StrategieIA({ dossier }: Props) {
   const updateMut = useUpdateDossier();
-  const { user } = useAuth();
+  const { user, role, isAdmin } = useAuth();
+  const canAccessReferentiel = isAdmin || role === 'analyste';
+  const [referentielOpen, setReferentielOpen] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [showForm, setShowForm] = useState(false);

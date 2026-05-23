@@ -3,7 +3,7 @@ import { Session, User, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-type AppRole = 'super_admin' | 'mandataire' | 'decoratrice';
+type AppRole = 'super_admin' | 'mandataire' | 'decoratrice' | 'analyste';
 
 interface AuthContextType {
   session: Session | null;

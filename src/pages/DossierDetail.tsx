@@ -49,7 +49,9 @@ export default function DossierDetail() {
   const navigate = useNavigate();
   const { data: dossiers = [], isLoading } = useDossiers();
   const { data: mandataires = [] } = useMandataires();
-  const { isAdmin } = useAuth();
+  const { isAdmin, role } = useAuth();
+  const canAccessGrille = role === 'super_admin' || role === 'analyste';
+  const canSeeStatut = canAccessGrille || role === 'mandataire';
   const updateMut = useUpdateDossier();
   const deleteMut = useDeleteDossier();
 

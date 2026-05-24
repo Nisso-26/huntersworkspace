@@ -56,6 +56,9 @@ export default function DossierDialog({ dossier, trigger }: Props) {
     dossier ? loadFicheFromDossier(dossier as any) : emptyFicheValues()
   );
 
+  const [qualification, setQualification] = useState<QualificationValues>(emptyQualification());
+  const qualResult = computeQualification(qualification);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload: any = {
@@ -68,10 +71,26 @@ export default function DossierDialog({ dossier, trigger }: Props) {
     if (isEdit) {
       await updateMut.mutateAsync({ id: dossier.id, ...payload });
     } else {
-      await createMut.mutateAsync(payload);
+      payload.score_qualification = qualResult.score;
+      payload.niveau_qualification = qualResult.niveau;
+      payload.tarif_conseil_ht = qualResult.tarif;
+      const created = await createMut.mutateAsync(payload);
+      if (qualResult.score >= 6 && created?.id) {
+        try {
+          await supabase.rpc('notify_super_admins_expert_dossier', {
+            _dossier_id: created.id,
+            _client_name: form.client_name,
+            _score: qualResult.score,
+          });
+        } catch (err) {
+          console.error('Notification super admin échouée', err);
+          toast.error('Dossier créé mais notification directeur échouée');
+        }
+      }
     }
     setOpen(false);
   };
+
 
   const statuses = [
     { value: 'nouveau', label: 'Nouveau' },

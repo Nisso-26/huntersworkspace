@@ -779,6 +779,7 @@ export type Database = {
           impot_revenu_paye: number | null
           mandataire_id: string | null
           nationalite: string | null
+          niveau_qualification: string | null
           nombre_enfants: number | null
           notes: string | null
           numero_dossier: string | null
@@ -796,6 +797,7 @@ export type Database = {
           revenus_fiscaux_reference: number | null
           revenus_locatifs_existants: number | null
           revenus_nets_mensuels: number | null
+          score_qualification: number | null
           secteur_activite: string | null
           services_souscrits: Json | null
           situation_familiale: string | null
@@ -803,6 +805,7 @@ export type Database = {
           status: string
           statut_professionnel: string | null
           strategie: string | null
+          tarif_conseil_ht: number | null
           taux_endettement_actuel: number | null
           tmi: number | null
           type_accompagnement: string | null
@@ -852,6 +855,7 @@ export type Database = {
           impot_revenu_paye?: number | null
           mandataire_id?: string | null
           nationalite?: string | null
+          niveau_qualification?: string | null
           nombre_enfants?: number | null
           notes?: string | null
           numero_dossier?: string | null
@@ -869,6 +873,7 @@ export type Database = {
           revenus_fiscaux_reference?: number | null
           revenus_locatifs_existants?: number | null
           revenus_nets_mensuels?: number | null
+          score_qualification?: number | null
           secteur_activite?: string | null
           services_souscrits?: Json | null
           situation_familiale?: string | null
@@ -876,6 +881,7 @@ export type Database = {
           status?: string
           statut_professionnel?: string | null
           strategie?: string | null
+          tarif_conseil_ht?: number | null
           taux_endettement_actuel?: number | null
           tmi?: number | null
           type_accompagnement?: string | null
@@ -925,6 +931,7 @@ export type Database = {
           impot_revenu_paye?: number | null
           mandataire_id?: string | null
           nationalite?: string | null
+          niveau_qualification?: string | null
           nombre_enfants?: number | null
           notes?: string | null
           numero_dossier?: string | null
@@ -942,6 +949,7 @@ export type Database = {
           revenus_fiscaux_reference?: number | null
           revenus_locatifs_existants?: number | null
           revenus_nets_mensuels?: number | null
+          score_qualification?: number | null
           secteur_activite?: string | null
           services_souscrits?: Json | null
           situation_familiale?: string | null
@@ -949,6 +957,7 @@ export type Database = {
           status?: string
           statut_professionnel?: string | null
           strategie?: string | null
+          tarif_conseil_ht?: number | null
           taux_endettement_actuel?: number | null
           tmi?: number | null
           type_accompagnement?: string | null

@@ -18,6 +18,11 @@ import AccompagnementSection from '@/components/AccompagnementSection';
 import FicheClientFields from '@/components/FicheClientFields';
 import { emptyFicheValues, loadFicheFromDossier, serializeFicheForSave, type FicheValues } from '@/lib/fiche-client-fields';
 import { ALL_SERVICES_TRUE } from '@/lib/workflow';
+import QualificationClient, { emptyQualification, computeQualification, type QualificationValues } from '@/components/QualificationClient';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+
 
 interface Props {
   dossier?: Dossier;

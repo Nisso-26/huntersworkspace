@@ -1837,6 +1837,10 @@ export type Database = {
         Returns: boolean
       }
       mark_portal_token_viewed: { Args: { _token: string }; Returns: undefined }
+      notify_super_admins_expert_dossier: {
+        Args: { _client_name: string; _dossier_id: string; _score: number }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "super_admin" | "mandataire" | "decoratrice" | "analyste"

@@ -1804,6 +1804,18 @@ export type Database = {
         Returns: boolean
       }
       get_dossier_for_portal: { Args: { _dossier_id: string }; Returns: Json }
+      get_portal_token: {
+        Args: { _token: string }
+        Returns: {
+          client_email: string
+          client_name: string
+          dossier_id: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          last_viewed_at: string
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -1815,6 +1827,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      mark_portal_token_viewed: { Args: { _token: string }; Returns: undefined }
     }
     Enums: {
       app_role: "super_admin" | "mandataire" | "decoratrice" | "analyste"

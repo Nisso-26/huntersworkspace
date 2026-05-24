@@ -64,24 +64,16 @@ export function useRevokeClientToken() {
 
 // Public fetch for the portal (no auth needed)
 export async function fetchPortalData(token: string) {
-  // Use anon key — no auth session
-  const { data: tokenData, error: tokenError } = await supabase
-    .from('client_tokens')
-    .select('*')
-    .eq('token', token)
-    .eq('is_active', true)
-    .single();
+  // Validate token via secure RPC (no direct table access for anon)
+  const { data: tokenRows, error: tokenError } = await (supabase as any)
+    .rpc('get_portal_token', { _token: token });
 
+  const tokenData = Array.isArray(tokenRows) ? tokenRows[0] : tokenRows;
   if (tokenError || !tokenData) throw new Error('Lien invalide ou expiré');
-
-  const now = new Date();
-  if (new Date(tokenData.expires_at) < now) throw new Error('Lien expiré');
 
   // Marque la consultation pour le suivi de relance automatique (best-effort)
   try {
-    await (supabase.from('client_tokens') as any)
-      .update({ last_viewed_at: new Date().toISOString() })
-      .eq('id', tokenData.id);
+    await (supabase as any).rpc('mark_portal_token_viewed', { _token: token });
   } catch (_) { /* ignore */ }
 
   const dossierId = tokenData.dossier_id;

@@ -147,6 +147,45 @@ export type Database = {
           },
         ]
       }
+      baremes_hunters: {
+        Row: {
+          created_at: string
+          id: string
+          ordre: number
+          service: string
+          tranche_max: number | null
+          tranche_min: number
+          type: string
+          updated_at: string
+          valeur: number
+          valeur_fixe: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ordre?: number
+          service: string
+          tranche_max?: number | null
+          tranche_min?: number
+          type?: string
+          updated_at?: string
+          valeur?: number
+          valeur_fixe?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ordre?: number
+          service?: string
+          tranche_max?: number | null
+          tranche_min?: number
+          type?: string
+          updated_at?: string
+          valeur?: number
+          valeur_fixe?: number
+        }
+        Relationships: []
+      }
       biens: {
         Row: {
           adresse: string | null

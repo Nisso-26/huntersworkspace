@@ -58,7 +58,9 @@ function ServiceEditor({ service, all }: { service: BaremeService; all: BaremeHu
           <span className="col-span-3">Valeur (€ ou %)</span>
           <span className="col-span-1"></span>
         </div>
-        {rows.map((row, i) => (
+        {rows.map((row, i) => {
+          const isPackOnly = service === 'chasse' && (row.tranche_max ?? Infinity) <= 100000;
+          return (
           <div key={i} className="grid grid-cols-12 gap-2 items-center">
             <Input className="col-span-2" type="number" value={row.tranche_min}
               onChange={e => update(i, 'tranche_min', Number(e.target.value))} />

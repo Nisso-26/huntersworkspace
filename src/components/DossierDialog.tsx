@@ -57,10 +57,15 @@ export default function DossierDialog({ dossier, trigger }: Props) {
   );
 
   const [qualification, setQualification] = useState<QualificationValues>(emptyQualification());
+  const [qualificationConfirmed, setQualificationConfirmed] = useState(false);
   const qualResult = computeQualification(qualification);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isEdit && !qualificationConfirmed) {
+      toast.error('Veuillez compléter et confirmer la qualification client');
+      return;
+    }
     const payload: any = {
       ...form,
       ...serializeFicheForSave(fiche),
@@ -122,7 +127,18 @@ export default function DossierDialog({ dossier, trigger }: Props) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isEdit && (
-            <QualificationClient values={qualification} onChange={setQualification} />
+            <>
+              <QualificationClient values={qualification} onChange={setQualification} />
+              <label className="flex items-start gap-2 text-sm rounded-md border p-3 bg-background cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={qualificationConfirmed}
+                  onChange={e => setQualificationConfirmed(e.target.checked)}
+                  className="mt-1"
+                />
+                <span>Je confirme avoir complété la qualification client (étape obligatoire).</span>
+              </label>
+            </>
           )}
 
           <div className="grid grid-cols-2 gap-4">

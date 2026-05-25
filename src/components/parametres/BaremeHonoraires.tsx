@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Receipt, Plus, Trash2, Save, Info } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   useBaremesHunters, useSaveBaremesService,
@@ -57,7 +58,9 @@ function ServiceEditor({ service, all }: { service: BaremeService; all: BaremeHu
           <span className="col-span-3">Valeur (€ ou %)</span>
           <span className="col-span-1"></span>
         </div>
-        {rows.map((row, i) => (
+        {rows.map((row, i) => {
+          const isPackOnly = service === 'chasse' && (row.tranche_max ?? Infinity) <= 100000;
+          return (
           <div key={i} className="grid grid-cols-12 gap-2 items-center">
             <Input className="col-span-2" type="number" value={row.tranche_min}
               onChange={e => update(i, 'tranche_min', Number(e.target.value))} />
@@ -80,8 +83,13 @@ function ServiceEditor({ service, all }: { service: BaremeService; all: BaremeHu
             <Button className="col-span-1" size="icon" variant="ghost" onClick={() => remove(i)}>
               <Trash2 className="w-4 h-4 text-destructive" />
             </Button>
+            {isPackOnly && (
+              <div className="col-span-12 -mt-1 pl-1">
+                <Badge variant="destructive" className="text-[10px]">Pack uniquement</Badge>
+              </div>
+            )}
           </div>
-        ))}
+        );})}
       </div>
 
       <div className="flex items-center justify-between pt-2">

@@ -24,7 +24,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { ArrowLeft, Save, Trash2, User, TrendingUp, FileText, PenTool, Globe, Receipt } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, User, TrendingUp, FileText, PenTool, Globe, Receipt, FileSignature } from 'lucide-react';
+import DevisGenerator from '@/components/DevisGenerator';
 import { useMandataires } from '@/hooks/use-mandataires';
 import WorkflowProgress from '@/components/WorkflowProgress';
 import AccompagnementSection from '@/components/AccompagnementSection';
@@ -195,12 +196,15 @@ export default function DossierDetail() {
 
         {/* Onglets */}
         <Tabs defaultValue="infos">
-          <TabsList className="w-full grid grid-cols-6">
+          <TabsList className="w-full grid grid-cols-7">
             <TabsTrigger value="infos" className="gap-1.5 text-xs">
               <User className="w-3.5 h-3.5" />Infos
             </TabsTrigger>
             <TabsTrigger value="strategie" className="gap-1.5 text-xs">
-              <TrendingUp className="w-3.5 h-3.5" />Stratégie patrimoniale
+              <TrendingUp className="w-3.5 h-3.5" />Stratégie
+            </TabsTrigger>
+            <TabsTrigger value="devis" className="gap-1.5 text-xs">
+              <FileSignature className="w-3.5 h-3.5" />Devis
             </TabsTrigger>
             <TabsTrigger value="facturation" className="gap-1.5 text-xs">
               <Receipt className="w-3.5 h-3.5" />Facturation
@@ -303,6 +307,11 @@ export default function DossierDetail() {
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          {/* Devis */}
+          <TabsContent value="devis" className="mt-4">
+            <DevisGenerator dossier={dossier} />
           </TabsContent>
 
           {/* Facturation */}

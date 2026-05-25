@@ -83,8 +83,13 @@ function ServiceEditor({ service, all }: { service: BaremeService; all: BaremeHu
             <Button className="col-span-1" size="icon" variant="ghost" onClick={() => remove(i)}>
               <Trash2 className="w-4 h-4 text-destructive" />
             </Button>
+            {isPackOnly && (
+              <div className="col-span-12 -mt-1 pl-1">
+                <Badge variant="destructive" className="text-[10px]">Pack uniquement</Badge>
+              </div>
+            )}
           </div>
-        ))}
+        );})}
       </div>
 
       <div className="flex items-center justify-between pt-2">

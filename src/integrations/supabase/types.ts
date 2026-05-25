@@ -595,6 +595,57 @@ export type Database = {
           },
         ]
       }
+      devis: {
+        Row: {
+          contenu: Json
+          created_at: string
+          created_by: string | null
+          date_emission: string
+          dossier_id: string
+          id: string
+          montant_ht: number
+          montant_ttc: number
+          numero: string | null
+          pack_actif: boolean
+          remise_pack: number
+          statut: string
+          tva_taux: number
+          updated_at: string
+        }
+        Insert: {
+          contenu?: Json
+          created_at?: string
+          created_by?: string | null
+          date_emission?: string
+          dossier_id: string
+          id?: string
+          montant_ht?: number
+          montant_ttc?: number
+          numero?: string | null
+          pack_actif?: boolean
+          remise_pack?: number
+          statut?: string
+          tva_taux?: number
+          updated_at?: string
+        }
+        Update: {
+          contenu?: Json
+          created_at?: string
+          created_by?: string | null
+          date_emission?: string
+          dossier_id?: string
+          id?: string
+          montant_ht?: number
+          montant_ttc?: number
+          numero?: string | null
+          pack_actif?: boolean
+          remise_pack?: number
+          statut?: string
+          tva_taux?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string
@@ -812,6 +863,7 @@ export type Database = {
           type_bien_souhaite: string | null
           type_location_souhaite: string | null
           updated_at: string
+          validation_directeur_requise: boolean
           ville: string | null
         }
         Insert: {
@@ -888,6 +940,7 @@ export type Database = {
           type_bien_souhaite?: string | null
           type_location_souhaite?: string | null
           updated_at?: string
+          validation_directeur_requise?: boolean
           ville?: string | null
         }
         Update: {
@@ -964,6 +1017,7 @@ export type Database = {
           type_bien_souhaite?: string | null
           type_location_souhaite?: string | null
           updated_at?: string
+          validation_directeur_requise?: boolean
           ville?: string | null
         }
         Relationships: []

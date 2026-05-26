@@ -11,6 +11,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
+import ValidationsEnAttente from '@/components/ValidationsEnAttente';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } } as const;
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' as const } } } as const;
@@ -88,6 +89,12 @@ export default function Dashboard() {
             </div>
           )}
         </motion.div>
+
+        {isAdmin && (
+          <motion.div variants={item}>
+            <ValidationsEnAttente />
+          </motion.div>
+        )}
 
         {/* KPI Cards */}
         <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">

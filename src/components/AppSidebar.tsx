@@ -10,6 +10,7 @@ import GlobalSearch from '@/components/GlobalSearch';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAlertes } from '@/hooks/use-alertes';
 import { useUnreadTotal } from '@/hooks/use-messagerie';
+import { useValidationsEnAttente } from '@/hooks/use-validations-dossiers';
 import huntersLogo from '@/assets/hunters-logo.jpg';
 
 const allNavItems = [
@@ -48,7 +49,9 @@ export default function AppSidebar({ mobile = false }: AppSidebarProps) {
   const { user, role, signOut } = useAuth();
   const { data: alertes = [] } = useAlertes();
   const unreadMessages = useUnreadTotal();
+  const { data: validations = [] } = useValidationsEnAttente();
   const unreadCount = alertes.filter(a => !a.is_read).length;
+  const validationsCount = validations.length;
 
   const navItems = allNavItems.filter(item => !role || item.roles.includes(role));
 
@@ -128,7 +131,11 @@ export default function AppSidebar({ mobile = false }: AppSidebarProps) {
                 (item.href !== '/' && location.pathname.startsWith(item.href));
               const isAlertItem = item.href === '/alertes';
               const isMessageItem = item.href === '/messagerie';
-              const badgeCount = isAlertItem ? unreadCount : isMessageItem ? unreadMessages : 0;
+              const isDashboardItem = item.href === '/';
+              const badgeCount = isAlertItem ? unreadCount
+                : isMessageItem ? unreadMessages
+                : (isDashboardItem && role === 'super_admin') ? validationsCount
+                : 0;
 
               return (
                 <Link

@@ -560,6 +560,51 @@ export type Database = {
         }
         Relationships: []
       }
+      conformite_mandataires: {
+        Row: {
+          annee: number
+          attestation_debut: string | null
+          attestation_fin: string | null
+          created_at: string
+          heures_formation_annee: number
+          id: string
+          justificatifs: Json
+          mandataire_id: string
+          statut_attestation: string
+          statut_formation: string
+          suspendu: boolean
+          updated_at: string
+        }
+        Insert: {
+          annee?: number
+          attestation_debut?: string | null
+          attestation_fin?: string | null
+          created_at?: string
+          heures_formation_annee?: number
+          id?: string
+          justificatifs?: Json
+          mandataire_id: string
+          statut_attestation?: string
+          statut_formation?: string
+          suspendu?: boolean
+          updated_at?: string
+        }
+        Update: {
+          annee?: number
+          attestation_debut?: string | null
+          attestation_fin?: string | null
+          created_at?: string
+          heures_formation_annee?: number
+          id?: string
+          justificatifs?: Json
+          mandataire_id?: string
+          statut_attestation?: string
+          statut_formation?: string
+          suspendu?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string
@@ -1111,6 +1156,7 @@ export type Database = {
           montant_ttc: number | null
           numero_facture: string | null
           reference: string | null
+          relance_etape: number
           remise_montant: number | null
           remise_pct: number | null
           statut: string
@@ -1134,6 +1180,7 @@ export type Database = {
           montant_ttc?: number | null
           numero_facture?: string | null
           reference?: string | null
+          relance_etape?: number
           remise_montant?: number | null
           remise_pct?: number | null
           statut?: string
@@ -1157,6 +1204,7 @@ export type Database = {
           montant_ttc?: number | null
           numero_facture?: string | null
           reference?: string | null
+          relance_etape?: number
           remise_montant?: number | null
           remise_pct?: number | null
           statut?: string
@@ -1574,6 +1622,7 @@ export type Database = {
           pack_status: string | null
           parrain_id: string | null
           status: string | null
+          suspendu: boolean
           updated_at: string
           zone: string | null
         }
@@ -1590,6 +1639,7 @@ export type Database = {
           pack_status?: string | null
           parrain_id?: string | null
           status?: string | null
+          suspendu?: boolean
           updated_at?: string
           zone?: string | null
         }
@@ -1606,6 +1656,7 @@ export type Database = {
           pack_status?: string | null
           parrain_id?: string | null
           status?: string | null
+          suspendu?: boolean
           updated_at?: string
           zone?: string | null
         }
@@ -1813,6 +1864,36 @@ export type Database = {
         }
         Relationships: []
       }
+      validations_dossiers: {
+        Row: {
+          created_at: string
+          decideur_id: string | null
+          dossier_id: string
+          id: string
+          motif: string | null
+          statut: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decideur_id?: string | null
+          dossier_id: string
+          id?: string
+          motif?: string | null
+          statut?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decideur_id?: string | null
+          dossier_id?: string
+          id?: string
+          motif?: string | null
+          statut?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       visites_chantier: {
         Row: {
           chantier_id: string
@@ -1862,6 +1943,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decide_validation_dossier: {
+        Args: { _motif?: string; _statut: string; _validation_id: string }
+        Returns: undefined
+      }
       dossier_has_active_token: {
         Args: { _dossier_id: string }
         Returns: boolean

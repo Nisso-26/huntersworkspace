@@ -158,6 +158,11 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
           <Button onClick={handleSave}>Enregistrer</Button>
         </div>
       </div>
+        </TabsContent>
+        <TabsContent value="conformite" className="mt-4">
+          <ConformiteTab mandataireId={m.id} />
+        </TabsContent>
+      </Tabs>
     </DialogContent>
   );
 }

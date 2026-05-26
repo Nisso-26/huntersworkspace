@@ -61,7 +61,11 @@ export default function ModeleEconomique() {
       </div>
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2"><Label>Taux commission siège (%)</Label><Input type="number" step="0.5" value={form.taux_commission_siege ?? 40} onChange={e => set('taux_commission_siege', Number(e.target.value))} /></div>
-        <div className="space-y-2"><Label>Tarif abonnement mensuel HT (€)</Label><Input type="number" value={form.tarif_abonnement_defaut ?? 125} onChange={e => set('tarif_abonnement_defaut', Number(e.target.value))} /></div>
+        <div className="space-y-2">
+          <Label>Tarif pack mensuel HT (€)</Label>
+          <Input type="number" value={form.tarif_abonnement_defaut ?? 149} onChange={e => set('tarif_abonnement_defaut', Number(e.target.value))} />
+          <p className="text-xs text-muted-foreground">Exigible dès le 1er mois suivant la signature — sans franchise. TVA 20 % → <strong>{((Number(form.tarif_abonnement_defaut ?? 149)) * 1.2).toFixed(2)} € TTC</strong>.</p>
+        </div>
         <div className="space-y-2"><Label>Période d'essai (jours)</Label><Input type="number" value={form.periode_essai_jours ?? 30} onChange={e => set('periode_essai_jours', Number(e.target.value))} /></div>
         <div className="space-y-2"><Label>Délai suspension après impayé (jours)</Label><Input type="number" value={form.delai_suspension_jours ?? 5} onChange={e => set('delai_suspension_jours', Number(e.target.value))} /></div>
         <div className="space-y-2"><Label>TVA par défaut (%)</Label><Input type="number" step="0.1" value={form.tva_taux_defaut ?? 20} onChange={e => set('tva_taux_defaut', Number(e.target.value))} /></div>

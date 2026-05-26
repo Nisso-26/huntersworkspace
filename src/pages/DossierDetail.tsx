@@ -26,6 +26,7 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import { ArrowLeft, Save, Trash2, User, TrendingUp, FileText, PenTool, Globe, Receipt, FileSignature } from 'lucide-react';
 import DevisGenerator from '@/components/DevisGenerator';
+import ValidationBanner from '@/components/ValidationBanner';
 import { useMandataires } from '@/hooks/use-mandataires';
 import WorkflowProgress from '@/components/WorkflowProgress';
 import AccompagnementSection from '@/components/AccompagnementSection';
@@ -191,6 +192,9 @@ export default function DossierDetail() {
           </div>
         </div>
 
+        {/* Bannière validation directeur */}
+        <ValidationBanner dossierId={dossier.id} />
+
         {/* Workflow progression */}
         <WorkflowProgress dossier={dossier} />
 
@@ -311,7 +315,15 @@ export default function DossierDetail() {
 
           {/* Devis */}
           <TabsContent value="devis" className="mt-4">
-            <DevisGenerator dossier={dossier} />
+            {(dossier as any).validation_directeur_requise ? (
+              <div className="bg-card border rounded-xl p-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  La génération de devis est bloquée tant que le directeur n'a pas validé ce dossier Expert.
+                </p>
+              </div>
+            ) : (
+              <DevisGenerator dossier={dossier} />
+            )}
           </TabsContent>
 
           {/* Facturation */}

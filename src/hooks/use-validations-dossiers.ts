@@ -37,7 +37,7 @@ export function useValidationsEnAttente() {
         .eq('statut', 'en_attente')
         .order('created_at', { ascending: true });
       if (error) throw error;
-      const ids = [...new Set((vals || []).map((v: any) => v.dossier_id))];
+      const ids = [...new Set((vals || []).map((v: any) => v.dossier_id as string))] as string[];
       if (ids.length === 0) return [];
       const { data: dossiers } = await supabase
         .from('dossiers')

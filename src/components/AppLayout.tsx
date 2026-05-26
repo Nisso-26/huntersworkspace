@@ -1,10 +1,12 @@
 import { ReactNode } from 'react';
 import AppSidebar from './AppSidebar';
 import MobileHeader from './MobileHeader';
+import { useValidationRealtimeForMandataire } from '@/hooks/use-validations-dossiers';
 
 interface AppLayoutProps { children: ReactNode; }
 
 export default function AppLayout({ children }: AppLayoutProps) {
+  useValidationRealtimeForMandataire();
   return (
     <div className="flex min-h-screen bg-background">
       <AppSidebar />

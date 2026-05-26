@@ -12,6 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ConformiteTab from '@/components/mandataires/ConformiteTab';
 
 const statusBadge: Record<string, string> = {
   actif: 'bg-hunters-success/10 text-hunters-success',
@@ -56,10 +58,13 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
   };
 
   return (
-    <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>{m.full_name || 'Conseiller'}</DialogTitle>
       </DialogHeader>
+      <Tabs defaultValue="profil">
+        <TabsList><TabsTrigger value="profil">Profil</TabsTrigger><TabsTrigger value="conformite">Conformité</TabsTrigger></TabsList>
+        <TabsContent value="profil" className="mt-4">
       <div className="space-y-6">
         {/* KPIs */}
         <div className="grid grid-cols-3 gap-3">

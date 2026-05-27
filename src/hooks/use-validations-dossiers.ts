@@ -12,6 +12,8 @@ export interface ValidationDossier {
   statut: ValidationStatut;
   decideur_id: string | null;
   motif: string | null;
+  score_client?: number | null;
+  tarif_conseil_calcule?: number | null;
   created_at: string;
   updated_at: string;
   // enrichis client-side
@@ -22,6 +24,7 @@ export interface ValidationDossier {
   score_qualification?: number | null;
   niveau_qualification?: string | null;
   tarif_conseil_ht?: number | null;
+  criteres_qualification?: Record<string, boolean> | null;
 }
 
 export function useValidationsEnAttente() {

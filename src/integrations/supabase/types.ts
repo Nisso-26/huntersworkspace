@@ -456,6 +456,14 @@ export type Database = {
           clause_mediation: string | null
           clause_retractation: string | null
           clause_rgpd: string | null
+          commission_amo_n1: number | null
+          commission_amo_n2: number | null
+          commission_chasse_n1: number | null
+          commission_chasse_n2: number | null
+          commission_conseil_n1: number | null
+          commission_conseil_n2: number | null
+          commission_deco_n1: number | null
+          commission_deco_n2: number | null
           couleur_primaire: string | null
           couleur_secondaire: string | null
           created_at: string | null
@@ -474,6 +482,7 @@ export type Database = {
           pied_page_document: string | null
           raison_sociale: string | null
           rcs: string | null
+          seuil_passage_n2: number | null
           siret: string | null
           site_web: string | null
           tarif_abonnement_defaut: number | null
@@ -494,6 +503,14 @@ export type Database = {
           clause_mediation?: string | null
           clause_retractation?: string | null
           clause_rgpd?: string | null
+          commission_amo_n1?: number | null
+          commission_amo_n2?: number | null
+          commission_chasse_n1?: number | null
+          commission_chasse_n2?: number | null
+          commission_conseil_n1?: number | null
+          commission_conseil_n2?: number | null
+          commission_deco_n1?: number | null
+          commission_deco_n2?: number | null
           couleur_primaire?: string | null
           couleur_secondaire?: string | null
           created_at?: string | null
@@ -512,6 +529,7 @@ export type Database = {
           pied_page_document?: string | null
           raison_sociale?: string | null
           rcs?: string | null
+          seuil_passage_n2?: number | null
           siret?: string | null
           site_web?: string | null
           tarif_abonnement_defaut?: number | null
@@ -532,6 +550,14 @@ export type Database = {
           clause_mediation?: string | null
           clause_retractation?: string | null
           clause_rgpd?: string | null
+          commission_amo_n1?: number | null
+          commission_amo_n2?: number | null
+          commission_chasse_n1?: number | null
+          commission_chasse_n2?: number | null
+          commission_conseil_n1?: number | null
+          commission_conseil_n2?: number | null
+          commission_deco_n1?: number | null
+          commission_deco_n2?: number | null
           couleur_primaire?: string | null
           couleur_secondaire?: string | null
           created_at?: string | null
@@ -550,6 +576,7 @@ export type Database = {
           pied_page_document?: string | null
           raison_sociale?: string | null
           rcs?: string | null
+          seuil_passage_n2?: number | null
           siret?: string | null
           site_web?: string | null
           tarif_abonnement_defaut?: number | null

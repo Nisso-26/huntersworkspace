@@ -25,7 +25,7 @@ export const emptyQualification = (): QualificationValues => ({
   credit_complexe: false,
 });
 
-const CRITERIA: { key: keyof QualificationValues; label: string; points: number }[] = [
+export const QUALIFICATION_CRITERIA: { key: keyof QualificationValues; label: string; points: number }[] = [
   { key: 'bien_existant', label: 'Client détient déjà 1 bien ou plus', points: 2 },
   { key: 'sci_holding', label: 'SCI existante ou à créer / holding', points: 2 },
   { key: 'statut_fiscal', label: 'Statut fiscal LMP, LMNP, IS ou déficit foncier actif', points: 2 },
@@ -35,6 +35,7 @@ const CRITERIA: { key: keyof QualificationValues; label: string; points: number 
   { key: 'budget_500k', label: 'Budget projet supérieur à 500 000 €', points: 2 },
   { key: 'credit_complexe', label: 'Montage crédit complexe (SCI IS, in fine, crédit pro)', points: 1 },
 ];
+const CRITERIA = QUALIFICATION_CRITERIA;
 
 export function computeQualification(v: QualificationValues) {
   const score = CRITERIA.reduce((s, c) => s + (v[c.key] ? c.points : 0), 0);

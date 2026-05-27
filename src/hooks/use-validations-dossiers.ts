@@ -12,6 +12,8 @@ export interface ValidationDossier {
   statut: ValidationStatut;
   decideur_id: string | null;
   motif: string | null;
+  score_client?: number | null;
+  tarif_conseil_calcule?: number | null;
   created_at: string;
   updated_at: string;
   // enrichis client-side
@@ -22,6 +24,7 @@ export interface ValidationDossier {
   score_qualification?: number | null;
   niveau_qualification?: string | null;
   tarif_conseil_ht?: number | null;
+  criteres_qualification?: Record<string, boolean> | null;
 }
 
 export function useValidationsEnAttente() {
@@ -41,7 +44,7 @@ export function useValidationsEnAttente() {
       if (ids.length === 0) return [];
       const { data: dossiers } = await supabase
         .from('dossiers')
-        .select('id, client_name, numero_dossier, mandataire_id, score_qualification, niveau_qualification, tarif_conseil_ht')
+        .select('id, client_name, numero_dossier, mandataire_id, score_qualification, niveau_qualification, tarif_conseil_ht, criteres_qualification')
         .in('id', ids);
       const mIds = [...new Set((dossiers || []).map(d => d.mandataire_id).filter(Boolean))] as string[];
       const profMap: Record<string, string> = {};
@@ -49,7 +52,7 @@ export function useValidationsEnAttente() {
         const { data: profs } = await supabase.from('profiles').select('id, full_name').in('id', mIds);
         (profs || []).forEach(p => { profMap[p.id] = p.full_name || ''; });
       }
-      const dMap = new Map((dossiers || []).map(d => [d.id, d]));
+      const dMap = new Map((dossiers || []).map(d => [d.id, d as any]));
       return (vals || []).map((v: any) => {
         const d = dMap.get(v.dossier_id);
         return {
@@ -61,6 +64,7 @@ export function useValidationsEnAttente() {
           score_qualification: d?.score_qualification,
           niveau_qualification: d?.niveau_qualification,
           tarif_conseil_ht: d?.tarif_conseil_ht,
+          criteres_qualification: d?.criteres_qualification ?? null,
         } as ValidationDossier;
       });
     },

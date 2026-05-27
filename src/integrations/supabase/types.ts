@@ -881,6 +881,7 @@ export type Database = {
           contraintes_particulieres: string | null
           created_at: string
           credits_en_cours: Json | null
+          criteres_qualification: Json | null
           date_naissance: string | null
           deficits_fonciers_existants: number | null
           deja_rencontre_banque: boolean | null
@@ -958,6 +959,7 @@ export type Database = {
           contraintes_particulieres?: string | null
           created_at?: string
           credits_en_cours?: Json | null
+          criteres_qualification?: Json | null
           date_naissance?: string | null
           deficits_fonciers_existants?: number | null
           deja_rencontre_banque?: boolean | null
@@ -1035,6 +1037,7 @@ export type Database = {
           contraintes_particulieres?: string | null
           created_at?: string
           credits_en_cours?: Json | null
+          criteres_qualification?: Json | null
           date_naissance?: string | null
           deficits_fonciers_existants?: number | null
           deja_rencontre_banque?: boolean | null
@@ -1898,7 +1901,9 @@ export type Database = {
           dossier_id: string
           id: string
           motif: string | null
+          score_client: number | null
           statut: string
+          tarif_conseil_calcule: number | null
           updated_at: string
         }
         Insert: {
@@ -1907,7 +1912,9 @@ export type Database = {
           dossier_id: string
           id?: string
           motif?: string | null
+          score_client?: number | null
           statut?: string
+          tarif_conseil_calcule?: number | null
           updated_at?: string
         }
         Update: {
@@ -1916,7 +1923,9 @@ export type Database = {
           dossier_id?: string
           id?: string
           motif?: string | null
+          score_client?: number | null
           statut?: string
+          tarif_conseil_calcule?: number | null
           updated_at?: string
         }
         Relationships: []

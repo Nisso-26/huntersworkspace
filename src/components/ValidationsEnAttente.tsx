@@ -6,8 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { ShieldCheck, AlertTriangle, Check, X, MessageSquare, ExternalLink } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, Check, X, MessageSquare, ExternalLink, ShieldAlert } from 'lucide-react';
 import { useValidationsEnAttente, useDecideValidation, type ValidationDossier } from '@/hooks/use-validations-dossiers';
+import { QUALIFICATION_CRITERIA } from '@/components/QualificationClient';
 
 type Action = 'valide' | 'refuse' | 'infos_demandees';
 const ACTION_LABEL: Record<Action, string> = {

@@ -79,6 +79,7 @@ export default function DossierDialog({ dossier, trigger }: Props) {
       payload.score_qualification = qualResult.score;
       payload.niveau_qualification = qualResult.niveau;
       payload.tarif_conseil_ht = qualResult.tarif;
+      payload.criteres_qualification = qualification;
       const created = await createMut.mutateAsync(payload);
       if (qualResult.score >= 6 && created?.id) {
         try {

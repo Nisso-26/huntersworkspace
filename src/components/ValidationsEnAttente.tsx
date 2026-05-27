@@ -57,59 +57,80 @@ export default function ValidationsEnAttente() {
         <p className="text-sm text-muted-foreground">Aucun dossier en attente de validation directeur.</p>
       ) : (
         <div className="space-y-3">
-          {items.map(v => (
-            <div key={v.id} className="border rounded-lg p-4 bg-card">
-              <div className="flex items-start justify-between flex-wrap gap-3">
-                <div className="space-y-1">
+          {items.map(v => {
+            const score = v.score_client ?? v.score_qualification ?? 0;
+            const tarif = v.tarif_conseil_calcule ?? v.tarif_conseil_ht ?? 0;
+            const isExpert = score >= 6;
+            const criteres = (v.criteres_qualification || {}) as Record<string, boolean>;
+            const checked = QUALIFICATION_CRITERIA.filter(c => criteres[c.key]);
+            return (
+              <div key={v.id} className="border rounded-lg p-4 bg-card space-y-3">
+                <div className="flex items-start justify-between flex-wrap gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Link to={`/dossiers/${v.dossier_id}`} className="font-semibold text-foreground hover:text-primary inline-flex items-center gap-1">
+                        {v.client_name}
+                        <ExternalLink className="w-3 h-3" />
+                      </Link>
+                      {v.numero_dossier && (
+                        <span className="text-xs font-mono bg-secondary px-2 py-0.5 rounded">{v.numero_dossier}</span>
+                      )}
+                      <Badge className="bg-[#F5A800] text-primary hover:bg-[#F5A800]">{v.niveau_qualification || 'Expert'}</Badge>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                      <span>Score : <strong className="text-foreground">{score}</strong></span>
+                      <span>·</span>
+                      <span>Conseiller : <strong className="text-foreground">{v.mandataire_name || 'Non assigné'}</strong></span>
+                      <span>·</span>
+                      <span>Tarif conseil : <strong className="text-foreground">{Number(tarif).toLocaleString('fr-FR')} € HT</strong></span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      En attente depuis {new Date(v.created_at).toLocaleDateString('fr-FR')}
+                    </p>
+                  </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Link to={`/dossiers/${v.dossier_id}`} className="font-semibold text-foreground hover:text-primary inline-flex items-center gap-1">
-                      {v.client_name}
-                      <ExternalLink className="w-3 h-3" />
-                    </Link>
-                    {v.numero_dossier && (
-                      <span className="text-xs font-mono bg-secondary px-2 py-0.5 rounded">{v.numero_dossier}</span>
-                    )}
-                    <Badge className="bg-[#F5A800] text-primary hover:bg-[#F5A800]">{v.niveau_qualification || 'Expert'}</Badge>
+                    <Button size="sm" variant="outline" onClick={() => openMotif(v, 'infos_demandees')}>
+                      <MessageSquare className="w-3.5 h-3.5 mr-1.5" />Infos
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10" onClick={() => openMotif(v, 'refuse')}>
+                      <X className="w-3.5 h-3.5 mr-1.5" />Refuser
+                    </Button>
+                    <Button size="sm" className="bg-[#1A4D2E] hover:bg-[#1A4D2E]/90" onClick={() => onValidate(v)} disabled={decideMut.isPending}>
+                      <Check className="w-3.5 h-3.5 mr-1.5" />Valider
+                    </Button>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span>Score : <strong className="text-foreground">{v.score_qualification ?? '—'}</strong></span>
-                    <span>·</span>
-                    <span>Conseiller : <strong className="text-foreground">{v.mandataire_name || 'Non assigné'}</strong></span>
-                    <span>·</span>
-                    <span>Tarif conseil : <strong className="text-foreground">{Number(v.tarif_conseil_ht || 0).toLocaleString('fr-FR')} € HT</strong></span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    En attente depuis {new Date(v.created_at).toLocaleDateString('fr-FR')}
-                  </p>
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => openMotif(v, 'infos_demandees')}
-                  >
-                    <MessageSquare className="w-3.5 h-3.5 mr-1.5" />Infos
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-destructive hover:bg-destructive/10"
-                    onClick={() => openMotif(v, 'refuse')}
-                  >
-                    <X className="w-3.5 h-3.5 mr-1.5" />Refuser
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-[#1A4D2E] hover:bg-[#1A4D2E]/90"
-                    onClick={() => onValidate(v)}
-                    disabled={decideMut.isPending}
-                  >
-                    <Check className="w-3.5 h-3.5 mr-1.5" />Valider
-                  </Button>
+
+                {isExpert && (
+                  <div className="flex items-start gap-2 rounded-md border-2 border-destructive bg-destructive/5 p-3">
+                    <ShieldAlert className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                    <p className="text-sm font-semibold text-foreground">
+                      ⚠️ Conseil score 6+ : 3 500 € HT — tarif plein obligatoire, aucune remise autorisée y compris en pack clé en main.
+                    </p>
+                  </div>
+                )}
+
+                <div className="rounded-md bg-muted/40 p-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                    Critères de scoring cochés ({checked.length}/{QUALIFICATION_CRITERIA.length})
+                  </p>
+                  {checked.length === 0 ? (
+                    <p className="text-xs text-muted-foreground italic">Aucun critère renseigné.</p>
+                  ) : (
+                    <ul className="space-y-1">
+                      {checked.map(c => (
+                        <li key={c.key} className="flex items-center gap-2 text-sm">
+                          <Check className="w-3.5 h-3.5 text-hunters-success shrink-0" />
+                          <span className="text-foreground">{c.label}</span>
+                          <span className="text-xs text-muted-foreground ml-auto">+{c.points}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

@@ -93,6 +93,8 @@ export default function ModeleEconomique() {
             S'applique sur chasse + AMO + déco uniquement. Le conseil patrimonial n'est jamais remisé, y compris en pack.
           </p>
         </div>
+      </div>
+
 
       <div className="space-y-3 pt-4 border-t">
         <h3 className="font-heading font-semibold">Grille de commissionnement mandataires</h3>

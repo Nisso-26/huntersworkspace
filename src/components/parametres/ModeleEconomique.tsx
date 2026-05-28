@@ -132,7 +132,9 @@ export default function ModeleEconomique() {
         </Table>
         <div className="text-xs text-muted-foreground space-y-1">
           <p>• <strong>Passage N2</strong> : automatique dès <strong>{Number(form.seuil_passage_n2 ?? 100000).toLocaleString('fr-FR')} €</strong> de CA HT cumulé encaissé par HUNTERS — non rétroactif.</p>
-          <p>• <strong>Conseil patrimonial</strong> : facturé au tarif plein en toutes circonstances — aucune remise autorisée, y compris en pack clé en main.</p>
+        </div>
+        <div className="p-3 rounded-sm border-2 border-destructive bg-destructive/5 text-sm text-destructive font-medium">
+          ⚠️ Conseil patrimonial : toujours facturé au tarif plein — aucune remise autorisée, y compris en pack clé en main.
         </div>
       </div>
 

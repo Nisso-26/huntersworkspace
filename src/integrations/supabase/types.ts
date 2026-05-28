@@ -482,6 +482,7 @@ export type Database = {
           pied_page_document: string | null
           raison_sociale: string | null
           rcs: string | null
+          remise_pack_pct: number | null
           seuil_passage_n2: number | null
           siret: string | null
           site_web: string | null
@@ -529,6 +530,7 @@ export type Database = {
           pied_page_document?: string | null
           raison_sociale?: string | null
           rcs?: string | null
+          remise_pack_pct?: number | null
           seuil_passage_n2?: number | null
           siret?: string | null
           site_web?: string | null
@@ -576,6 +578,7 @@ export type Database = {
           pied_page_document?: string | null
           raison_sociale?: string | null
           rcs?: string | null
+          remise_pack_pct?: number | null
           seuil_passage_n2?: number | null
           siret?: string | null
           site_web?: string | null

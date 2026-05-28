@@ -46,9 +46,10 @@ export default function ModeleEconomique() {
     updateMut.mutate({
       section: 'modele_economique',
       updates: {
-        tarif_abonnement_defaut: form.tarif_abonnement_defaut,
+        tarif_abonnement_defaut: form.tarif_abonnement_defaut ?? 149,
         delai_suspension_jours: form.delai_suspension_jours,
         tva_taux_defaut: form.tva_taux_defaut,
+        remise_pack_pct: form.remise_pack_pct ?? 10,
         commission_conseil_n1: form.commission_conseil_n1,
         commission_conseil_n2: form.commission_conseil_n2,
         commission_chasse_n1: form.commission_chasse_n1,

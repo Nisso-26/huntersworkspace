@@ -235,15 +235,17 @@ export default function FacturationSection({ dossier }: Props) {
               <p className="text-sm font-bold">{fmtEur(baseCleEnMain)}</p>
             </div>
             <div>
-              <Label className="text-[10px] uppercase">Remise (%)</Label>
-              <Input type="number" min={0} max={100} value={remiseGlobale}
-                onChange={e => setRemiseGlobale(Number(e.target.value))} />
+              <p className="text-[10px] text-muted-foreground uppercase">Remise pack auto</p>
+              <p className="text-sm font-bold">−{fmtEur(remiseMontantPack)} <span className="text-xs font-normal text-muted-foreground">({remisePackPct}%)</span></p>
             </div>
             <div>
               <p className="text-[10px] text-muted-foreground uppercase">Montant Net HT</p>
               <p className="text-sm font-bold text-primary">{fmtEur(netCleEnMain)}</p>
             </div>
           </div>
+          <p className="text-xs text-muted-foreground italic">
+            Remise pack {remisePackPct}% appliquée sur chasse + AMO + déco — Conseil : tarif plein.
+          </p>
 
           <div className="space-y-2">
             <Label>Mode de facturation</Label>

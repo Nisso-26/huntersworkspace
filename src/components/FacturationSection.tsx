@@ -123,9 +123,7 @@ export default function FacturationSection({ dossier }: Props) {
 
   // ─── À la carte ─────────────────────────────
   const serviceKeys = (Object.keys(services) as ServiceKey[]).filter(k => services[k]);
-  const [remisesCarte, setRemisesCarte] = useState<Record<string, number>>({});
 
-  const setRemise = (k: string, v: number) => setRemisesCarte(p => ({ ...p, [k]: v }));
   const setStatut = async (k: string, statut: ServiceStatut) => {
     const newSrc = { ...(dossier.services_souscrits as any || {}), _statuts: { ...statuts, [k]: statut } };
     await updateDossier.mutateAsync({ id: dossier.id, services_souscrits: newSrc } as any);
@@ -134,41 +132,34 @@ export default function FacturationSection({ dossier }: Props) {
   const genererFactureService = async (k: ServiceKey) => {
     const t = tarifMap[k];
     if (!t) { toast.error('Tarif introuvable'); return; }
-    const remise = remisesCarte[k] || 0;
-    const net = t.tarif * (1 - remise / 100);
     const lignes = [{
       service_key: k,
       label: t.label,
       tarif_base: t.tarif,
-      remise_pct: remise,
-      remise_montant: t.tarif - net,
-      montant_ht: net,
+      remise_pct: 0,
+      remise_montant: 0,
+      montant_ht: t.tarif,
       tva_taux: t.tva,
     }];
-    await createFromLignes(lignes, remise, t.tarif - net, 'a_la_carte');
+    await createFromLignes(lignes, 0, 0, 'a_la_carte');
   };
 
   const genererFactureGlobale = async () => {
     const lignes = serviceKeys.map(k => {
       const t = tarifMap[k];
       if (!t) return null;
-      const remise = remisesCarte[k] || 0;
-      const net = t.tarif * (1 - remise / 100);
       return {
         service_key: k,
         label: t.label,
         tarif_base: t.tarif,
-        remise_pct: remise,
-        remise_montant: t.tarif - net,
-        montant_ht: net,
+        remise_pct: 0,
+        remise_montant: 0,
+        montant_ht: t.tarif,
         tva_taux: t.tva,
       };
     }).filter(Boolean) as any[];
     if (!lignes.length) { toast.error('Aucun service à facturer'); return; }
-    const totalBase = lignes.reduce((s, l) => s + l.tarif_base, 0);
-    const totalRemise = lignes.reduce((s, l) => s + l.remise_montant, 0);
-    const remisePctGlobale = totalBase > 0 ? (totalRemise / totalBase) * 100 : 0;
-    await createFromLignes(lignes, remisePctGlobale, totalRemise, 'a_la_carte_globale');
+    await createFromLignes(lignes, 0, 0, 'a_la_carte_globale');
   };
 
   const createFromLignes = async (

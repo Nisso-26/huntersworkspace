@@ -84,7 +84,15 @@ export default function ModeleEconomique() {
         </div>
         <div className="space-y-2"><Label>Délai suspension après impayé (jours)</Label><Input type="number" value={form.delai_suspension_jours ?? 5} onChange={e => set('delai_suspension_jours', Number(e.target.value))} /></div>
         <div className="space-y-2"><Label>TVA par défaut (%)</Label><Input type="number" step="0.1" value={form.tva_taux_defaut ?? 20} onChange={e => set('tva_taux_defaut', Number(e.target.value))} /></div>
-      </div>
+        <div className="space-y-2">
+          <Label>Remise pack clé en main (%)</Label>
+          <Input type="number" step="0.5" min={0} max={100} disabled={!isAdmin}
+            value={form.remise_pack_pct ?? 10}
+            onChange={e => set('remise_pack_pct', Number(e.target.value))} />
+          <p className="text-xs italic text-muted-foreground">
+            S'applique sur chasse + AMO + déco uniquement. Le conseil patrimonial n'est jamais remisé, y compris en pack.
+          </p>
+        </div>
 
       <div className="space-y-3 pt-4 border-t">
         <h3 className="font-heading font-semibold">Grille de commissionnement mandataires</h3>

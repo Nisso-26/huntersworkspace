@@ -46,7 +46,7 @@ export default function FacturationSection({ dossier }: Props) {
   const statuts = getStatuts(dossier);
 
   // ─── Clé en main ───────────────────────────
-  const [remiseGlobale, setRemiseGlobale] = useState(0);
+  const remisePackPct = Number((settings as any)?.remise_pack_pct ?? 10);
   const [mode, setMode] = useState<'unique' | 'fractionne'>('unique');
   const [jalonRows, setJalonRows] = useState<{ libelle: string; pourcentage: number; statut: string }[]>([]);
 
@@ -57,8 +57,17 @@ export default function FacturationSection({ dossier }: Props) {
     }
   }, [jalons.length]);
 
-  const baseCleEnMain = tarifMap['cle_en_main']?.tarif || 0;
-  const netCleEnMain = baseCleEnMain * (1 - remiseGlobale / 100);
+  // Pack = conseil tarif plein + (chasse + amo + deco) avec remise pack
+  const tarifConseil = tarifMap['conseil']?.tarif || 0;
+  const tarifChasse = tarifMap['chasse']?.tarif || 0;
+  const tarifAmo = tarifMap['amo']?.tarif || 0;
+  const tarifDeco = tarifMap['deco']?.tarif || 0;
+  const remisablePack = tarifChasse + tarifAmo + tarifDeco;
+  const tarifPackComputed = tarifConseil + remisablePack;
+  const baseCleEnMain = tarifPackComputed > 0 ? tarifPackComputed : (tarifMap['cle_en_main']?.tarif || 0);
+  const remiseMontantPack = remisablePack * (remisePackPct / 100);
+  const netCleEnMain = baseCleEnMain - remiseMontantPack;
+
 
   const handleSaveJalons = () => {
     const total = jalonRows.reduce((s, j) => s + (Number(j.pourcentage) || 0), 0);

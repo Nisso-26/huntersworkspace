@@ -46,7 +46,7 @@ export default function FacturationSection({ dossier }: Props) {
   const statuts = getStatuts(dossier);
 
   // ─── Clé en main ───────────────────────────
-  const [remiseGlobale, setRemiseGlobale] = useState(0);
+  const remisePackPct = Number((settings as any)?.remise_pack_pct ?? 10);
   const [mode, setMode] = useState<'unique' | 'fractionne'>('unique');
   const [jalonRows, setJalonRows] = useState<{ libelle: string; pourcentage: number; statut: string }[]>([]);
 
@@ -57,8 +57,17 @@ export default function FacturationSection({ dossier }: Props) {
     }
   }, [jalons.length]);
 
-  const baseCleEnMain = tarifMap['cle_en_main']?.tarif || 0;
-  const netCleEnMain = baseCleEnMain * (1 - remiseGlobale / 100);
+  // Pack = conseil tarif plein + (chasse + amo + deco) avec remise pack
+  const tarifConseil = tarifMap['conseil']?.tarif || 0;
+  const tarifChasse = tarifMap['chasse']?.tarif || 0;
+  const tarifAmo = tarifMap['amo']?.tarif || 0;
+  const tarifDeco = tarifMap['deco']?.tarif || 0;
+  const remisablePack = tarifChasse + tarifAmo + tarifDeco;
+  const tarifPackComputed = tarifConseil + remisablePack;
+  const baseCleEnMain = tarifPackComputed > 0 ? tarifPackComputed : (tarifMap['cle_en_main']?.tarif || 0);
+  const remiseMontantPack = remisablePack * (remisePackPct / 100);
+  const netCleEnMain = baseCleEnMain - remiseMontantPack;
+
 
   const handleSaveJalons = () => {
     const total = jalonRows.reduce((s, j) => s + (Number(j.pourcentage) || 0), 0);
@@ -86,12 +95,12 @@ export default function FacturationSection({ dossier }: Props) {
       service_key: 'cle_en_main',
       label: 'Pack Clé en main',
       tarif_base: baseCleEnMain,
-      remise_pct: remiseGlobale,
-      remise_montant: baseCleEnMain - netCleEnMain,
+      remise_pct: baseCleEnMain > 0 ? (remiseMontantPack / baseCleEnMain) * 100 : 0,
+      remise_montant: remiseMontantPack,
       montant_ht: ht,
       tva_taux: tva,
     }];
-    await createFromLignes(lignes, remiseGlobale, baseCleEnMain - netCleEnMain, 'cle_en_main_unique');
+    await createFromLignes(lignes, baseCleEnMain > 0 ? (remiseMontantPack / baseCleEnMain) * 100 : 0, remiseMontantPack, 'cle_en_main_unique');
   };
 
   const genererFactureJalon = async (jalon: any) => {
@@ -114,9 +123,7 @@ export default function FacturationSection({ dossier }: Props) {
 
   // ─── À la carte ─────────────────────────────
   const serviceKeys = (Object.keys(services) as ServiceKey[]).filter(k => services[k]);
-  const [remisesCarte, setRemisesCarte] = useState<Record<string, number>>({});
 
-  const setRemise = (k: string, v: number) => setRemisesCarte(p => ({ ...p, [k]: v }));
   const setStatut = async (k: string, statut: ServiceStatut) => {
     const newSrc = { ...(dossier.services_souscrits as any || {}), _statuts: { ...statuts, [k]: statut } };
     await updateDossier.mutateAsync({ id: dossier.id, services_souscrits: newSrc } as any);
@@ -125,41 +132,34 @@ export default function FacturationSection({ dossier }: Props) {
   const genererFactureService = async (k: ServiceKey) => {
     const t = tarifMap[k];
     if (!t) { toast.error('Tarif introuvable'); return; }
-    const remise = remisesCarte[k] || 0;
-    const net = t.tarif * (1 - remise / 100);
     const lignes = [{
       service_key: k,
       label: t.label,
       tarif_base: t.tarif,
-      remise_pct: remise,
-      remise_montant: t.tarif - net,
-      montant_ht: net,
+      remise_pct: 0,
+      remise_montant: 0,
+      montant_ht: t.tarif,
       tva_taux: t.tva,
     }];
-    await createFromLignes(lignes, remise, t.tarif - net, 'a_la_carte');
+    await createFromLignes(lignes, 0, 0, 'a_la_carte');
   };
 
   const genererFactureGlobale = async () => {
     const lignes = serviceKeys.map(k => {
       const t = tarifMap[k];
       if (!t) return null;
-      const remise = remisesCarte[k] || 0;
-      const net = t.tarif * (1 - remise / 100);
       return {
         service_key: k,
         label: t.label,
         tarif_base: t.tarif,
-        remise_pct: remise,
-        remise_montant: t.tarif - net,
-        montant_ht: net,
+        remise_pct: 0,
+        remise_montant: 0,
+        montant_ht: t.tarif,
         tva_taux: t.tva,
       };
     }).filter(Boolean) as any[];
     if (!lignes.length) { toast.error('Aucun service à facturer'); return; }
-    const totalBase = lignes.reduce((s, l) => s + l.tarif_base, 0);
-    const totalRemise = lignes.reduce((s, l) => s + l.remise_montant, 0);
-    const remisePctGlobale = totalBase > 0 ? (totalRemise / totalBase) * 100 : 0;
-    await createFromLignes(lignes, remisePctGlobale, totalRemise, 'a_la_carte_globale');
+    await createFromLignes(lignes, 0, 0, 'a_la_carte_globale');
   };
 
   const createFromLignes = async (
@@ -226,15 +226,17 @@ export default function FacturationSection({ dossier }: Props) {
               <p className="text-sm font-bold">{fmtEur(baseCleEnMain)}</p>
             </div>
             <div>
-              <Label className="text-[10px] uppercase">Remise (%)</Label>
-              <Input type="number" min={0} max={100} value={remiseGlobale}
-                onChange={e => setRemiseGlobale(Number(e.target.value))} />
+              <p className="text-[10px] text-muted-foreground uppercase">Remise pack auto</p>
+              <p className="text-sm font-bold">−{fmtEur(remiseMontantPack)} <span className="text-xs font-normal text-muted-foreground">({remisePackPct}%)</span></p>
             </div>
             <div>
               <p className="text-[10px] text-muted-foreground uppercase">Montant Net HT</p>
               <p className="text-sm font-bold text-primary">{fmtEur(netCleEnMain)}</p>
             </div>
           </div>
+          <p className="text-xs text-muted-foreground italic">
+            Remise pack {remisePackPct}% appliquée sur chasse + AMO + déco — Conseil : tarif plein.
+          </p>
 
           <div className="space-y-2">
             <Label>Mode de facturation</Label>
@@ -308,24 +310,18 @@ export default function FacturationSection({ dossier }: Props) {
           {serviceKeys.map(k => {
             const t = tarifMap[k];
             if (!t) return null;
-            const remise = remisesCarte[k] || 0;
-            const net = t.tarif * (1 - remise / 100);
             const stat = statuts[k] || 'en_cours';
             return (
               <div key={k} className="grid grid-cols-12 gap-2 items-center p-3 border rounded-sm">
-                <div className="col-span-12 sm:col-span-3">
+                <div className="col-span-12 sm:col-span-4">
                   <p className="text-sm font-semibold">{SERVICE_LABELS[k]}</p>
-                  <p className="text-[10px] text-muted-foreground">{fmtEur(t.tarif)} (base)</p>
+                  <p className="text-[10px] text-muted-foreground">{fmtEur(t.tarif)} (tarif plein)</p>
                 </div>
-                <div className="col-span-4 sm:col-span-2">
-                  <Label className="text-[10px] uppercase">Remise %</Label>
-                  <Input type="number" min={0} max={100} value={remise} onChange={e => setRemise(k, Number(e.target.value))} />
-                </div>
-                <div className="col-span-4 sm:col-span-2">
+                <div className="col-span-6 sm:col-span-2">
                   <p className="text-[10px] uppercase text-muted-foreground">Net HT</p>
-                  <p className="text-sm font-bold text-primary">{fmtEur(net)}</p>
+                  <p className="text-sm font-bold text-primary">{fmtEur(t.tarif)}</p>
                 </div>
-                <div className="col-span-4 sm:col-span-2">
+                <div className="col-span-6 sm:col-span-3">
                   <Label className="text-[10px] uppercase">Statut</Label>
                   <Select value={stat} onValueChange={(v: ServiceStatut) => setStatut(k, v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
@@ -350,16 +346,10 @@ export default function FacturationSection({ dossier }: Props) {
               <div>
                 <p className="text-xs uppercase text-muted-foreground font-semibold">Total Net HT</p>
                 <p className="text-lg font-bold text-primary">
-                  {fmtEur(serviceKeys.reduce((s, k) => {
-                    const t = tarifMap[k]; if (!t) return s;
-                    return s + t.tarif * (1 - (remisesCarte[k] || 0) / 100);
-                  }, 0))}
+                  {fmtEur(serviceKeys.reduce((s, k) => s + (tarifMap[k]?.tarif || 0), 0))}
                 </p>
-                <p className="text-[10px] text-muted-foreground">
-                  Remises totales : {fmtEur(serviceKeys.reduce((s, k) => {
-                    const t = tarifMap[k]; if (!t) return s;
-                    return s + t.tarif * ((remisesCarte[k] || 0) / 100);
-                  }, 0))}
+                <p className="text-[10px] text-muted-foreground italic">
+                  Mode à la carte : tarifs pleins, aucune remise. Passez en pack clé en main pour bénéficier de la remise {remisePackPct}% sur chasse + AMO + déco.
                 </p>
               </div>
               <Button onClick={genererFactureGlobale} variant="outline" className="gap-2">

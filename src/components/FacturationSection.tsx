@@ -95,12 +95,12 @@ export default function FacturationSection({ dossier }: Props) {
       service_key: 'cle_en_main',
       label: 'Pack Clé en main',
       tarif_base: baseCleEnMain,
-      remise_pct: remiseGlobale,
-      remise_montant: baseCleEnMain - netCleEnMain,
+      remise_pct: baseCleEnMain > 0 ? (remiseMontantPack / baseCleEnMain) * 100 : 0,
+      remise_montant: remiseMontantPack,
       montant_ht: ht,
       tva_taux: tva,
     }];
-    await createFromLignes(lignes, remiseGlobale, baseCleEnMain - netCleEnMain, 'cle_en_main_unique');
+    await createFromLignes(lignes, baseCleEnMain > 0 ? (remiseMontantPack / baseCleEnMain) * 100 : 0, remiseMontantPack, 'cle_en_main_unique');
   };
 
   const genererFactureJalon = async (jalon: any) => {

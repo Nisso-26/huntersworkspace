@@ -16,9 +16,25 @@ const CATEGORIE_LABELS: Record<string, string> = {
   proposition_commerciale: 'Proposition commerciale',
   fiche_rentabilite: 'Fiche de rentabilité',
   mandat_recherche: 'Mandat de recherche',
+  convention_honoraires: "Convention d'honoraires",
+  lettre_mission_amo: 'Lettre de mission AMO',
+  lettre_mission_deco: 'Lettre de mission Décoration',
+  contrat_pack: 'Contrat Pack clé en main',
   compte_rendu: 'Compte-rendu',
   autre: 'Autre',
 };
+
+const CATEGORIE_ORDER: string[] = [
+  'Proposition commerciale',
+  "Convention d'honoraires",
+  'Contrat Pack clé en main',
+  'Mandat de recherche',
+  'Lettre de mission AMO',
+  'Lettre de mission Décoration',
+  'Fiche de rentabilité',
+  'Compte-rendu',
+  'Autre',
+];
 
 export default function NouveauDocumentButton({
   dossier,
@@ -30,6 +46,18 @@ export default function NouveauDocumentButton({
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<ModeleDocument | null>(null);
   const { data: modeles = [], isLoading } = useModelesDocuments({ onlyActive: true });
+
+  const grouped = modeles.reduce((acc, m) => {
+    const cat = CATEGORIE_LABELS[m.categorie] || m.categorie;
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(m);
+    return acc;
+  }, {} as Record<string, ModeleDocument[]>);
+  const cats = Object.keys(grouped).sort((a, b) => {
+    const ia = CATEGORIE_ORDER.indexOf(a);
+    const ib = CATEGORIE_ORDER.indexOf(b);
+    return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+  });
 
   return (
     <>
@@ -59,27 +87,40 @@ export default function NouveauDocumentButton({
               Aucun modèle disponible. Demandez à un Directeur d'en créer dans Paramètres.
             </p>
           ) : (
-            <ul className="space-y-2 max-h-[60vh] overflow-y-auto">
-              {modeles.map((m) => (
-                <li key={m.id}>
-                  <button
-                    onClick={() => {
-                      setSelected(m);
-                      setOpen(false);
-                    }}
-                    className="w-full text-left flex items-start gap-3 p-3 rounded-md border hover:border-[#1A4D2E] hover:bg-[#E8F2EC] transition"
-                  >
-                    <FileText className="w-5 h-5 text-[#1A4D2E] mt-0.5 shrink-0" />
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm text-foreground">{m.titre}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {CATEGORIE_LABELS[m.categorie] || m.categorie}
-                      </p>
-                    </div>
-                  </button>
-                </li>
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+              {cats.map((cat) => (
+                <div key={cat} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-[#1A4D2E]">
+                      {cat}
+                    </span>
+                    <div className="flex-1 h-px bg-border" />
+                    <span className="text-[10px] text-muted-foreground">
+                      {grouped[cat].length}
+                    </span>
+                  </div>
+                  <ul className="space-y-2">
+                    {grouped[cat].map((m) => (
+                      <li key={m.id}>
+                        <button
+                          onClick={() => {
+                            setSelected(m);
+                            setOpen(false);
+                          }}
+                          className="w-full text-left flex items-start gap-3 p-3 rounded-md border hover:border-[#1A4D2E] hover:bg-[#E8F2EC] transition"
+                        >
+                          <FileText className="w-5 h-5 text-[#1A4D2E] mt-0.5 shrink-0" />
+                          <div className="flex-1">
+                            <p className="font-semibold text-sm text-foreground">{m.titre}</p>
+                            <p className="text-xs text-muted-foreground">{cat}</p>
+                          </div>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </DialogContent>
       </Dialog>

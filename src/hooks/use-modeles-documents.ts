@@ -7,6 +7,10 @@ export type ModeleCategorie =
   | 'fiche_rentabilite'
   | 'mandat_recherche'
   | 'compte_rendu'
+  | 'convention_honoraires'
+  | 'lettre_mission_amo'
+  | 'lettre_mission_deco'
+  | 'contrat_pack'
   | 'autre';
 
 export interface ModeleSectionChamp {

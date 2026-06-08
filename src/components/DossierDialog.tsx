@@ -240,6 +240,17 @@ export default function DossierDialog({ dossier, trigger }: Props) {
               </div>
             </>
           )}
+          <div className="rounded-md border-2 border-destructive bg-destructive/5 p-4 text-sm space-y-2">
+            <p className="font-bold flex items-center gap-2 text-destructive">⚠️ Rappel légal obligatoire</p>
+            <p>
+              Le mandataire est formellement interdit d'encaisser, sous quelque forme que ce soit,
+              des sommes provenant des clients (honoraires, acomptes, dépôts de garantie).
+            </p>
+            <p>
+              Tout encaissement est réservé exclusivement à HUNTERS Immobilier.
+              Toute violation constitue une faute grave entraînant la résiliation immédiate du contrat.
+            </p>
+          </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
             <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>

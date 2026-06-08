@@ -499,9 +499,20 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
               <Badge variant="secondary" className="text-xs">Sans couverture</Badge>
             )}
           </div>
-          <Button size="sm" variant="outline" onClick={handleGeneratePreview} disabled={generatingPreview}>
-            {generatingPreview ? '…' : 'Régénérer'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <a
+              href={url}
+              download={`${modele.titre.replace(/[^a-z0-9_-]+/gi, '_')}_${dossier.numero_dossier || dossier.id.slice(0, 8)}.pdf`}
+            >
+              <Button size="sm" variant="outline" className="gap-1">
+                <Download className="w-3.5 h-3.5" />
+                Télécharger
+              </Button>
+            </a>
+            <Button size="sm" variant="outline" onClick={handleGeneratePreview} disabled={generatingPreview}>
+              {generatingPreview ? '…' : 'Régénérer'}
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">

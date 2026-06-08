@@ -5,6 +5,54 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+export type AlurAlert = {
+  user_id: string;
+  type: "warning";
+  title: string;
+  detail: string;
+};
+
+/**
+ * Détecte les attestations ALUR expirant dans les 30 prochains jours
+ * et évite les doublons (alerte non lue déjà existante pour le mandataire).
+ * Exporté pour tests unitaires.
+ */
+export async function detectExpiringAlurAttestations(
+  supabase: any,
+  now: Date,
+): Promise<AlurAlert[]> {
+  const alerts: AlurAlert[] = [];
+  const in30Days = new Date(now.getTime() + 30 * 86400000).toISOString();
+  const { data: expiringAttestations } = await supabase
+    .from("conformite_mandataires")
+    .select("id, mandataire_id, attestation_fin")
+    .eq("statut_attestation", "valide")
+    .lte("attestation_fin", in30Days)
+    .gte("attestation_fin", now.toISOString());
+
+  if (!expiringAttestations) return alerts;
+
+  for (const a of expiringAttestations) {
+    const { data: existing } = await supabase
+      .from("alertes")
+      .select("id")
+      .eq("user_id", a.mandataire_id)
+      .ilike("title", "%Attestation ALUR%")
+      .eq("is_read", false)
+      .limit(1);
+    if (!existing?.length) {
+      alerts.push({
+        user_id: a.mandataire_id,
+        type: "warning",
+        title: "Attestation ALUR — renouvellement requis",
+        detail: `Attestation ALUR expire le ${new Date(a.attestation_fin!).toLocaleDateString("fr-FR")} — renouvellement requis`,
+      });
+    }
+  }
+  return alerts;
+}
+
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });

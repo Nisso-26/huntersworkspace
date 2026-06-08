@@ -159,7 +159,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
           step_completed: completedSteps,
           data: form as unknown as Record<string, unknown>,
           updated_at: new Date().toISOString(),
-        },
+        } as any,
         { onConflict: 'mandataire_id' }
       );
 
@@ -175,7 +175,8 @@ export default function OnboardingWizard({ onComplete }: Props) {
         siret: form.siret || null,
         onboarding_step: step,
       };
-      await supabase.from('profiles').update(profileFields).eq('id', user.id);
+      await supabase.from('profiles').update(profileFields as any).eq('id', user.id);
+
     } catch (e) {
       // silencieux — réessai au prochain changement
       console.error('Onboarding persist failed', e);

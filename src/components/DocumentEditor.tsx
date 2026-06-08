@@ -168,6 +168,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
       numeroDossier: dossier.numero_dossier,
       conseiller,
       company,
+      categorie: modele.categorie,
     });
 
   const handleExport = async () => {

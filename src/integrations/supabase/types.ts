@@ -1471,6 +1471,39 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          data: Json
+          id: string
+          mandataire_id: string
+          step_completed: number[]
+          step_current: number
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          mandataire_id: string
+          step_completed?: number[]
+          step_current?: number
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          mandataire_id?: string
+          step_completed?: number[]
+          step_current?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       partenaire_dossiers: {
         Row: {
           created_at: string
@@ -1512,40 +1545,58 @@ export type Database = {
       }
       partenaires: {
         Row: {
+          accredite_par: string | null
+          charte_signee: boolean | null
+          code_prescripteur: string | null
           created_at: string
           created_by: string | null
+          date_accreditation: string | null
           email: string | null
           id: string
+          nb_dossiers_envoyes: number | null
           nom: string
           notes: string | null
           societe: string | null
           specialite: string
+          statut: string | null
           telephone: string | null
           updated_at: string
           ville: string | null
         }
         Insert: {
+          accredite_par?: string | null
+          charte_signee?: boolean | null
+          code_prescripteur?: string | null
           created_at?: string
           created_by?: string | null
+          date_accreditation?: string | null
           email?: string | null
           id?: string
+          nb_dossiers_envoyes?: number | null
           nom: string
           notes?: string | null
           societe?: string | null
           specialite?: string
+          statut?: string | null
           telephone?: string | null
           updated_at?: string
           ville?: string | null
         }
         Update: {
+          accredite_par?: string | null
+          charte_signee?: boolean | null
+          code_prescripteur?: string | null
           created_at?: string
           created_by?: string | null
+          date_accreditation?: string | null
           email?: string | null
           id?: string
+          nb_dossiers_envoyes?: number | null
           nom?: string
           notes?: string | null
           societe?: string | null
           specialite?: string
+          statut?: string | null
           telephone?: string | null
           updated_at?: string
           ville?: string | null
@@ -1657,15 +1708,19 @@ export type Database = {
           id: string
           last_name: string | null
           niveau: string | null
+          onboarding_completed: boolean | null
           onboarding_completed_at: string | null
+          onboarding_step: number | null
           pack_accepte: boolean
           pack_accepte_at: string | null
           pack_montant: number | null
           pack_status: string | null
           parrain_id: string | null
           prescripteurs_acceptes: boolean
+          rsac_date: string | null
           rsac_date_immat: string | null
           rsac_greffe: string | null
+          rsac_justificatif: string | null
           rsac_justificatif_path: string | null
           rsac_numero: string | null
           siret: string | null
@@ -1692,15 +1747,19 @@ export type Database = {
           id: string
           last_name?: string | null
           niveau?: string | null
+          onboarding_completed?: boolean | null
           onboarding_completed_at?: string | null
+          onboarding_step?: number | null
           pack_accepte?: boolean
           pack_accepte_at?: string | null
           pack_montant?: number | null
           pack_status?: string | null
           parrain_id?: string | null
           prescripteurs_acceptes?: boolean
+          rsac_date?: string | null
           rsac_date_immat?: string | null
           rsac_greffe?: string | null
+          rsac_justificatif?: string | null
           rsac_justificatif_path?: string | null
           rsac_numero?: string | null
           siret?: string | null
@@ -1727,15 +1786,19 @@ export type Database = {
           id?: string
           last_name?: string | null
           niveau?: string | null
+          onboarding_completed?: boolean | null
           onboarding_completed_at?: string | null
+          onboarding_step?: number | null
           pack_accepte?: boolean
           pack_accepte_at?: string | null
           pack_montant?: number | null
           pack_status?: string | null
           parrain_id?: string | null
           prescripteurs_acceptes?: boolean
+          rsac_date?: string | null
           rsac_date_immat?: string | null
           rsac_greffe?: string | null
+          rsac_justificatif?: string | null
           rsac_justificatif_path?: string | null
           rsac_numero?: string | null
           siret?: string | null
@@ -2030,6 +2093,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      zones_mandataires: {
+        Row: {
+          affectee_par: string | null
+          communes: string[]
+          created_at: string
+          date_affectation: string
+          id: string
+          mandataire_id: string
+          perimetre_km: number
+          statut: string
+          zone_id: number
+          zone_label: string
+        }
+        Insert: {
+          affectee_par?: string | null
+          communes?: string[]
+          created_at?: string
+          date_affectation?: string
+          id?: string
+          mandataire_id: string
+          perimetre_km?: number
+          statut?: string
+          zone_id: number
+          zone_label: string
+        }
+        Update: {
+          affectee_par?: string | null
+          communes?: string[]
+          created_at?: string
+          date_affectation?: string
+          id?: string
+          mandataire_id?: string
+          perimetre_km?: number
+          statut?: string
+          zone_id?: number
+          zone_label?: string
+        }
+        Relationships: []
       }
     }
     Views: {

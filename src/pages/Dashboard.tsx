@@ -23,20 +23,21 @@ export default function Dashboard() {
   const { isAdmin, user, role } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
 
-  // Afficher l'onboarding pour les nouveaux conseillers sans dossiers
+  // Affiche l'onboarding tant que profiles.onboarding_completed = false
   useEffect(() => {
-    if (!isAdmin && role === 'mandataire' && !loadingD && dossiers.length === 0) {
-      const key = `onboarding_done_${user?.id}`;
-      if (!localStorage.getItem(key)) {
-        setShowOnboarding(true);
-      }
-    }
-  }, [isAdmin, role, loadingD, dossiers.length, user?.id]);
+    if (!user?.id || isAdmin || role !== 'mandataire') return;
+    (async () => {
+      const { data } = await (await import('@/integrations/supabase/client')).supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', user.id)
+        .maybeSingle();
+      setShowOnboarding(!(data as any)?.onboarding_completed);
+    })();
+  }, [isAdmin, role, user?.id]);
 
-  const handleOnboardingComplete = () => {
-    if (user?.id) localStorage.setItem(`onboarding_done_${user.id}`, '1');
-    setShowOnboarding(false);
-  };
+  const handleOnboardingComplete = () => setShowOnboarding(false);
+
 
   const caTotal = dossiers
     .filter(d => ['signe', 'compromis'].includes(d.status))

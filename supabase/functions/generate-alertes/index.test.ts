@@ -1,111 +1,131 @@
-import "https://deno.land/std@0.224.0/dotenv/load.ts";
-import { assertEquals, assert } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { detectExpiringAlurAttestations } from "./index.ts";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? Deno.env.get("VITE_SUPABASE_URL")!;
-const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+type Row = Record<string, any>;
 
-const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false },
-});
+/** Mini mock Postgrest query builder pour simuler supabase-js. */
+function createMockClient(tables: Record<string, Row[]>) {
+  const calls: { table: string; filters: Array<[string, string, any]> }[] = [];
 
-async function callFunction() {
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/generate-alertes`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
-      "Content-Type": "application/json",
-    },
-  });
-  const text = await res.text();
-  return { status: res.status, body: text };
+  function query(table: string) {
+    const filters: Array<[string, string, any]> = [];
+    let rows = tables[table] ?? [];
+    const call = { table, filters };
+    calls.push(call);
+
+    const builder: any = {
+      select: () => builder,
+      eq: (col: string, val: any) => { filters.push(["eq", col, val]); rows = rows.filter(r => r[col] === val); return builder; },
+      lte: (col: string, val: any) => { filters.push(["lte", col, val]); rows = rows.filter(r => r[col] <= val); return builder; },
+      gte: (col: string, val: any) => { filters.push(["gte", col, val]); rows = rows.filter(r => r[col] >= val); return builder; },
+      ilike: (col: string, pattern: string) => {
+        filters.push(["ilike", col, pattern]);
+        const needle = pattern.replace(/%/g, "").toLowerCase();
+        rows = rows.filter(r => String(r[col] ?? "").toLowerCase().includes(needle));
+        return builder;
+      },
+      limit: (n: number) => { rows = rows.slice(0, n); return builder; },
+      then: (resolve: any) => resolve({ data: rows, error: null }),
+    };
+    return builder;
+  }
+
+  return {
+    from: (table: string) => query(table),
+    _calls: calls,
+  };
 }
 
-Deno.test("generate-alertes: détecte attestations ALUR expirant sous 30j sans doublon", async () => {
-  assert(SERVICE_ROLE_KEY, "SUPABASE_SERVICE_ROLE_KEY required");
+const NOW = new Date("2026-06-08T00:00:00.000Z");
+const iso = (daysFromNow: number) =>
+  new Date(NOW.getTime() + daysFromNow * 86400000).toISOString().slice(0, 10);
 
-  // 1) Create test user
-  const email = `alur-test-${crypto.randomUUID()}@example.com`;
-  const { data: created, error: userErr } = await admin.auth.admin.createUser({
-    email,
-    password: "TestPass!" + crypto.randomUUID(),
-    email_confirm: true,
-    user_metadata: { full_name: "ALUR Test" },
+Deno.test("ALUR: crée une alerte pour une attestation expirant sous 30 jours", async () => {
+  const client = createMockClient({
+    conformite_mandataires: [
+      { id: "c1", mandataire_id: "user-1", attestation_fin: iso(10), statut_attestation: "valide" },
+    ],
+    alertes: [],
   });
-  assertEquals(userErr, null);
-  const userId = created.user!.id;
+  const alerts = await detectExpiringAlurAttestations(client, NOW);
+  assertEquals(alerts.length, 1);
+  assertEquals(alerts[0].user_id, "user-1");
+  assertEquals(alerts[0].type, "warning");
+  assertEquals(alerts[0].title, "Attestation ALUR — renouvellement requis");
+});
 
-  try {
-    // handle_new_user trigger creates profile + role; ensure mandataire role
-    await admin.from("user_roles").upsert({ user_id: userId, role: "mandataire" }, {
-      onConflict: "user_id,role",
-    });
+Deno.test("ALUR: ignore les attestations expirant au-delà de 30 jours", async () => {
+  const client = createMockClient({
+    conformite_mandataires: [
+      { id: "c1", mandataire_id: "user-1", attestation_fin: iso(90), statut_attestation: "valide" },
+    ],
+    alertes: [],
+  });
+  const alerts = await detectExpiringAlurAttestations(client, NOW);
+  assertEquals(alerts.length, 0);
+});
 
-    // 2) Insert conformite row with attestation_fin in 10 days
-    const in10Days = new Date(Date.now() + 10 * 86400000).toISOString().slice(0, 10);
-    const { error: confErr } = await admin.from("conformite_mandataires").insert({
-      mandataire_id: userId,
-      attestation_fin: in10Days,
-      statut_attestation: "valide",
-    });
-    assertEquals(confErr, null);
+Deno.test("ALUR: ignore les attestations déjà expirées", async () => {
+  const client = createMockClient({
+    conformite_mandataires: [
+      { id: "c1", mandataire_id: "user-1", attestation_fin: iso(-5), statut_attestation: "valide" },
+    ],
+    alertes: [],
+  });
+  const alerts = await detectExpiringAlurAttestations(client, NOW);
+  assertEquals(alerts.length, 0);
+});
 
-    // Cleanup any prior matching alerts
-    await admin.from("alertes").delete()
-      .eq("user_id", userId).ilike("title", "%Attestation ALUR%");
+Deno.test("ALUR: ignore les attestations dont le statut n'est pas 'valide'", async () => {
+  const client = createMockClient({
+    conformite_mandataires: [
+      { id: "c1", mandataire_id: "user-1", attestation_fin: iso(10), statut_attestation: "expiree" },
+    ],
+    alertes: [],
+  });
+  const alerts = await detectExpiringAlurAttestations(client, NOW);
+  assertEquals(alerts.length, 0);
+});
 
-    // 3) First call → should create exactly one alert
-    const r1 = await callFunction();
-    assertEquals(r1.status, 200);
+Deno.test("ALUR: pas de doublon si une alerte non lue existe déjà pour ce mandataire", async () => {
+  const client = createMockClient({
+    conformite_mandataires: [
+      { id: "c1", mandataire_id: "user-1", attestation_fin: iso(10), statut_attestation: "valide" },
+    ],
+    alertes: [
+      { id: "a1", user_id: "user-1", title: "Attestation ALUR — renouvellement requis", is_read: false },
+    ],
+  });
+  const alerts = await detectExpiringAlurAttestations(client, NOW);
+  assertEquals(alerts.length, 0);
+});
 
-    const { data: alerts1 } = await admin.from("alertes")
-      .select("id, title, detail, type")
-      .eq("user_id", userId).ilike("title", "%Attestation ALUR%");
-    assertEquals(alerts1?.length, 1, "Une alerte ALUR doit être créée");
-    assertEquals(alerts1![0].type, "warning");
-    assert(alerts1![0].detail.includes("expire"), "Detail doit mentionner l'expiration");
+Deno.test("ALUR: recrée une alerte si l'alerte existante a été lue", async () => {
+  const client = createMockClient({
+    conformite_mandataires: [
+      { id: "c1", mandataire_id: "user-1", attestation_fin: iso(10), statut_attestation: "valide" },
+    ],
+    alertes: [
+      { id: "a1", user_id: "user-1", title: "Attestation ALUR — renouvellement requis", is_read: true },
+    ],
+  });
+  const alerts = await detectExpiringAlurAttestations(client, NOW);
+  assertEquals(alerts.length, 1);
+});
 
-    // 4) Second call → no duplicate (alert non lue existante)
-    const r2 = await callFunction();
-    assertEquals(r2.status, 200);
-
-    const { data: alerts2 } = await admin.from("alertes")
-      .select("id").eq("user_id", userId).ilike("title", "%Attestation ALUR%");
-    assertEquals(alerts2?.length, 1, "Aucun doublon ne doit être créé");
-
-    // 5) Attestation expirée hors fenêtre (>30j) → pas d'alerte pour ce cas
-    // Crée un 2e user pour valider la borne
-    const email2 = `alur-far-${crypto.randomUUID()}@example.com`;
-    const { data: u2 } = await admin.auth.admin.createUser({
-      email: email2, password: "TestPass!x" + crypto.randomUUID(), email_confirm: true,
-    });
-    const userId2 = u2.user!.id;
-    try {
-      await admin.from("user_roles").upsert({ user_id: userId2, role: "mandataire" }, {
-        onConflict: "user_id,role",
-      });
-      const in90Days = new Date(Date.now() + 90 * 86400000).toISOString().slice(0, 10);
-      await admin.from("conformite_mandataires").insert({
-        mandataire_id: userId2, attestation_fin: in90Days, statut_attestation: "valide",
-      });
-      await admin.from("alertes").delete()
-        .eq("user_id", userId2).ilike("title", "%Attestation ALUR%");
-
-      const r3 = await callFunction();
-      assertEquals(r3.status, 200);
-
-      const { data: alerts3 } = await admin.from("alertes")
-        .select("id").eq("user_id", userId2).ilike("title", "%Attestation ALUR%");
-      assertEquals(alerts3?.length, 0, "Pas d'alerte hors fenêtre 30 jours");
-    } finally {
-      await admin.from("alertes").delete().eq("user_id", userId2);
-      await admin.from("conformite_mandataires").delete().eq("mandataire_id", userId2);
-      await admin.auth.admin.deleteUser(userId2);
-    }
-  } finally {
-    // Cleanup
-    await admin.from("alertes").delete().eq("user_id", userId);
-    await admin.from("conformite_mandataires").delete().eq("mandataire_id", userId);
-    await admin.auth.admin.deleteUser(userId);
-  }
+Deno.test("ALUR: traite plusieurs mandataires indépendamment", async () => {
+  const client = createMockClient({
+    conformite_mandataires: [
+      { id: "c1", mandataire_id: "user-1", attestation_fin: iso(5), statut_attestation: "valide" },
+      { id: "c2", mandataire_id: "user-2", attestation_fin: iso(20), statut_attestation: "valide" },
+      { id: "c3", mandataire_id: "user-3", attestation_fin: iso(60), statut_attestation: "valide" },
+    ],
+    alertes: [
+      { id: "a1", user_id: "user-2", title: "Attestation ALUR — renouvellement requis", is_read: false },
+    ],
+  });
+  const alerts = await detectExpiringAlurAttestations(client, NOW);
+  // user-1 → alerte ; user-2 → doublon ignoré ; user-3 → hors fenêtre
+  assertEquals(alerts.length, 1);
+  assertEquals(alerts[0].user_id, "user-1");
 });

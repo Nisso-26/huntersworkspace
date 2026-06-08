@@ -1,79 +1,15 @@
 // Exports PDF du dossier — 3 niveaux : intégral, fiche interne, fiche client
+// Rendu basé sur pdf-design-system : charte HUNTERS sobre et institutionnelle.
 import { supabase } from '@/integrations/supabase/client';
 import type { Dossier } from '@/hooks/use-dossiers';
 import { SERVICE_LABELS, getServices, getWorkflowSteps, progressFromStatus } from '@/lib/workflow';
-
-const GREEN: [number, number, number] = [26, 77, 46];
-const GOLD: [number, number, number] = [245, 168, 0];
-const GREY: [number, number, number] = [120, 120, 120];
-const DARK: [number, number, number] = [40, 40, 40];
-
-async function loadLogoBase64(): Promise<string | null> {
-  try {
-    const res = await fetch('/assets/hunters-logo.jpg');
-    if (!res.ok) return null;
-    const blob = await res.blob();
-    return new Promise((r) => {
-      const fr = new FileReader();
-      fr.onload = () => r(fr.result as string);
-      fr.onerror = () => r(null);
-      fr.readAsDataURL(blob);
-    });
-  } catch { return null; }
-}
-
-function header(doc: any, logo: string | null, numero: string | null) {
-  doc.setFillColor(...GREEN);
-  doc.rect(0, 0, 210, 14, 'F');
-  if (logo) { try { doc.addImage(logo, 'JPEG', 15, 2, 10, 10); } catch { /* ignore */ } }
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(...GOLD);
-  doc.text('HUNTERS IMMOBILIER', 28, 8);
-  if (numero) {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(255, 255, 255);
-    doc.text(`Réf. ${numero}`, 195, 8, { align: 'right' });
-  }
-  doc.setFillColor(...GOLD);
-  doc.rect(0, 14, 210, 0.6, 'F');
-}
-
-function footer(doc: any, mention: string, page?: number, total?: number) {
-  doc.setFillColor(...GREEN);
-  doc.rect(0, 285, 210, 12, 'F');
-  doc.setFillColor(...GOLD);
-  doc.rect(0, 284, 210, 0.5, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'normal');
-  doc.text(mention, 105, 291, { align: 'center' });
-  if (page && total) doc.text(`${page} / ${total}`, 195, 291, { align: 'right' });
-}
-
-function sectionTitle(doc: any, y: number, label: string) {
-  doc.setFillColor(...GREEN);
-  doc.rect(15, y, 180, 8, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text(label.toUpperCase(), 18, y + 5.5);
-  return y + 12;
-}
-
-function kv(doc: any, x: number, y: number, label: string, value: string) {
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(...GREY);
-  doc.text(label, x, y);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9.5);
-  doc.setTextColor(...DARK);
-  doc.text(value || '—', x, y + 4.5);
-}
-
 import { fmtPdfEur } from './pdf-utils';
+import {
+  C, T, LAYOUT,
+  drawHeader, drawFooter, drawSectionTitle,
+  drawIvoryBox, ensureSpace, drawCoverPage, loadLogo,
+} from '@/lib/pdf-design-system';
+
 const fmtEur = (n: number) => fmtPdfEur(n);
 
 async function archive(dossierId: string, type: string, numero: string | null) {
@@ -88,229 +24,299 @@ async function archive(dossierId: string, type: string, numero: string | null) {
   } catch (e) { console.error('archive', e); }
 }
 
+// Carte ivoire indicateur clé
+function drawIndicatorCard(doc: any, x: number, y: number, w: number, h: number, label: string, value: string) {
+  doc.setFillColor(...C.ivoryDark);
+  doc.rect(x, y, w, h, 'F');
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.3);
+  doc.rect(x, y, w, h, 'S');
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(...C.textMuted);
+  doc.text(label.toUpperCase(), x + 3, y + 5.5);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(...C.green);
+  doc.text(value || '—', x + 3, y + h - 3);
+}
+
 // ════════════════════════════════════════════════
-// 1. FICHE CLIENT — 1 page
+// 1. FICHE CLIENT — couverture compacte + indicateurs
 // ════════════════════════════════════════════════
 export async function exportFicheClient(dossier: Dossier) {
-  const [{ default: jsPDF }, logo] = await Promise.all([import('jspdf'), loadLogoBase64()]);
+  const [{ default: jsPDF }, logo] = await Promise.all([import('jspdf'), loadLogo()]);
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const { margin, pageW, contentW } = LAYOUT;
+  const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  // Cover-style header
-  doc.setFillColor(...GREEN);
-  doc.rect(0, 0, 210, 60, 'F');
-  doc.setFillColor(...GOLD);
-  doc.rect(0, 60, 210, 1.2, 'F');
-  if (logo) { try { doc.addImage(logo, 'JPEG', 95, 12, 20, 20); } catch { /* ignore */ } }
-  doc.setTextColor(...GOLD);
+  // ─── COUVERTURE COMPACTE (demi-page) ──────────────────────────────────
+  const coverH = 110;
+  doc.setFillColor(...C.green);
+  doc.rect(0, 0, pageW, coverH, 'F');
+  doc.setFillColor(...C.gold);
+  doc.rect(0, coverH, pageW, 1.2, 'F');
+
+  if (logo) { try { doc.addImage(logo, 'JPEG', margin, 14, 20, 20); } catch { /* ignore */ } }
+  doc.setTextColor(...C.gold);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text('HUNTERS IMMOBILIER', 105, 40, { align: 'center' });
+  doc.setFontSize(11);
+  doc.text('HUNTERS', margin + 24, 22);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
   doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(12);
-  doc.text("Synthèse de votre dossier d'investissement", 105, 51, { align: 'center' });
+  doc.text('Cabinet de conseil en investissement immobilier', margin + 24, 28);
 
-  let y = 75;
-  // Profil
-  y = sectionTitle(doc, y, 'Profil');
-  kv(doc, 18, y, 'Client', dossier.client_name);
-  kv(doc, 95, y, 'Ville cible', dossier.ville || '—');
-  kv(doc, 160, y, 'Budget', fmtEur(dossier.budget));
-  y += 14;
-  kv(doc, 18, y, 'Référence', dossier.numero_dossier || '—');
-  y += 14;
-
-  // Services
-  y = sectionTitle(doc, y, 'Services souscrits');
-  const services = getServices(dossier);
-  const activeServices = (Object.keys(services) as any[]).filter(k => services[k]);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(...DARK);
-  let xs = 18;
-  activeServices.forEach(k => {
-    const label = `✓ ${SERVICE_LABELS[k as keyof typeof SERVICE_LABELS] || k}`;
-    doc.setFillColor(245, 240, 220);
-    doc.roundedRect(xs, y, 56, 8, 1.5, 1.5, 'F');
-    doc.text(label, xs + 2, y + 5.5);
-    xs += 60;
-    if (xs > 150) { xs = 18; y += 11; }
-  });
-  y += 18;
-
-  // Avancement
-  y = sectionTitle(doc, y, 'Avancement');
-  const p = progressFromStatus(dossier);
-  const barW = 180;
-  doc.setFillColor(235, 235, 235);
-  doc.rect(15, y, barW, 6, 'F');
-  doc.setFillColor(...GREEN);
-  doc.rect(15, y, barW * (p.current / p.total), 6, 'F');
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.setTextColor(...DARK);
-  y += 12;
-  doc.text(`Étape ${p.current} / ${p.total}`, 18, y);
-  y += 12;
+  doc.setTextColor(...C.gold);
+  doc.text('SYNTHÈSE DE DOSSIER', margin, 54);
 
-  // Stratégie
-  y = sectionTitle(doc, y, 'Stratégie patrimoniale');
-  const strat = parseStrategieShort(dossier);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(20);
+  doc.setTextColor(255, 255, 255);
+  doc.text(dossier.client_name, margin, 66);
+
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(...DARK);
+  doc.setFontSize(9);
+  doc.setTextColor(...C.gold);
+  doc.text(`Réf. ${dossier.numero_dossier || dossier.id.slice(0, 8)}`, margin, 76);
+  doc.setTextColor(255, 255, 255);
+  doc.text(today, pageW - margin, 76, { align: 'right' });
+
+  let y = coverH + 14;
+
+  // ─── INDICATEURS CLÉS (2 colonnes) ───────────────────────────────────
+  y = drawSectionTitle(doc, 'Indicateurs clés', y);
+  const cardW = (contentW - 4) / 2;
+  const cardH = 18;
+  const inds = [
+    { label: 'Ville cible',      value: dossier.ville || '—' },
+    { label: 'Budget',           value: fmtEur(dossier.budget) },
+    { label: 'Honoraires',       value: fmtEur(dossier.honoraires) },
+    { label: 'Statut',           value: dossier.status },
+  ];
+  inds.forEach((ind, i) => {
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    drawIndicatorCard(doc, margin + col * (cardW + 4), y + row * (cardH + 4), cardW, cardH, ind.label, ind.value);
+  });
+  y += 2 * (cardH + 4) + 4;
+
+  // ─── SERVICES SOUSCRITS ──────────────────────────────────────────────
+  y = drawSectionTitle(doc, 'Services souscrits', y);
+  const services = getServices(dossier);
+  const activeServices = (Object.keys(services) as any[]).filter(k => services[k]);
+  doc.setFont(T.body.font, T.body.style);
+  doc.setFontSize(T.body.size);
+  if (activeServices.length === 0) {
+    doc.setTextColor(...C.textMuted);
+    doc.text('Aucun service souscrit.', margin, y);
+    y += 6;
+  } else {
+    let xs = margin;
+    const chipW = 58;
+    activeServices.forEach((k, i) => {
+      const label = SERVICE_LABELS[k as keyof typeof SERVICE_LABELS] || k;
+      doc.setFillColor(...C.ivoryDark);
+      doc.rect(xs, y, chipW, 8, 'F');
+      doc.setTextColor(...C.green);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.text(label, xs + 3, y + 5.5);
+      xs += chipW + 4;
+      if ((i + 1) % 3 === 0) { xs = margin; y += 11; }
+    });
+    y += 14;
+  }
+
+  // ─── AVANCEMENT ──────────────────────────────────────────────────────
+  y = drawSectionTitle(doc, 'Avancement', y);
+  const p = progressFromStatus(dossier);
+  doc.setFillColor(...C.border);
+  doc.roundedRect(margin, y, contentW, 5, 1, 1, 'F');
+  doc.setFillColor(...C.green);
+  doc.roundedRect(margin, y, contentW * (p.current / p.total), 5, 1, 1, 'F');
+  y += 9;
+  doc.setFont(T.body.font, 'normal');
+  doc.setFontSize(T.body.size);
+  doc.setTextColor(...C.textDark);
+  doc.text(`Étape ${p.current} / ${p.total}`, margin, y);
+  y += 10;
+
+  // ─── STRATÉGIE PATRIMONIALE ──────────────────────────────────────────
+  y = drawSectionTitle(doc, 'Stratégie patrimoniale', y);
+  const strat = parseStrategieShort(dossier);
+  doc.setFont(T.body.font, 'normal');
+  doc.setFontSize(T.body.size);
+  doc.setTextColor(...C.textDark);
   strat.recos.forEach(r => {
-    const lines = doc.splitTextToSize(`• ${r}`, 175);
-    doc.text(lines, 18, y);
+    const lines = doc.splitTextToSize(`• ${r}`, contentW);
+    doc.text(lines, margin, y);
     y += lines.length * 5 + 1;
   });
   if (strat.rendement) {
     y += 2;
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...GREEN);
-    doc.text(`Rendement cible : ${strat.rendement}`, 18, y);
+    doc.setTextColor(...C.green);
+    doc.text(`Rendement cible : ${strat.rendement}`, margin, y);
   }
 
-  // Footer
-  doc.setFillColor(...GREEN);
-  doc.rect(0, 280, 210, 17, 'F');
-  doc.setFillColor(...GOLD);
-  doc.rect(0, 280, 210, 0.5, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Document établi par Hunters Immobilier · Cabinet de conseil en investissement immobilier · Tours', 105, 287, { align: 'center' });
-  doc.text(new Date().toLocaleDateString('fr-FR'), 105, 292, { align: 'center' });
+  drawFooter(doc, 1, 1);
 
   doc.save(`fiche-client-${dossier.numero_dossier || dossier.id.slice(0, 8)}.pdf`);
   await archive(dossier.id, 'fiche_client', dossier.numero_dossier);
 }
 
 // ════════════════════════════════════════════════
-// 2. FICHE INTERNE — 2 pages
+// 2. FICHE INTERNE — pas de couverture, en-tête sobre
 // ════════════════════════════════════════════════
 export async function exportFicheInterne(dossier: Dossier, conseillerNom: string) {
-  const [{ default: jsPDF }, logo, activites] = await Promise.all([
+  const [{ default: jsPDF }, activites] = await Promise.all([
     import('jspdf'),
-    loadLogoBase64(),
     fetchActivites(dossier.id, 5),
   ]);
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const { margin, contentW, headerH } = LAYOUT;
   const numero = dossier.numero_dossier;
   const dateStr = new Date().toLocaleDateString('fr-FR');
+  const titre = 'Fiche interne';
+  const ctxHeader = { refDossier: numero, titre };
 
-  header(doc, logo, numero);
-  let y = 22;
+  drawHeader(doc, numero, titre);
+  let y = headerH + 8;
 
-  // En-tête
+  // En-tête contextuel
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
-  doc.setTextColor(...GREEN);
-  doc.text(dossier.client_name, 15, y + 5);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...GREY);
-  doc.text(`Conseiller : ${conseillerNom} · Extrait le ${dateStr}`, 15, y + 11);
-  y += 18;
-
-  // Profil
-  y = sectionTitle(doc, y, 'Profil synthétique');
-  kv(doc, 18, y, 'Ville', dossier.ville || '—');
-  kv(doc, 65, y, 'Budget', fmtEur(dossier.budget));
-  kv(doc, 115, y, 'Honoraires', fmtEur(dossier.honoraires));
-  kv(doc, 165, y, 'Statut', dossier.status);
+  doc.setTextColor(...C.green);
+  doc.text(dossier.client_name, margin, y + 4);
+  doc.setFont(T.label.font, T.label.style);
+  doc.setFontSize(T.label.size);
+  doc.setTextColor(...C.textMuted);
+  doc.text(`Conseiller : ${conseillerNom} · Extrait le ${dateStr}`, margin, y + 10);
   y += 16;
 
-  // Services
-  y = sectionTitle(doc, y, 'Services souscrits');
+  // ─── PROFIL SYNTHÉTIQUE (cartes 4) ───────────────────────────────────
+  y = drawSectionTitle(doc, 'Profil synthétique', y);
+  const cardW = (contentW - 9) / 4;
+  const cardH = 16;
+  const profil = [
+    { label: 'Ville',      value: dossier.ville || '—' },
+    { label: 'Budget',     value: fmtEur(dossier.budget) },
+    { label: 'Honoraires', value: fmtEur(dossier.honoraires) },
+    { label: 'Statut',     value: dossier.status },
+  ];
+  profil.forEach((ind, i) => {
+    drawIndicatorCard(doc, margin + i * (cardW + 3), y, cardW, cardH, ind.label, ind.value);
+  });
+  y += cardH + 6;
+
+  // ─── SERVICES ────────────────────────────────────────────────────────
+  y = drawSectionTitle(doc, 'Services souscrits', y);
   const services = getServices(dossier);
   const statuts = ((dossier.services_souscrits as any)?._statuts as Record<string, string>) || {};
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...DARK);
+  doc.setFont(T.body.font, 'normal');
+  doc.setFontSize(T.body.size);
+  doc.setTextColor(...C.textDark);
   (Object.keys(services) as any[]).filter(k => services[k]).forEach(k => {
     const s = statuts[k] || 'en_cours';
-    const icon = s === 'cloture' ? '●' : '○';
-    doc.text(`${icon} ${SERVICE_LABELS[k as keyof typeof SERVICE_LABELS] || k} — ${s}`, 18, y);
+    doc.setTextColor(...C.gold);
+    doc.text('▪', margin + 1, y);
+    doc.setTextColor(...C.textDark);
+    doc.text(`${SERVICE_LABELS[k as keyof typeof SERVICE_LABELS] || k} — ${s}`, margin + 6, y);
     y += 5.5;
   });
   y += 4;
 
-  // Avancement
-  y = sectionTitle(doc, y, 'Avancement');
+  // ─── AVANCEMENT ──────────────────────────────────────────────────────
+  y = ensureSpace(doc, y, 30, ctxHeader);
+  y = drawSectionTitle(doc, 'Avancement', y);
   const steps = getWorkflowSteps(dossier);
   const p = progressFromStatus(dossier);
-  doc.setFillColor(235, 235, 235);
-  doc.rect(15, y, 180, 6, 'F');
-  doc.setFillColor(...GREEN);
-  doc.rect(15, y, 180 * (p.current / p.total), 6, 'F');
-  y += 10;
-  doc.setFont('helvetica', 'normal');
+  doc.setFillColor(...C.border);
+  doc.roundedRect(margin, y, contentW, 5, 1, 1, 'F');
+  doc.setFillColor(...C.green);
+  doc.roundedRect(margin, y, contentW * (p.current / p.total), 5, 1, 1, 'F');
+  y += 9;
+  doc.setFont(T.body.font, 'normal');
   doc.setFontSize(8.5);
-  doc.setTextColor(...DARK);
   steps.forEach((s, i) => {
-    const dot = i + 1 <= p.current ? '✓' : '·';
-    doc.setTextColor(i + 1 === p.current ? GREEN[0] : DARK[0], i + 1 === p.current ? GREEN[1] : DARK[1], i + 1 === p.current ? GREEN[2] : DARK[2]);
-    doc.text(`${dot} ${i + 1}. ${s.short}`, 18 + (i % 5) * 36, y + Math.floor(i / 5) * 6);
+    const isCurrent = i + 1 === p.current;
+    const isDone = i + 1 < p.current;
+    doc.setTextColor(...(isCurrent ? C.green : isDone ? C.textDark : C.textMuted));
+    doc.setFont('helvetica', isCurrent ? 'bold' : 'normal');
+    const dot = isDone || isCurrent ? '●' : '○';
+    doc.text(`${dot} ${i + 1}. ${s.short}`, margin + (i % 5) * 36, y + Math.floor(i / 5) * 5.5);
   });
-  y += Math.ceil(steps.length / 5) * 6 + 6;
+  y += Math.ceil(steps.length / 5) * 5.5 + 6;
 
-  // Stratégie
-  y = sectionTitle(doc, y, 'Stratégie patrimoniale');
+  // ─── STRATÉGIE ───────────────────────────────────────────────────────
+  y = ensureSpace(doc, y, 30, ctxHeader);
+  y = drawSectionTitle(doc, 'Stratégie patrimoniale', y);
   const strat = parseStrategieShort(dossier);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...DARK);
+  doc.setFont(T.body.font, 'normal');
+  doc.setFontSize(T.body.size);
+  doc.setTextColor(...C.textDark);
   strat.recos.forEach(r => {
-    const lines = doc.splitTextToSize(`• ${r}`, 175);
-    doc.text(lines, 18, y);
+    const lines = doc.splitTextToSize(`• ${r}`, contentW);
+    doc.text(lines, margin, y);
     y += lines.length * 5 + 1;
   });
   if (strat.rendement) {
     y += 2;
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...GREEN);
-    doc.text(`Rendement cible : ${strat.rendement}`, 18, y);
+    doc.setTextColor(...C.green);
+    doc.text(`Rendement cible : ${strat.rendement}`, margin, y);
     y += 6;
   }
 
-  // Page 2 : activités
+  // ─── ACTIVITÉ RÉCENTE (nouvelle page) ────────────────────────────────
   doc.addPage();
-  header(doc, logo, numero);
-  let y2 = 22;
-  y2 = sectionTitle(doc, y2, 'Dernière activité');
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...DARK);
+  drawHeader(doc, numero, titre);
+  let y2 = headerH + 10;
+  y2 = drawSectionTitle(doc, 'Dernière activité', y2);
+  doc.setFont(T.body.font, 'normal');
+  doc.setFontSize(T.body.size);
+  doc.setTextColor(...C.textDark);
   if (activites.length === 0) {
-    doc.text('Aucune activité récente.', 18, y2);
+    doc.setTextColor(...C.textMuted);
+    doc.text('Aucune activité récente.', margin, y2);
   } else {
     activites.forEach(a => {
+      y2 = ensureSpace(doc, y2, 12, ctxHeader);
       const dt = new Date(a.created_at).toLocaleDateString('fr-FR');
       doc.setFont('helvetica', 'bold');
-      doc.text(`${dt} · ${a.type}`, 18, y2);
+      doc.setTextColor(...C.green);
+      doc.text(`${dt} · ${a.type}`, margin, y2);
       doc.setFont('helvetica', 'normal');
-      const lines = doc.splitTextToSize(a.commentaire || '', 175);
-      doc.text(lines, 18, y2 + 5);
+      doc.setTextColor(...C.textDark);
+      const lines = doc.splitTextToSize(a.commentaire || '', contentW);
+      doc.text(lines, margin, y2 + 5);
       y2 += 5 + lines.length * 5 + 3;
     });
   }
 
-  footer(doc, `Hunters Immobilier · ${dateStr} · Usage interne confidentiel`);
-  doc.setPage(1);
-  footer(doc, `Hunters Immobilier · ${dateStr} · Usage interne confidentiel`);
+  // Pieds de page
+  const total = doc.getNumberOfPages();
+  for (let i = 1; i <= total; i++) {
+    doc.setPage(i);
+    drawFooter(doc, i, total, `HUNTERS · ${dateStr} · Usage interne confidentiel`);
+  }
 
   doc.save(`fiche-interne-${numero || dossier.id.slice(0, 8)}.pdf`);
   await archive(dossier.id, 'fiche_interne', numero);
 }
 
 // ════════════════════════════════════════════════
-// 3. DOSSIER INTÉGRAL — 10 pages
+// 3. DOSSIER INTÉGRAL — couverture complète + sections
 // ════════════════════════════════════════════════
 export async function exportDossierIntegral(dossier: Dossier, conseillerNom: string) {
   const [{ default: jsPDF }, logo, activites, biens, historique, docsGenres, signatures] = await Promise.all([
     import('jspdf'),
-    loadLogoBase64(),
+    loadLogo(),
     fetchActivites(dossier.id, 50),
     fetchBiens(dossier.id),
     fetchHistorique(dossier.id),
@@ -318,69 +324,47 @@ export async function exportDossierIntegral(dossier: Dossier, conseillerNom: str
     fetchSignatures(dossier.id),
   ]);
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const { margin, contentW, headerH } = LAYOUT;
   const numero = dossier.numero_dossier;
-  const dateStr = new Date().toLocaleDateString('fr-FR');
-  const mention = 'Hunters Immobilier · Confidentiel · Usage interne';
+  const dateStr = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+  const titre = 'Dossier intégral';
+  const ctxHeader = { refDossier: numero, titre };
 
-  // ── PAGE 1 — Couverture
-  doc.setFillColor(...GREEN);
-  doc.rect(0, 0, 210, 297, 'F');
-  doc.setFillColor(...GOLD);
-  doc.rect(0, 0, 210, 3, 'F');
-  doc.rect(0, 294, 210, 3, 'F');
-  if (logo) { try { doc.addImage(logo, 'JPEG', 95, 35, 20, 20); } catch { /* ignore */ } }
-  doc.setTextColor(...GOLD);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.text('HUNTERS IMMOBILIER', 105, 65, { align: 'center' });
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(26);
-  doc.text('DOSSIER', 105, 110, { align: 'center' });
-  doc.text('CONFIDENTIEL', 105, 124, { align: 'center' });
-  doc.setFillColor(...GOLD);
-  doc.rect(75, 132, 60, 1, 'F');
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(11);
-  doc.text(dossier.client_name, 105, 155, { align: 'center' });
-  doc.setFontSize(9);
-  doc.setTextColor(...GOLD);
-  doc.text(`Référence : ${numero || dossier.id.slice(0, 8)}`, 105, 165, { align: 'center' });
-  doc.setTextColor(255, 255, 255);
-  doc.text(`Conseiller : ${conseillerNom}`, 105, 175, { align: 'center' });
-  doc.text(`Édition : ${dateStr}`, 105, 182, { align: 'center' });
+  // ─── COUVERTURE COMPLÈTE ─────────────────────────────────────────────
+  await drawCoverPage(doc, {
+    logo,
+    typeDocument: 'Dossier client',
+    titre: 'Dossier intégral',
+    sousTitre: `Vue exhaustive du dossier de ${dossier.client_name}`,
+    client: dossier.client_name,
+    conseiller: conseillerNom,
+    refDossier: numero,
+    date: dateStr,
+    confidentiel: true,
+  });
 
-  // Helper next page
-  const nextPage = (title: string, num: number) => {
-    doc.addPage();
-    header(doc, logo, numero);
-    footer(doc, mention, num, 10);
-    let y = 22;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.setTextColor(...GREEN);
-    doc.text(`${num}. ${title}`, 15, y + 5);
-    doc.setFillColor(...GOLD);
-    doc.rect(15, y + 8, 50, 0.6, 'F');
-    return y + 18;
-  };
-
-  const drawLines = (lines: string[], y: number) => {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9.5);
-    doc.setTextColor(...DARK);
-    lines.forEach(l => {
-      const wrapped = doc.splitTextToSize(l, 180);
-      if (y + wrapped.length * 5 > 275) return;
-      doc.text(wrapped, 15, y);
-      y += wrapped.length * 5 + 1;
-    });
+  const renderTextBlock = (lines: string[], y: number): number => {
+    doc.setFont(T.body.font, 'normal');
+    doc.setFontSize(T.body.size);
+    doc.setTextColor(...C.textDark);
+    for (const l of lines) {
+      const wrapped = doc.splitTextToSize(l, contentW);
+      y = ensureSpace(doc, y, wrapped.length * 5.5 + 1, ctxHeader);
+      doc.text(wrapped, margin, y);
+      y += wrapped.length * 5.5 + 1;
+    }
     return y;
   };
 
-  // ── PAGE 2 — Profil client
-  let y = nextPage('Profil client', 2);
-  y = drawLines([
+  const beginSection = (label: string): number => {
+    doc.addPage();
+    drawHeader(doc, numero, titre);
+    return drawSectionTitle(doc, label, headerH + 10);
+  };
+
+  // ─── PROFIL CLIENT ───────────────────────────────────────────────────
+  let y = beginSection('Profil client');
+  y = renderTextBlock([
     `Nom : ${dossier.client_name}`,
     `Email : ${dossier.email || '—'}`,
     `Téléphone : ${dossier.phone || '—'}`,
@@ -390,56 +374,57 @@ export async function exportDossierIntegral(dossier: Dossier, conseillerNom: str
     dossier.notes || '—',
   ], y);
 
-  // ── PAGE 3 — Capacité financière
-  y = nextPage('Capacité financière', 3);
-  y = drawLines([
-    `Budget total : ${fmtEur(dossier.budget)}`,
-    `Honoraires : ${fmtEur(dossier.honoraires)}`,
-    '',
-    'Détail à compléter via la stratégie patrimoniale.',
-  ], y);
+  // ─── CAPACITÉ FINANCIÈRE ─────────────────────────────────────────────
+  y = beginSection('Capacité financière');
+  const cardW = (contentW - 4) / 2;
+  const cardH = 18;
+  drawIndicatorCard(doc, margin, y, cardW, cardH, 'Budget total', fmtEur(dossier.budget));
+  drawIndicatorCard(doc, margin + cardW + 4, y, cardW, cardH, 'Honoraires', fmtEur(dossier.honoraires));
+  y += cardH + 6;
+  y = renderTextBlock(['Détail à compléter via la stratégie patrimoniale.'], y);
 
-  // ── PAGE 4 — Services souscrits
-  y = nextPage('Services souscrits', 4);
+  // ─── SERVICES SOUSCRITS ──────────────────────────────────────────────
+  y = beginSection('Services souscrits');
   const services = getServices(dossier);
   const statuts = ((dossier.services_souscrits as any)?._statuts as Record<string, string>) || {};
-  doc.setFontSize(10);
+  doc.setFont(T.body.font, 'normal');
+  doc.setFontSize(T.body.size);
   (Object.keys(services) as any[]).forEach(k => {
     const active = services[k];
     const s = statuts[k] || (active ? 'en_cours' : '—');
-    doc.setTextColor(active ? GREEN[0] : GREY[0], active ? GREEN[1] : GREY[1], active ? GREEN[2] : GREY[2]);
+    doc.setTextColor(...(active ? C.green : C.textMuted));
     doc.setFont('helvetica', active ? 'bold' : 'normal');
-    doc.text(`${active ? '✓' : '·'} ${SERVICE_LABELS[k as keyof typeof SERVICE_LABELS] || k} — ${active ? s : 'non souscrit'}`, 15, y);
+    doc.text(`${active ? '●' : '○'} ${SERVICE_LABELS[k as keyof typeof SERVICE_LABELS] || k} — ${active ? s : 'non souscrit'}`, margin, y);
     y += 6;
   });
   y += 4;
-  doc.setTextColor(...DARK);
+  doc.setTextColor(...C.textDark);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Type d'accompagnement : ${dossier.type_accompagnement || 'cle_en_main'}`, 15, y);
+  doc.text(`Type d'accompagnement : ${dossier.type_accompagnement || 'cle_en_main'}`, margin, y);
 
-  // ── PAGE 5 — Stratégie patrimoniale
-  y = nextPage('Stratégie patrimoniale', 5);
+  // ─── STRATÉGIE ───────────────────────────────────────────────────────
+  y = beginSection('Stratégie patrimoniale');
   const strat = parseStrategieShort(dossier);
-  drawLines(strat.recos.map(r => `• ${r}`).concat(strat.rendement ? ['', `Rendement cible : ${strat.rendement}`] : []), y);
+  renderTextBlock(strat.recos.map(r => `• ${r}`).concat(strat.rendement ? ['', `Rendement cible : ${strat.rendement}`] : []), y);
 
-  // ── PAGE 6 — Biens identifiés
-  y = nextPage('Biens identifiés', 6);
-  if (biens.length === 0) drawLines(['Aucun bien identifié pour ce dossier.'], y);
+  // ─── BIENS ──────────────────────────────────────────────────────────
+  y = beginSection('Biens identifiés');
+  if (biens.length === 0) renderTextBlock(['Aucun bien identifié pour ce dossier.'], y);
   else biens.forEach((b: any) => {
-    y = drawLines([`${b.reference || '—'} · ${b.ville || ''} · ${fmtEur(Number(b.prix_acquisition) || 0)} · Statut : ${b.statut}`], y);
+    y = renderTextBlock([`${b.reference || '—'} · ${b.ville || ''} · ${fmtEur(Number(b.prix_acquisition) || 0)} · Statut : ${b.statut}`], y);
   });
 
-  // ── PAGE 7 — Journal d'activité
-  y = nextPage("Journal d'activité", 7);
-  if (activites.length === 0) drawLines(['Aucune activité.'], y);
+  // ─── ACTIVITÉ ───────────────────────────────────────────────────────
+  y = beginSection("Journal d'activité");
+  if (activites.length === 0) renderTextBlock(['Aucune activité.'], y);
   else activites.slice(0, 25).forEach(a => {
     const dt = new Date(a.created_at).toLocaleDateString('fr-FR');
-    y = drawLines([`${dt} · ${a.type} — ${a.commentaire || ''}`], y);
+    y = renderTextBlock([`${dt} · ${a.type} — ${a.commentaire || ''}`], y);
   });
 
-  // ── PAGE 8 — Documents et signatures
-  y = nextPage('Documents et signatures', 8);
-  drawLines([
+  // ─── DOCUMENTS & SIGNATURES ─────────────────────────────────────────
+  y = beginSection('Documents et signatures');
+  renderTextBlock([
     'Documents générés :',
     ...docsGenres.map((d: any) => `· ${d.type} — ${new Date(d.date_generation).toLocaleDateString('fr-FR')}`),
     '',
@@ -447,37 +432,41 @@ export async function exportDossierIntegral(dossier: Dossier, conseillerNom: str
     ...signatures.map((s: any) => `· ${s.document_name} — ${s.status}${s.signed_at ? ' le ' + new Date(s.signed_at).toLocaleDateString('fr-FR') : ''}`),
   ], y);
 
-  // ── PAGE 9 — Historique statuts
-  y = nextPage('Historique des statuts', 9);
-  if (historique.length === 0) drawLines(['Aucun changement de statut enregistré.'], y);
+  // ─── HISTORIQUE ─────────────────────────────────────────────────────
+  y = beginSection('Historique des statuts');
+  if (historique.length === 0) renderTextBlock(['Aucun changement de statut enregistré.'], y);
   else historique.forEach((h: any) => {
     const dt = new Date(h.date_changement).toLocaleDateString('fr-FR');
-    y = drawLines([`${dt} · ${h.ancien_statut || '—'} → ${h.nouveau_statut}`], y);
+    y = renderTextBlock([`${dt} · ${h.ancien_statut || '—'} → ${h.nouveau_statut}`], y);
   });
 
-  // ── PAGE 10 — Synthèse
-  y = nextPage('Synthèse', 10);
+  // ─── SYNTHÈSE ───────────────────────────────────────────────────────
+  y = beginSection('Synthèse');
   const p = progressFromStatus(dossier);
-  doc.setFillColor(235, 235, 235);
-  doc.rect(15, y, 180, 8, 'F');
-  doc.setFillColor(...GREEN);
-  doc.rect(15, y, 180 * (p.current / p.total), 8, 'F');
+  doc.setFillColor(...C.border);
+  doc.roundedRect(margin, y, contentW, 6, 1, 1, 'F');
+  doc.setFillColor(...C.green);
+  doc.roundedRect(margin, y, contentW * (p.current / p.total), 6, 1, 1, 'F');
+  y += 12;
+  drawIvoryBox(doc, y, 8);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(...C.green);
+  doc.text(`Étape ${p.current} / ${p.total}   ·   Statut actuel : ${dossier.status}`, margin + 4, y + 5.5);
   y += 14;
-  drawLines([
-    `Étape actuelle : ${p.current} / ${p.total}`,
-    `Statut : ${dossier.status}`,
-    '',
+  renderTextBlock([
     'Prochaines actions recommandées :',
     '· Mettre à jour les coordonnées si manquantes',
     '· Finaliser la stratégie patrimoniale',
     '· Avancer vers l\'étape suivante du workflow',
   ], y);
 
-  // Footer page 1
-  doc.setPage(1);
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(7);
-  doc.text(mention, 105, 270, { align: 'center' });
+  // ─── PIEDS DE PAGE (hors couverture) ────────────────────────────────
+  const total = doc.getNumberOfPages();
+  for (let i = 2; i <= total; i++) {
+    doc.setPage(i);
+    drawFooter(doc, i - 1, total - 1, `HUNTERS · Confidentiel · Usage interne · ${dateStr}`);
+  }
 
   doc.save(`dossier-integral-${numero || dossier.id.slice(0, 8)}.pdf`);
   await archive(dossier.id, 'dossier_integral', numero);

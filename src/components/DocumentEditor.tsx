@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Download, X, FileText, Eye } from 'lucide-react';
+import { Download, X, FileText, Eye, FileSearch, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
@@ -127,6 +127,41 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
   const [financierSaisies, setFinancierSaisies] = useState<Record<string, Record<string, number>>>({});
   const [textOverrides, setTextOverrides] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [pdfPreview, setPdfPreview] = useState<{ url: string; pages: number } | null>(null);
+  const [generatingPreview, setGeneratingPreview] = useState(false);
+
+  const COVER_CATEGORIES = new Set([
+    'mandat_recherche',
+    'convention_honoraires',
+    'lettre_mission_amo',
+    'lettre_mission_deco',
+    'contrat_pack',
+  ]);
+  const hasCover = COVER_CATEGORIES.has(modele.categorie || '');
+
+  useEffect(() => {
+    return () => {
+      if (pdfPreview?.url) URL.revokeObjectURL(pdfPreview.url);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleGeneratePreview = () => {
+    setGeneratingPreview(true);
+    try {
+      const pdf = buildPdf();
+      const blob = pdf.output('blob');
+      const url = URL.createObjectURL(blob);
+      setPdfPreview((prev) => {
+        if (prev?.url) URL.revokeObjectURL(prev.url);
+        return { url, pages: pdf.getNumberOfPages() };
+      });
+    } catch (e: any) {
+      toast.error(e.message || "Erreur d'aperçu PDF");
+    } finally {
+      setGeneratingPreview(false);
+    }
+  };
 
   // Calcul des valeurs financières
   const financierValues = useMemo<Record<string, Record<string, number>>>(() => {
@@ -416,6 +451,93 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
     </div>
   );
 
+  // ---------- Aperçu PDF (couverture / contenu séparés) ----------
+  const renderPdfPreview = () => {
+    if (!pdfPreview) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-center gap-3 p-6">
+          <FileSearch className="w-10 h-10 text-[#1A4D2E]/60" />
+          <p className="text-sm text-muted-foreground max-w-sm">
+            Génère un rendu PDF réel pour vérifier la mise en page, et valider que la couverture
+            occupe bien une page seule.
+          </p>
+          <Button
+            onClick={handleGeneratePreview}
+            disabled={generatingPreview}
+            className="bg-[#1A4D2E] hover:bg-[#1A4D2E]/90 text-white"
+          >
+            <FileSearch className="w-4 h-4 mr-1" />
+            {generatingPreview ? 'Génération…' : "Générer l'aperçu PDF"}
+          </Button>
+        </div>
+      );
+    }
+
+    const { url, pages } = pdfPreview;
+    const coverOk = hasCover ? pages >= 2 : true;
+
+    return (
+      <div className="flex flex-col h-full gap-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              {pages} page{pages > 1 ? 's' : ''}
+            </Badge>
+            {hasCover ? (
+              coverOk ? (
+                <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Couverture isolée
+                </Badge>
+              ) : (
+                <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 gap-1">
+                  <AlertTriangle className="w-3 h-3" />
+                  Couverture & contenu fusionnés
+                </Badge>
+              )
+            ) : (
+              <Badge variant="secondary" className="text-xs">Sans couverture</Badge>
+            )}
+          </div>
+          <Button size="sm" variant="outline" onClick={handleGeneratePreview} disabled={generatingPreview}>
+            {generatingPreview ? '…' : 'Régénérer'}
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+          <div className="flex flex-col border rounded-md overflow-hidden bg-white">
+            <div className="px-3 py-1.5 text-xs font-semibold bg-[#1A4D2E] text-white">
+              {hasCover ? 'Page 1 — Couverture' : 'Page 1'}
+            </div>
+            <iframe
+              key={`cover-${url}`}
+              src={`${url}#page=1&view=Fit&toolbar=0`}
+              title="Couverture"
+              className="flex-1 w-full min-h-[320px] bg-neutral-100"
+            />
+          </div>
+          <div className="flex flex-col border rounded-md overflow-hidden bg-white">
+            <div className="px-3 py-1.5 text-xs font-semibold bg-[#F5A800] text-[#2C2C2C]">
+              {pages >= 2 ? `Pages 2 → ${pages} — Contenu` : 'Aucune page de contenu'}
+            </div>
+            {pages >= 2 ? (
+              <iframe
+                key={`content-${url}`}
+                src={`${url}#page=2&view=Fit&toolbar=0`}
+                title="Contenu"
+                className="flex-1 w-full min-h-[320px] bg-neutral-100"
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground p-4">
+                Le document ne contient qu'une page.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] sm:max-w-6xl h-[90vh] flex flex-col p-0">
@@ -434,6 +556,9 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
                 <TabsTrigger value="preview" className="gap-1">
                   <Eye className="w-3.5 h-3.5" /> Aperçu
                 </TabsTrigger>
+                <TabsTrigger value="pdf" className="gap-1">
+                  <FileSearch className="w-3.5 h-3.5" /> PDF
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="edit" className="flex-1 overflow-y-auto px-4 pb-4">
                 {renderEditor()}
@@ -441,16 +566,35 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
               <TabsContent value="preview" className="flex-1 overflow-y-auto px-4 pb-4">
                 <div className="bg-white border rounded-md p-4">{renderPreview()}</div>
               </TabsContent>
+              <TabsContent value="pdf" className="flex-1 overflow-hidden px-4 pb-4">
+                {renderPdfPreview()}
+              </TabsContent>
             </Tabs>
           ) : (
             <div className="grid grid-cols-2 h-full">
               <div className="overflow-y-auto p-6 border-r">{renderEditor()}</div>
-              <div className="overflow-y-auto p-6 bg-muted/30">
-                <div className="bg-white border rounded-md p-6 shadow-sm">{renderPreview()}</div>
+              <div className="overflow-hidden p-3 bg-muted/30">
+                <Tabs defaultValue="html" className="h-full flex flex-col">
+                  <TabsList className="self-start">
+                    <TabsTrigger value="html" className="gap-1">
+                      <Eye className="w-3.5 h-3.5" /> Aperçu HTML
+                    </TabsTrigger>
+                    <TabsTrigger value="pdf" className="gap-1">
+                      <FileSearch className="w-3.5 h-3.5" /> Aperçu PDF
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="html" className="flex-1 overflow-y-auto mt-2">
+                    <div className="bg-white border rounded-md p-6 shadow-sm">{renderPreview()}</div>
+                  </TabsContent>
+                  <TabsContent value="pdf" className="flex-1 overflow-hidden mt-2">
+                    {renderPdfPreview()}
+                  </TabsContent>
+                </Tabs>
               </div>
             </div>
           )}
         </div>
+
 
         <div className="px-6 py-3 border-t flex items-center justify-end gap-2 bg-background">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>

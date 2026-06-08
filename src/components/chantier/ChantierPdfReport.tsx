@@ -194,16 +194,17 @@ export async function generateChantierPdf(chantier: Chantier) {
 
     for (const visite of visites) {
       y = ensureSpace(doc, y, 30, ctxHeader);
-      doc.setFillColor(...C.green);
+      // Bandeau ivoire (rule 1 : pas de vert pleine largeur hors header/footer/cover)
+      doc.setFillColor(...C.ivoryDark);
       doc.rect(margin, y, contentW, 7, 'F');
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
-      doc.setTextColor(...C.white);
+      doc.setTextColor(...C.green);
       doc.text(format(new Date(visite.date_visite), 'dd/MM/yyyy HH:mm', { locale: fr }), margin + 3, y + 4.8);
       if (visite.personnes_presentes) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
-        doc.setTextColor(...C.gold);
+        doc.setTextColor(...C.textMuted);
         doc.text(`Présents : ${visite.personnes_presentes}`, pageW - margin - 3, y + 4.8, { align: 'right' });
       }
       y += 11;

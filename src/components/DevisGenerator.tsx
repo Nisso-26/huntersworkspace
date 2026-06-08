@@ -12,9 +12,12 @@ import { useDevis, useSaveDevis, useUpdateDevisStatut, type DevisLigne, type Dev
 import { useCompanySettings } from '@/hooks/use-company-settings';
 import { fmtPdfEur } from '@/lib/pdf-utils';
 import type { Dossier } from '@/hooks/use-dossiers';
+import {
+  C, T, LAYOUT,
+  drawHeader, drawFooter, drawSectionTitle,
+  drawIvoryBox, ensureSpace, drawSignatureZone,
+} from '@/lib/pdf-design-system';
 
-const GREEN: [number, number, number] = [26, 77, 46];
-const GOLD: [number, number, number] = [245, 168, 0];
 
 function pickTranche(rows: BaremeHunters[], service: BaremeService, base: number) {
   return rows.find(r =>

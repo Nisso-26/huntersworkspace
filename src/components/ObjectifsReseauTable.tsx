@@ -20,12 +20,25 @@ const statutLabel: Record<string, string> = {
 
 export default function ObjectifsReseauTable() {
   const { data = [], isLoading } = useObjectifsReseauCourant();
+  const qc = useQueryClient();
+  const [computing, setComputing] = useState(false);
 
   if (isLoading) return <Skeleton className="h-48 rounded-xl" />;
 
   const t3 = data.filter(r => r.objectif.trimestres_rates_consecutifs >= 3);
   const t2 = data.filter(r => r.objectif.trimestres_rates_consecutifs === 2);
   const t1 = data.filter(r => r.objectif.trimestres_rates_consecutifs === 1);
+
+  const handleCompute = async () => {
+    setComputing(true);
+    const { data: res, error } = await supabase.rpc('compute_objectif_trimestre');
+    setComputing(false);
+    if (error) { toast.error(error.message); return; }
+    const r = res as any;
+    toast.success(`Calcul terminé — ${r?.atteints ?? 0} atteints · ${r?.insuffisants ?? 0} insuffisants`);
+    qc.invalidateQueries({ queryKey: ['objectifs-reseau-courant'] });
+    qc.invalidateQueries({ queryKey: ['objectif-trimestre'] });
+  };
 
   return (
     <div className="space-y-4">

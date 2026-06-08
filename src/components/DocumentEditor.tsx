@@ -46,21 +46,67 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
   const { data: company } = useCompanySettings();
   const { data: mandataires = [] } = useMandataires();
 
-  const conseiller = mandataires.find((m) => m.id === dossier.mandataire_id)?.full_name || '';
+  const mandataire = mandataires.find((m) => m.id === dossier.mandataire_id);
+  const conseiller = mandataire?.full_name || '';
   const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  // Variables texte
+  // Variables texte enrichies (client, mandataire, cabinet, scoring, services, objectifs)
   const baseVariables = useMemo<Record<string, any>>(() => ({
-    nom_client: dossier.client_name || '',
-    email_client: dossier.email || '',
-    telephone_client: dossier.phone || '',
-    ville: dossier.ville || '',
-    budget: dossier.budget ? fmtPdfEur(dossier.budget) : '',
+    // ── CLIENT ──
+    nom_client:           dossier.client_name || '',
+    email_client:         (dossier as any).email || '',
+    telephone_client:     (dossier as any).phone || '',
+    ville:                dossier.ville || '',
+    budget:               dossier.budget ? fmtPdfEur(dossier.budget) : '',
+    honoraires:           dossier.honoraires ? fmtPdfEur(dossier.honoraires) : '',
+    numero_dossier:       dossier.numero_dossier || '',
+    date:                 today,
+
+    // ── MANDATAIRE ──
     conseiller,
-    numero_dossier: dossier.numero_dossier || '',
-    date: today,
-    honoraires: dossier.honoraires ? fmtPdfEur(dossier.honoraires) : '',
-  }), [dossier, conseiller, today]);
+    conseiller_email:     mandataire?.email || '',
+    conseiller_telephone: (mandataire as any)?.phone || '',
+    conseiller_rsac:      (mandataire as any)?.rsac_numero || '',
+    conseiller_greffe:    (mandataire as any)?.rsac_greffe || '',
+    conseiller_zone:      (mandataire as any)?.zone_label || (mandataire as any)?.zone || '',
+    conseiller_niveau:    (mandataire as any)?.niveau || 'N1',
+    conseiller_siret:     (mandataire as any)?.siret || '',
+
+    // ── HUNTERS IMMOBILIER ──
+    cabinet_nom:          (company as any)?.raison_sociale || 'HUNTERS Immobilier',
+    cabinet_adresse:      (company as any)?.adresse_siege || '45 rue Michel Colombe, 37000 Tours',
+    cabinet_telephone:    (company as any)?.telephone || '',
+    cabinet_email:        (company as any)?.email_contact || (company as any)?.email || '',
+    cabinet_siret:        (company as any)?.siret || '',
+    carte_t:              (company as any)?.numero_carte_t || '',
+
+    // ── SCORING & TARIFICATION ──
+    score_qualification:  String((dossier as any)?.score_qualification ?? ''),
+    niveau_client:        (dossier as any)?.niveau_qualification || 'standard',
+    tarif_conseil:        (dossier as any)?.tarif_conseil_ht
+                            ? fmtPdfEur((dossier as any).tarif_conseil_ht)
+                            : '',
+
+    // ── SERVICES SOUSCRITS (liste textuelle) ──
+    services_liste:       Object.entries((dossier as any).services_souscrits || {})
+                            .filter(([, v]) => v)
+                            .map(([k]) => ({
+                              conseil: 'Conseil stratégique patrimonial',
+                              chasse: 'Chasse immobilière',
+                              amo: "Assistance à Maîtrise d'Ouvrage (AMO)",
+                              deco: 'Décoration & ameublement',
+                              financement: 'Accompagnement financement',
+                              gestion_locative: 'Gestion locative',
+                            }[k as string] || k))
+                            .join(', '),
+
+    // ── OBJECTIFS CONTRACTUELS ──
+    objectif_ca:          '20 000 € HT / trimestre',
+    objectif_mandats:     '2 mandats signés / trimestre',
+    objectif_conseil:     '1 rapport de conseil / mois',
+    pack_mensuel:         '149 € HT / mois',
+    seuil_n2:             '100 000 € CA HT cumulé',
+  }), [dossier, mandataire, company, conseiller, today]);
 
   const sections = (modele.contenu_template?.sections || []) as ModeleSection[];
 

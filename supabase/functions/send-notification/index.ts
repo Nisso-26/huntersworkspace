@@ -79,9 +79,8 @@ Deno.serve(async (req) => {
     if (typeof subject !== "string" || subject.length > 300) throw new Error("Sujet invalide");
     if (typeof body !== "string" || body.length > 100000) throw new Error("Corps invalide");
 
-
-    const recipients = Array.isArray(to) ? to : [to];
     const html = wrap(subject, body, numero_dossier || null);
+
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",

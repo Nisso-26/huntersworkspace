@@ -112,21 +112,26 @@ export async function exportStrategiePdf(
     y = drawSectionTitle(doc, 'Recommandations', y);
 
     strategie.recommandations.forEach((rec: any) => {
-      // En-tête recommandation
+      // En-tête recommandation (ivoire + texte vert — rule 1)
       y = ensureSpace(doc, y, 14, ctxHeader);
-      doc.setFillColor(...C.green);
+      doc.setFillColor(...C.ivoryDark);
       doc.rect(margin, y, contentW, 9, 'F');
+      // Filet vertical or à gauche pour signaler la recommandation
+      doc.setFillColor(...C.gold);
+      doc.rect(margin, y, 1.5, 9, 'F');
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9.5);
-      doc.setTextColor(...C.white);
+      doc.setTextColor(...C.green);
       doc.text(`${rec.rang}. ${rec.titre}`, margin + 4, y + 6);
+      doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
-      doc.setTextColor(...C.gold);
+      doc.setTextColor(...C.textMuted);
       doc.text(
         `${rec.rendement_brut_estime_pct}% brut · ${rec.dispositif}`,
         pageW - margin - 4, y + 6, { align: 'right' },
       );
       y += 13;
+
 
       // Description
       if (rec.description) {

@@ -229,8 +229,8 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
       doc.setTextColor(...C.textDark);
       doc.text(fmtPdfEur(l.montant_ht), colHT, y + 4.2, { align: 'right' });
 
-      // Mention conseil
-      if (l.service === 'conseil' && !packActif) {
+      // Mention conseil — toujours afficher "(tarif plein)" (rule 7)
+      if (l.service === 'conseil') {
         doc.setFont('helvetica', 'italic');
         doc.setFontSize(7);
         doc.setTextColor(...C.textMuted);

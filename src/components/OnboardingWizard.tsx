@@ -252,7 +252,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
             data: form as unknown as Record<string, unknown>,
             completed_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-          },
+          } as any,
           { onConflict: 'mandataire_id' }
         );
 

@@ -56,6 +56,7 @@ export default function DocumentsContractuelsList({ dossier }: { dossier: Dossie
         numeroDossier: dossier.numero_dossier,
         conseiller: nameById.get(doc.genere_par || '') || '',
         company,
+        categorie: modele.categorie,
       });
       const safe = (doc.titre || 'document').replace(/[^a-z0-9_-]+/gi, '_');
       pdf.save(`${safe}_${dossier.numero_dossier || dossier.id.slice(0, 8)}.pdf`);

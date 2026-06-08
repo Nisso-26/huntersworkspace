@@ -652,6 +652,25 @@ function StepZoneActivation({
         </div>
       </section>
 
+      {/* 5.5 — Interdiction d'encaissement */}
+      <section className="space-y-3">
+        <div className="rounded-md border-2 border-destructive bg-destructive/5 p-4 text-sm space-y-2">
+          <p className="font-bold flex items-center gap-2 text-destructive">⚠️ Rappel légal obligatoire</p>
+          <p>
+            Le mandataire est formellement interdit d'encaisser, sous quelque forme que ce soit,
+            des sommes provenant des clients (honoraires, acomptes, dépôts de garantie).
+          </p>
+          <p>
+            Tout encaissement est réservé exclusivement à HUNTERS Immobilier.
+            Toute violation constitue une faute grave entraînant la résiliation immédiate du contrat.
+          </p>
+        </div>
+        <label className="flex items-start gap-3 cursor-pointer">
+          <Checkbox checked={form.accept_encaissement} onCheckedChange={(c) => setField('accept_encaissement', c === true)} className="mt-1" />
+          <span className="text-sm">Je confirme avoir pris connaissance de l'interdiction formelle d'encaissement direct de fonds clients.</span>
+        </label>
+      </section>
+
       {/* 5.5 — Récapitulatif */}
       <section className="space-y-3">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Récapitulatif avant activation</h3>

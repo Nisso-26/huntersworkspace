@@ -59,6 +59,10 @@ export default function ModeleEconomique() {
         commission_deco_n1: form.commission_deco_n1,
         commission_deco_n2: form.commission_deco_n2,
         seuil_passage_n2: form.seuil_passage_n2,
+        ca_objectif_n1_trimestre: form.ca_objectif_n1_trimestre ?? 20000,
+        ca_objectif_n2_trimestre: form.ca_objectif_n2_trimestre ?? 30000,
+        mandats_objectif_trimestre: form.mandats_objectif_trimestre ?? 2,
+        conseils_objectif_mois: form.conseils_objectif_mois ?? 1,
       } as any,
     });
     setConfirmOpen(false);
@@ -137,6 +141,33 @@ export default function ModeleEconomique() {
           ⚠️ Conseil patrimonial : toujours facturé au tarif plein — aucune remise autorisée, y compris en pack clé en main.
         </div>
       </div>
+
+      <div className="space-y-3 pt-4 border-t">
+        <h3 className="font-heading font-semibold">Objectifs mandataires</h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>CA objectif N1 / trimestre (€)</Label>
+            <Input type="number" disabled={!isAdmin} value={form.ca_objectif_n1_trimestre ?? 20000} onChange={e => set('ca_objectif_n1_trimestre', Number(e.target.value))} />
+          </div>
+          <div className="space-y-2">
+            <Label>CA objectif N2 / trimestre (€)</Label>
+            <Input type="number" disabled={!isAdmin} value={form.ca_objectif_n2_trimestre ?? 30000} onChange={e => set('ca_objectif_n2_trimestre', Number(e.target.value))} />
+          </div>
+          <div className="space-y-2">
+            <Label>Mandats objectif / trimestre</Label>
+            <Input type="number" disabled={!isAdmin} value={form.mandats_objectif_trimestre ?? 2} onChange={e => set('mandats_objectif_trimestre', Number(e.target.value))} />
+          </div>
+          <div className="space-y-2">
+            <Label>Conseils objectif / mois</Label>
+            <Input type="number" disabled={!isAdmin} value={form.conseils_objectif_mois ?? 1} onChange={e => set('conseils_objectif_mois', Number(e.target.value))} />
+          </div>
+        </div>
+        <p className="text-xs italic text-muted-foreground">
+          Révisable annuellement. Trimestre atteint uniquement si CA + mandats + conseils sont tous au vert simultanément.
+        </p>
+      </div>
+
+
 
       {isAdmin && (
         <Button onClick={handleSave} disabled={updateMut.isPending}><Save className="w-4 h-4 mr-2" />Enregistrer</Button>

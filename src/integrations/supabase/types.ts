@@ -449,6 +449,8 @@ export type Database = {
           assureur_police: string | null
           assureur_rcp: string | null
           bic: string | null
+          ca_objectif_n1_trimestre: number
+          ca_objectif_n2_trimestre: number
           capital_social: string | null
           carte_t_expiration: string | null
           carte_t_numero: string | null
@@ -464,6 +466,7 @@ export type Database = {
           commission_conseil_n2: number | null
           commission_deco_n1: number | null
           commission_deco_n2: number | null
+          conseils_objectif_mois: number
           couleur_primaire: string | null
           couleur_secondaire: string | null
           created_at: string | null
@@ -476,6 +479,7 @@ export type Database = {
           iban: string | null
           id: string
           logo_url: string | null
+          mandats_objectif_trimestre: number
           mentions_legales: string | null
           numero_tva_intra: string | null
           periode_essai_jours: number | null
@@ -497,6 +501,8 @@ export type Database = {
           assureur_police?: string | null
           assureur_rcp?: string | null
           bic?: string | null
+          ca_objectif_n1_trimestre?: number
+          ca_objectif_n2_trimestre?: number
           capital_social?: string | null
           carte_t_expiration?: string | null
           carte_t_numero?: string | null
@@ -512,6 +518,7 @@ export type Database = {
           commission_conseil_n2?: number | null
           commission_deco_n1?: number | null
           commission_deco_n2?: number | null
+          conseils_objectif_mois?: number
           couleur_primaire?: string | null
           couleur_secondaire?: string | null
           created_at?: string | null
@@ -524,6 +531,7 @@ export type Database = {
           iban?: string | null
           id?: string
           logo_url?: string | null
+          mandats_objectif_trimestre?: number
           mentions_legales?: string | null
           numero_tva_intra?: string | null
           periode_essai_jours?: number | null
@@ -545,6 +553,8 @@ export type Database = {
           assureur_police?: string | null
           assureur_rcp?: string | null
           bic?: string | null
+          ca_objectif_n1_trimestre?: number
+          ca_objectif_n2_trimestre?: number
           capital_social?: string | null
           carte_t_expiration?: string | null
           carte_t_numero?: string | null
@@ -560,6 +570,7 @@ export type Database = {
           commission_conseil_n2?: number | null
           commission_deco_n1?: number | null
           commission_deco_n2?: number | null
+          conseils_objectif_mois?: number
           couleur_primaire?: string | null
           couleur_secondaire?: string | null
           created_at?: string | null
@@ -572,6 +583,7 @@ export type Database = {
           iban?: string | null
           id?: string
           logo_url?: string | null
+          mandats_objectif_trimestre?: number
           mentions_legales?: string | null
           numero_tva_intra?: string | null
           periode_essai_jours?: number | null
@@ -631,6 +643,42 @@ export type Database = {
           statut_attestation?: string
           statut_formation?: string
           suspendu?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      conseils_mensuels: {
+        Row: {
+          annee: number
+          created_at: string
+          id: string
+          mandataire_id: string
+          mois: number
+          nb_conseils_objectif: number
+          nb_conseils_realises: number
+          statut: string
+          updated_at: string
+        }
+        Insert: {
+          annee: number
+          created_at?: string
+          id?: string
+          mandataire_id: string
+          mois: number
+          nb_conseils_objectif?: number
+          nb_conseils_realises?: number
+          statut?: string
+          updated_at?: string
+        }
+        Update: {
+          annee?: number
+          created_at?: string
+          id?: string
+          mandataire_id?: string
+          mois?: number
+          nb_conseils_objectif?: number
+          nb_conseils_realises?: number
+          statut?: string
           updated_at?: string
         }
         Relationships: []
@@ -1471,6 +1519,60 @@ export type Database = {
         }
         Relationships: []
       }
+      objectifs_trimestriels: {
+        Row: {
+          annee: number
+          ca_objectif: number
+          ca_realise: number
+          conseils_objectif: number
+          conseils_realises: number
+          created_at: string
+          id: string
+          leads_bloques: boolean
+          mandataire_id: string
+          mandats_objectif: number
+          mandats_realises: number
+          statut: string
+          trimestre: number
+          trimestres_rates_consecutifs: number
+          updated_at: string
+        }
+        Insert: {
+          annee: number
+          ca_objectif?: number
+          ca_realise?: number
+          conseils_objectif?: number
+          conseils_realises?: number
+          created_at?: string
+          id?: string
+          leads_bloques?: boolean
+          mandataire_id: string
+          mandats_objectif?: number
+          mandats_realises?: number
+          statut?: string
+          trimestre: number
+          trimestres_rates_consecutifs?: number
+          updated_at?: string
+        }
+        Update: {
+          annee?: number
+          ca_objectif?: number
+          ca_realise?: number
+          conseils_objectif?: number
+          conseils_realises?: number
+          created_at?: string
+          id?: string
+          leads_bloques?: boolean
+          mandataire_id?: string
+          mandats_objectif?: number
+          mandats_realises?: number
+          statut?: string
+          trimestre?: number
+          trimestres_rates_consecutifs?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       onboarding_progress: {
         Row: {
           completed_at: string | null
@@ -2138,6 +2240,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      compute_objectif_trimestre: {
+        Args: { _annee: number; _mandataire_id: string; _trimestre: number }
+        Returns: {
+          annee: number
+          ca_objectif: number
+          ca_realise: number
+          conseils_objectif: number
+          conseils_realises: number
+          created_at: string
+          id: string
+          leads_bloques: boolean
+          mandataire_id: string
+          mandats_objectif: number
+          mandats_realises: number
+          statut: string
+          trimestre: number
+          trimestres_rates_consecutifs: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "objectifs_trimestriels"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       decide_validation_dossier: {
         Args: { _motif?: string; _statut: string; _validation_id: string }
         Returns: undefined

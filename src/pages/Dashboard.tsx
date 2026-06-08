@@ -13,6 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
 import ValidationsEnAttente from '@/components/ValidationsEnAttente';
 import ConformiteResume from '@/components/mandataires/ConformiteResume';
+import ObjectifsReseauTable from '@/components/ObjectifsReseauTable';
+import ObjectifsTab from '@/components/mandataires/ObjectifsTab';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } } as const;
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' as const } } } as const;
@@ -96,6 +98,18 @@ export default function Dashboard() {
           <motion.div variants={item} className="grid lg:grid-cols-2 gap-4">
             <ValidationsEnAttente />
             <ConformiteResume />
+          </motion.div>
+        )}
+
+        {isAdmin && (
+          <motion.div variants={item}>
+            <ObjectifsReseauTable />
+          </motion.div>
+        )}
+
+        {!isAdmin && role === 'mandataire' && user?.id && (
+          <motion.div variants={item}>
+            <ObjectifsTab mandataireId={user.id} />
           </motion.div>
         )}
 

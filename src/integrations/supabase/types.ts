@@ -1643,55 +1643,109 @@ export type Database = {
       }
       profiles: {
         Row: {
+          adresse_cp: string | null
+          adresse_rue: string | null
+          adresse_ville: string | null
           avatar_url: string | null
           created_at: string
           date_entree: string | null
+          date_naissance: string | null
           email: string | null
+          first_name: string | null
           full_name: string | null
           iban: string | null
           id: string
+          last_name: string | null
           niveau: string | null
+          onboarding_completed_at: string | null
+          pack_accepte: boolean
+          pack_accepte_at: string | null
           pack_montant: number | null
           pack_status: string | null
           parrain_id: string | null
+          prescripteurs_acceptes: boolean
+          rsac_date_immat: string | null
+          rsac_greffe: string | null
+          rsac_justificatif_path: string | null
+          rsac_numero: string | null
+          siret: string | null
           status: string | null
+          statut_juridique: string | null
           suspendu: boolean
           updated_at: string
           zone: string | null
+          zone_acceptee: boolean
+          zone_prioritaire: string | null
         }
         Insert: {
+          adresse_cp?: string | null
+          adresse_rue?: string | null
+          adresse_ville?: string | null
           avatar_url?: string | null
           created_at?: string
           date_entree?: string | null
+          date_naissance?: string | null
           email?: string | null
+          first_name?: string | null
           full_name?: string | null
           iban?: string | null
           id: string
+          last_name?: string | null
           niveau?: string | null
+          onboarding_completed_at?: string | null
+          pack_accepte?: boolean
+          pack_accepte_at?: string | null
           pack_montant?: number | null
           pack_status?: string | null
           parrain_id?: string | null
+          prescripteurs_acceptes?: boolean
+          rsac_date_immat?: string | null
+          rsac_greffe?: string | null
+          rsac_justificatif_path?: string | null
+          rsac_numero?: string | null
+          siret?: string | null
           status?: string | null
+          statut_juridique?: string | null
           suspendu?: boolean
           updated_at?: string
           zone?: string | null
+          zone_acceptee?: boolean
+          zone_prioritaire?: string | null
         }
         Update: {
+          adresse_cp?: string | null
+          adresse_rue?: string | null
+          adresse_ville?: string | null
           avatar_url?: string | null
           created_at?: string
           date_entree?: string | null
+          date_naissance?: string | null
           email?: string | null
+          first_name?: string | null
           full_name?: string | null
           iban?: string | null
           id?: string
+          last_name?: string | null
           niveau?: string | null
+          onboarding_completed_at?: string | null
+          pack_accepte?: boolean
+          pack_accepte_at?: string | null
           pack_montant?: number | null
           pack_status?: string | null
           parrain_id?: string | null
+          prescripteurs_acceptes?: boolean
+          rsac_date_immat?: string | null
+          rsac_greffe?: string | null
+          rsac_justificatif_path?: string | null
+          rsac_numero?: string | null
+          siret?: string | null
           status?: string | null
+          statut_juridique?: string | null
           suspendu?: boolean
           updated_at?: string
           zone?: string | null
+          zone_acceptee?: boolean
+          zone_prioritaire?: string | null
         }
         Relationships: []
       }

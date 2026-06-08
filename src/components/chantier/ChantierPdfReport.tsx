@@ -1,12 +1,16 @@
-// jsPDF chargé dynamiquement dans generateChantierPdf pour alléger le bundle initial
+// Rapport de suivi chantier — rendu basé sur pdf-design-system.
 import { supabase } from '@/integrations/supabase/client';
 import type { Chantier } from '@/hooks/use-chantiers';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { fmtPdfEur, fmtPdfNum } from '@/lib/pdf-utils';
+import {
+  C, T, LAYOUT,
+  drawHeader, drawFooter, drawSectionTitle,
+  drawIvoryBox, ensureSpace, loadLogo,
+} from '@/lib/pdf-design-system';
 
-const GREEN = [26, 77, 46] as const;
-const GOLD = [212, 160, 23] as const;
+const RED: [number, number, number] = [192, 57, 43];
 
 async function loadImageAsBase64(url: string): Promise<string | null> {
   try {
@@ -23,60 +27,41 @@ async function loadImageAsBase64(url: string): Promise<string | null> {
 
 export async function generateChantierPdf(chantier: Chantier) {
   const { default: jsPDF } = await import('jspdf');
-  const doc = new jsPDF();
-  const w = 210;
-  let y = 0;
+  await loadLogo(); // chargé pour parité, non utilisé sur en-tête sobre
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const { margin, contentW, pageW, headerH } = LAYOUT;
+  const titre = `Rapport chantier · ${chantier.reference}`;
+  const ctxHeader = { refDossier: chantier.reference, titre };
 
-  // Helper
-  const addPage = () => { doc.addPage(); y = 20; };
-  const checkPage = (need: number) => { if (y + need > 275) addPage(); };
+  drawHeader(doc, chantier.reference, titre);
+  let y = headerH + 10;
 
-  // Header bar
-  doc.setFillColor(...GREEN);
-  doc.rect(0, 0, w, 30, 'F');
-  doc.setTextColor(...GOLD);
-  doc.setFontSize(18);
-  doc.setFont('helvetica', 'bold');
-  doc.text('HUNTERS', 14, 15);
-  doc.setFontSize(9);
-  doc.setTextColor(255, 255, 255);
-  doc.text('Chasseur Immobilier', 14, 22);
-  doc.setFontSize(11);
-  doc.text(`Rapport de suivi chantier`, w - 14, 12, { align: 'right' });
-  doc.setFontSize(9);
-  doc.text(`${chantier.reference} — ${format(new Date(), 'dd MMMM yyyy', { locale: fr })}`, w - 14, 20, { align: 'right' });
+  // ─── INFOS GÉNÉRALES ────────────────────────────────────────────────
+  y = drawSectionTitle(doc, 'Informations générales', y);
+  doc.setFont(T.body.font, 'normal');
+  doc.setFontSize(T.body.size);
 
-  y = 40;
-
-  // Infos générales
-  doc.setTextColor(0);
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Informations générales', 14, y);
-  y += 8;
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  const infos = [
-    ['Bien', `${chantier.bien_reference || '—'} ${chantier.bien_ville ? `(${chantier.bien_ville})` : ''}`],
-    ['Conseiller', chantier.mandataire_name || '—'],
-    ['Statut', chantier.statut],
-    ['Début prévu', chantier.date_debut_prevue || '—'],
-    ['Fin prévue', chantier.date_fin_prevue || '—'],
+  const infos: Array<[string, string]> = [
+    ['Bien',         `${chantier.bien_reference || '—'}${chantier.bien_ville ? ` (${chantier.bien_ville})` : ''}`],
+    ['Conseiller',   chantier.mandataire_name || '—'],
+    ['Statut',       chantier.statut],
+    ['Début prévu',  chantier.date_debut_prevue || '—'],
+    ['Fin prévue',   chantier.date_fin_prevue || '—'],
   ];
   infos.forEach(([label, val]) => {
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${label} :`, 14, y);
+    doc.setTextColor(...C.textMuted);
     doc.setFont('helvetica', 'normal');
-    doc.text(val, 50, y);
-    y += 5;
+    doc.text(`${label}`, margin, y);
+    doc.setTextColor(...C.textDark);
+    doc.setFont('helvetica', 'bold');
+    doc.text(val, margin + 36, y);
+    y += 5.5;
   });
+  y += 4;
 
-  // Budget summary
-  y += 5;
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Récapitulatif budgétaire', 14, y);
-  y += 8;
+  // ─── RÉCAPITULATIF BUDGÉTAIRE ───────────────────────────────────────
+  y = ensureSpace(doc, y, 40, ctxHeader);
+  y = drawSectionTitle(doc, 'Récapitulatif budgétaire', y);
 
   const lots = chantier.lots || [];
   const totalDevis = lots.reduce((s, l) => s + l.montant_devis, 0);
@@ -84,181 +69,237 @@ export async function generateChantierPdf(chantier: Chantier) {
   const totalFacture = lots.reduce((s, l) => s + l.montant_facture, 0);
   const budgetAlloue = chantier.budget_alloue;
   const pct = budgetAlloue > 0 ? Math.min(100, (totalFacture / budgetAlloue) * 100) : 0;
+  const overBudget = totalFacture > budgetAlloue;
 
-  // Progress bar
-  doc.setFillColor(230, 230, 230);
-  doc.rect(14, y, 120, 5, 'F');
-  const barColor = totalFacture > budgetAlloue ? [220, 50, 50] : GREEN;
-  doc.setFillColor(...(barColor as [number, number, number]));
-  doc.rect(14, y, 120 * (pct / 100), 5, 'F');
-  doc.setFontSize(8);
-  doc.setTextColor(100);
-  doc.text(`${Math.round(pct)}%`, 138, y + 4);
-  y += 10;
+  // Encadré ivoire 4 valeurs clés
+  drawIvoryBox(doc, y, 22);
+  const valsW = contentW / 4;
+  const vals: Array<[string, string]> = [
+    ['Budget alloué', fmtPdfEur(budgetAlloue)],
+    ['Total devis',   fmtPdfEur(totalDevis)],
+    ['Engagé',        fmtPdfEur(totalEngage)],
+    ['Facturé',       fmtPdfEur(totalFacture)],
+  ];
+  vals.forEach(([label, value], i) => {
+    const x = margin + i * valsW + 4;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(...C.textMuted);
+    doc.text(label.toUpperCase(), x, y + 8);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(...C.green);
+    doc.text(value, x, y + 17);
+  });
+  y += 28;
 
-  // Lots table header
-  doc.setFontSize(8);
-  doc.setFillColor(240, 240, 240);
-  doc.rect(14, y, w - 28, 6, 'F');
-  doc.setTextColor(0);
-  doc.setFont('helvetica', 'bold');
-  const cols = [14, 50, 85, 105, 130, 155, 175];
-  const headers = ['Lot', 'Artisan', 'Devis', 'Engagé', 'Facturé', 'Reste', '%'];
-  headers.forEach((h, i) => doc.text(h, cols[i], y + 4));
-  y += 8;
+  // Barre de progression
+  doc.setFont(T.label.font, T.label.style);
+  doc.setFontSize(T.label.size);
+  doc.setTextColor(...C.textMuted);
+  doc.text(`Consommation budgétaire : ${Math.round(pct)}%${overBudget ? ' — dépassement' : ''}`, margin, y);
+  y += 3;
+  doc.setFillColor(...C.border);
+  doc.roundedRect(margin, y, contentW, 5, 1, 1, 'F');
+  doc.setFillColor(...(overBudget ? C.gold : C.green));
+  doc.roundedRect(margin, y, contentW * (pct / 100), 5, 1, 1, 'F');
+  y += 11;
 
-  doc.setFont('helvetica', 'normal');
-  lots.forEach(lot => {
-    checkPage(6);
-    doc.text(lot.designation.substring(0, 20), cols[0], y);
-    doc.text((lot.artisan || '—').substring(0, 18), cols[1], y);
-    doc.text(fmtPdfNum(lot.montant_devis, 0), cols[2], y);
-    doc.text(fmtPdfNum(lot.montant_engage, 0), cols[3], y);
-    doc.text(fmtPdfNum(lot.montant_facture, 0), cols[4], y);
-    doc.text(fmtPdfNum(lot.montant_devis - lot.montant_facture, 0), cols[5], y);
-    doc.text(`${lot.avancement}%`, cols[6], y);
-    y += 5;
+  // ─── TABLEAU DES LOTS ───────────────────────────────────────────────
+  y = ensureSpace(doc, y, 20, ctxHeader);
+  y = drawSectionTitle(doc, 'Lots et artisans', y);
+
+  const cols = [
+    { x: margin,             w: 50, label: 'Lot',     align: 'left'  as const },
+    { x: margin + 50,        w: 38, label: 'Artisan', align: 'left'  as const },
+    { x: margin + 88 + 22,   w: 0,  label: 'Devis',   align: 'right' as const },
+    { x: margin + 88 + 44,   w: 0,  label: 'Engagé',  align: 'right' as const },
+    { x: margin + 88 + 64,   w: 0,  label: 'Facturé', align: 'right' as const },
+    { x: margin + 88 + 84,   w: 0,  label: 'Reste',   align: 'right' as const },
+  ];
+
+  const rowH = 6.2;
+  // En-tête
+  doc.setFillColor(...C.ivoryDark);
+  doc.rect(margin, y, contentW, rowH, 'F');
+  doc.setFont(T.tableHeader.font, T.tableHeader.style);
+  doc.setFontSize(T.tableHeader.size);
+  doc.setTextColor(...C.green);
+  cols.forEach(c => {
+    doc.text(c.label.toUpperCase(), c.x + (c.align === 'right' ? 0 : 1), y + 4.2, { align: c.align });
+  });
+  y += rowH;
+
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.3);
+
+  lots.forEach((lot, i) => {
+    y = ensureSpace(doc, y, rowH, ctxHeader);
+    if (i % 2 === 1) {
+      doc.setFillColor(...C.ivory);
+      doc.rect(margin, y, contentW, rowH, 'F');
+    }
+    const reste = lot.montant_devis - lot.montant_facture;
+    doc.setFont(T.tableCell.font, 'normal');
+    doc.setFontSize(T.tableCell.size);
+    doc.setTextColor(...C.textDark);
+    doc.text((lot.designation || '').substring(0, 28), cols[0].x + 1, y + 4.2);
+    doc.setTextColor(...C.textMuted);
+    doc.text((lot.artisan || '—').substring(0, 22), cols[1].x + 1, y + 4.2);
+    doc.setTextColor(...C.textDark);
+    doc.text(fmtPdfNum(lot.montant_devis, 0), cols[2].x, y + 4.2, { align: 'right' });
+    doc.text(fmtPdfNum(lot.montant_engage, 0), cols[3].x, y + 4.2, { align: 'right' });
+    doc.text(fmtPdfNum(lot.montant_facture, 0), cols[4].x, y + 4.2, { align: 'right' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...(reste < 0 ? RED : C.green));
+    doc.text(fmtPdfNum(reste, 0), cols[5].x, y + 4.2, { align: 'right' });
+
+    // Bordure horizontale uniquement
+    doc.line(margin, y + rowH, margin + contentW, y + rowH);
+    y += rowH;
   });
 
-  // Totals
-  checkPage(8);
-  doc.setDrawColor(200);
-  doc.line(14, y, w - 14, y);
-  y += 4;
+  // Total
+  y = ensureSpace(doc, y, rowH + 4, ctxHeader);
+  doc.setFillColor(...C.ivoryDark);
+  doc.rect(margin, y, contentW, rowH, 'F');
+  const totalReste = totalDevis - totalFacture;
   doc.setFont('helvetica', 'bold');
-  doc.text('TOTAL', cols[0], y);
-  doc.text(fmtPdfNum(totalDevis, 0), cols[2], y);
-  doc.text(fmtPdfNum(totalEngage, 0), cols[3], y);
-  doc.text(fmtPdfNum(totalFacture, 0), cols[4], y);
-  doc.text(fmtPdfNum(totalDevis - totalFacture, 0), cols[5], y);
-  y += 5;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text(`Budget alloué: ${fmtPdfEur(budgetAlloue)} | Déco: ${fmtPdfEur(chantier.total_deco || 0)}`, 14, y);
-  y += 10;
+  doc.setFontSize(T.tableCell.size);
+  doc.setTextColor(...C.green);
+  doc.text('TOTAL', cols[0].x + 1, y + 4.2);
+  doc.setTextColor(...C.textDark);
+  doc.text(fmtPdfNum(totalDevis, 0),   cols[2].x, y + 4.2, { align: 'right' });
+  doc.text(fmtPdfNum(totalEngage, 0),  cols[3].x, y + 4.2, { align: 'right' });
+  doc.text(fmtPdfNum(totalFacture, 0), cols[4].x, y + 4.2, { align: 'right' });
+  doc.setTextColor(...(totalReste < 0 ? RED : C.green));
+  doc.text(fmtPdfNum(totalReste, 0),   cols[5].x, y + 4.2, { align: 'right' });
+  y += rowH + 6;
 
-  // Visites
+  // Mention déco
+  if (chantier.total_deco) {
+    doc.setFont(T.label.font, T.label.style);
+    doc.setFontSize(T.label.size);
+    doc.setTextColor(...C.textMuted);
+    doc.text(`Décoration & ameublement : ${fmtPdfEur(chantier.total_deco)}`, margin, y);
+    y += 8;
+  }
+
+  // ─── VISITES ────────────────────────────────────────────────────────
   const visites = chantier.visites || [];
   if (visites.length > 0) {
-    checkPage(15);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0);
-    doc.text('Comptes-rendus de visite', 14, y);
-    y += 8;
+    y = ensureSpace(doc, y, 20, ctxHeader);
+    y = drawSectionTitle(doc, 'Comptes-rendus de visite', y);
 
     for (const visite of visites) {
-      checkPage(30);
-      doc.setFillColor(...GREEN);
-      doc.rect(14, y, w - 28, 6, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(9);
+      y = ensureSpace(doc, y, 30, ctxHeader);
+      doc.setFillColor(...C.green);
+      doc.rect(margin, y, contentW, 7, 'F');
       doc.setFont('helvetica', 'bold');
-      doc.text(format(new Date(visite.date_visite), 'dd/MM/yyyy HH:mm', { locale: fr }), 16, y + 4);
+      doc.setFontSize(9);
+      doc.setTextColor(...C.white);
+      doc.text(format(new Date(visite.date_visite), 'dd/MM/yyyy HH:mm', { locale: fr }), margin + 3, y + 4.8);
       if (visite.personnes_presentes) {
         doc.setFont('helvetica', 'normal');
-        doc.text(`Présents: ${visite.personnes_presentes}`, 60, y + 4);
-      }
-      y += 10;
-
-      doc.setTextColor(0);
-      if (visite.observations) {
         doc.setFontSize(8);
+        doc.setTextColor(...C.gold);
+        doc.text(`Présents : ${visite.personnes_presentes}`, pageW - margin - 3, y + 4.8, { align: 'right' });
+      }
+      y += 11;
+
+      if (visite.observations) {
         doc.setFont('helvetica', 'bold');
-        doc.text('Observations:', 14, y);
+        doc.setFontSize(8);
+        doc.setTextColor(...C.green);
+        doc.text('Observations', margin, y);
         y += 4;
-        doc.setFont('helvetica', 'normal');
-        const lines = doc.splitTextToSize(visite.observations, w - 28);
-        lines.forEach((line: string) => {
-          checkPage(5);
-          doc.text(line, 14, y);
-          y += 4;
-        });
+        doc.setFont(T.body.font, 'normal');
+        doc.setFontSize(T.body.size);
+        doc.setTextColor(...C.textDark);
+        const lines = doc.splitTextToSize(visite.observations, contentW);
+        for (const line of lines) {
+          y = ensureSpace(doc, y, 5, ctxHeader);
+          doc.text(line, margin, y);
+          y += 4.5;
+        }
         y += 2;
       }
 
       if (visite.points_vigilance) {
-        checkPage(8);
+        y = ensureSpace(doc, y, 10, ctxHeader);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(...GOLD);
-        doc.text('⚠ Points de vigilance:', 14, y);
+        doc.setFontSize(8);
+        doc.setTextColor(...C.gold);
+        doc.text('Points de vigilance', margin, y);
         y += 4;
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(0);
-        const lines = doc.splitTextToSize(visite.points_vigilance, w - 28);
-        lines.forEach((line: string) => {
-          checkPage(5);
-          doc.text(line, 14, y);
-          y += 4;
-        });
+        doc.setFont(T.body.font, 'normal');
+        doc.setFontSize(T.body.size);
+        doc.setTextColor(...C.textDark);
+        const lines = doc.splitTextToSize(visite.points_vigilance, contentW);
+        for (const line of lines) {
+          y = ensureSpace(doc, y, 5, ctxHeader);
+          doc.text(line, margin, y);
+          y += 4.5;
+        }
         y += 2;
       }
 
       // Photos grid (2x3)
       if (visite.photos && visite.photos.length > 0) {
-        checkPage(40);
+        y = ensureSpace(doc, y, 40, ctxHeader);
         doc.setFont('helvetica', 'bold');
-        doc.text('Photos:', 14, y);
+        doc.setFontSize(8);
+        doc.setTextColor(...C.green);
+        doc.text('Photos', margin, y);
         y += 4;
         const photoUrls = visite.photos.slice(0, 6);
+        const photoW = (contentW - 4) / 3;
+        const photoH = 32;
         let col = 0;
-        let photoY = y;
+        const startY = y;
         for (const photo of photoUrls) {
           const url = supabase.storage.from('visites-photos').getPublicUrl(photo.file_path).data.publicUrl;
           const img = await loadImageAsBase64(url);
           if (img) {
-            const x = 14 + (col % 3) * 62;
-            const py = photoY + Math.floor(col / 3) * 35;
-            checkPage(35);
+            const x = margin + (col % 3) * (photoW + 2);
+            const py = startY + Math.floor(col / 3) * (photoH + 2);
+            y = ensureSpace(doc, py + photoH, 0, ctxHeader);
             try {
-              doc.addImage(img, 'JPEG', x, py, 58, 32);
-            } catch { /* skip broken image */ }
+              doc.addImage(img, 'JPEG', x, py, photoW, photoH);
+            } catch { /* skip */ }
           }
           col++;
         }
-        y = photoY + Math.ceil(photoUrls.length / 3) * 35 + 4;
+        y = startY + Math.ceil(photoUrls.length / 3) * (photoH + 2) + 2;
       }
 
       // Actions
       if (visite.prochaines_actions.length > 0) {
-        checkPage(10);
+        y = ensureSpace(doc, y, 12, ctxHeader);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8);
-        doc.text('Prochaines actions:', 14, y);
+        doc.setTextColor(...C.green);
+        doc.text('Prochaines actions', margin, y);
         y += 4;
-        doc.setFont('helvetica', 'normal');
+        doc.setFont(T.body.font, 'normal');
+        doc.setFontSize(T.body.size);
+        doc.setTextColor(...C.textDark);
         visite.prochaines_actions.forEach(a => {
-          checkPage(5);
-          doc.text(`• ${a.action} — ${a.responsable} ${a.deadline ? `(${a.deadline})` : ''}`, 16, y);
-          y += 4;
+          y = ensureSpace(doc, y, 5, ctxHeader);
+          doc.text(`• ${a.action} — ${a.responsable}${a.deadline ? ` (${a.deadline})` : ''}`, margin + 2, y);
+          y += 4.5;
         });
       }
-
       y += 6;
     }
   }
 
-  // Signatures
-  checkPage(30);
-  y += 5;
-  doc.setDrawColor(200);
-  doc.line(14, y, w - 14, y);
-  y += 10;
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Signature mandataire :', 14, y);
-  doc.text('Signature client :', 110, y);
-  y += 20;
-  doc.line(14, y, 80, y);
-  doc.line(110, y, w - 14, y);
-
-  // Footer
-  const pages = doc.getNumberOfPages();
-  for (let i = 1; i <= pages; i++) {
+  // ─── PIEDS DE PAGE ──────────────────────────────────────────────────
+  const total = doc.getNumberOfPages();
+  for (let i = 1; i <= total; i++) {
     doc.setPage(i);
-    doc.setFontSize(7);
-    doc.setTextColor(150);
-    doc.text(`HUNTERS — Rapport chantier ${chantier.reference} — Page ${i}/${pages}`, w / 2, 292, { align: 'center' });
+    drawFooter(doc, i, total, `HUNTERS · Rapport chantier ${chantier.reference}`);
   }
 
   doc.save(`rapport-chantier-${chantier.reference}-${format(new Date(), 'yyyy-MM-dd')}.pdf`);

@@ -165,6 +165,9 @@ export default function ModeleEconomique() {
         <p className="text-xs italic text-muted-foreground">
           Révisable annuellement. Trimestre atteint uniquement si CA + mandats + conseils sont tous au vert simultanément.
         </p>
+      </div>
+
+
 
       {isAdmin && (
         <Button onClick={handleSave} disabled={updateMut.isPending}><Save className="w-4 h-4 mr-2" />Enregistrer</Button>

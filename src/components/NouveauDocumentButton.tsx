@@ -16,9 +16,25 @@ const CATEGORIE_LABELS: Record<string, string> = {
   proposition_commerciale: 'Proposition commerciale',
   fiche_rentabilite: 'Fiche de rentabilité',
   mandat_recherche: 'Mandat de recherche',
+  convention_honoraires: "Convention d'honoraires",
+  lettre_mission_amo: 'Lettre de mission AMO',
+  lettre_mission_deco: 'Lettre de mission Décoration',
+  contrat_pack: 'Contrat Pack clé en main',
   compte_rendu: 'Compte-rendu',
   autre: 'Autre',
 };
+
+const CATEGORIE_ORDER: string[] = [
+  'Proposition commerciale',
+  "Convention d'honoraires",
+  'Contrat Pack clé en main',
+  'Mandat de recherche',
+  'Lettre de mission AMO',
+  'Lettre de mission Décoration',
+  'Fiche de rentabilité',
+  'Compte-rendu',
+  'Autre',
+];
 
 export default function NouveauDocumentButton({
   dossier,

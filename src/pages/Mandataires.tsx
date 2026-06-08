@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ConformiteTab from '@/components/mandataires/ConformiteTab';
+import ObjectifsTab from '@/components/mandataires/ObjectifsTab';
+import { useAuth } from '@/contexts/AuthContext';
 
 const statusBadge: Record<string, string> = {
   actif: 'bg-hunters-success/10 text-hunters-success',
@@ -34,6 +36,7 @@ const niveauOptions = [
 ];
 
 function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandataireProfile; mandataires: MandataireProfile[]; onUpdate: (data: any) => void }) {
+  const { isAdmin } = useAuth();
   const [form, setForm] = useState({
     niveau: m.niveau || 'N1',
     parrain_id: m.parrain_id || '',
@@ -63,7 +66,7 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
         <DialogTitle>{m.full_name || 'Conseiller'}</DialogTitle>
       </DialogHeader>
       <Tabs defaultValue="profil">
-        <TabsList><TabsTrigger value="profil">Profil</TabsTrigger><TabsTrigger value="conformite">Conformité</TabsTrigger></TabsList>
+        <TabsList><TabsTrigger value="profil">Profil</TabsTrigger><TabsTrigger value="conformite">Conformité</TabsTrigger><TabsTrigger value="objectifs">Objectifs</TabsTrigger></TabsList>
         <TabsContent value="profil" className="mt-4">
       <div className="space-y-6">
         {/* KPIs */}
@@ -161,6 +164,9 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
         </TabsContent>
         <TabsContent value="conformite" className="mt-4">
           <ConformiteTab mandataireId={m.id} />
+        </TabsContent>
+        <TabsContent value="objectifs" className="mt-4">
+          <ObjectifsTab mandataireId={m.id} canEdit={isAdmin} />
         </TabsContent>
       </Tabs>
     </DialogContent>

@@ -213,7 +213,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
         return ibanOk && siretOk && form.accept_pack;
       }
       case 5:
-        return Boolean(zonePrioritaire) && form.accept_zone && form.accept_prescripteurs && form.accept_objectifs;
+        return Boolean(zonePrioritaire) && form.accept_zone && form.accept_prescripteurs && form.accept_objectifs && form.accept_encaissement;
       default:
         return false;
     }

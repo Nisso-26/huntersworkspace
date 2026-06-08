@@ -24,7 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { ArrowLeft, Save, Trash2, User, TrendingUp, FileText, PenTool, Globe, Receipt, FileSignature } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, User, TrendingUp, FileText, PenTool, Globe, Receipt, FileSignature, Lock } from 'lucide-react';
 import DevisGenerator from '@/components/DevisGenerator';
 import ValidationBanner from '@/components/ValidationBanner';
 import { useMandataires } from '@/hooks/use-mandataires';

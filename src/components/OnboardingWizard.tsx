@@ -67,6 +67,7 @@ type FormData = {
   accept_zone: boolean;
   accept_prescripteurs: boolean;
   accept_objectifs: boolean;
+  accept_encaissement: boolean;
 };
 
 const EMPTY_FORM: FormData = {
@@ -88,6 +89,7 @@ const EMPTY_FORM: FormData = {
   accept_zone: false,
   accept_prescripteurs: false,
   accept_objectifs: false,
+  accept_encaissement: false,
 };
 
 export default function OnboardingWizard({ onComplete }: Props) {

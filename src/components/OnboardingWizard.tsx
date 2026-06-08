@@ -67,6 +67,7 @@ type FormData = {
   accept_zone: boolean;
   accept_prescripteurs: boolean;
   accept_objectifs: boolean;
+  accept_encaissement: boolean;
 };
 
 const EMPTY_FORM: FormData = {
@@ -88,6 +89,7 @@ const EMPTY_FORM: FormData = {
   accept_zone: false,
   accept_prescripteurs: false,
   accept_objectifs: false,
+  accept_encaissement: false,
 };
 
 export default function OnboardingWizard({ onComplete }: Props) {
@@ -211,7 +213,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
         return ibanOk && siretOk && form.accept_pack;
       }
       case 5:
-        return Boolean(zonePrioritaire) && form.accept_zone && form.accept_prescripteurs && form.accept_objectifs;
+        return Boolean(zonePrioritaire) && form.accept_zone && form.accept_prescripteurs && form.accept_objectifs && form.accept_encaissement;
       default:
         return false;
     }
@@ -648,6 +650,25 @@ function StepZoneActivation({
             <strong> Aucune remise autorisée, y compris en pack clé en main.</strong>
           </p>
         </div>
+      </section>
+
+      {/* 5.5 — Interdiction d'encaissement */}
+      <section className="space-y-3">
+        <div className="rounded-md border-2 border-destructive bg-destructive/5 p-4 text-sm space-y-2">
+          <p className="font-bold flex items-center gap-2 text-destructive">⚠️ Rappel légal obligatoire</p>
+          <p>
+            Le mandataire est formellement interdit d'encaisser, sous quelque forme que ce soit,
+            des sommes provenant des clients (honoraires, acomptes, dépôts de garantie).
+          </p>
+          <p>
+            Tout encaissement est réservé exclusivement à HUNTERS Immobilier.
+            Toute violation constitue une faute grave entraînant la résiliation immédiate du contrat.
+          </p>
+        </div>
+        <label className="flex items-start gap-3 cursor-pointer">
+          <Checkbox checked={form.accept_encaissement} onCheckedChange={(c) => setField('accept_encaissement', c === true)} className="mt-1" />
+          <span className="text-sm">Je confirme avoir pris connaissance de l'interdiction formelle d'encaissement direct de fonds clients.</span>
+        </label>
       </section>
 
       {/* 5.5 — Récapitulatif */}

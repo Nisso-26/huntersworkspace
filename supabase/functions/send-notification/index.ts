@@ -80,6 +80,26 @@ Deno.serve(async (req) => {
     if (typeof subject !== "string" || subject.length > 300) throw new Error("Sujet invalide");
     if (typeof body !== "string" || body.length > 100000) throw new Error("Corps invalide");
 
+    // Restrict recipients: non-service callers can only target internal users (existing profiles)
+    // to prevent abuse of the company domain for phishing arbitrary external addresses.
+    if (!isService) {
+      const adminClient = createClient(supabaseUrl, serviceRoleKey);
+      const lowered = recipients.map((e: string) => e.toLowerCase());
+      const { data: knownProfiles, error: pErr } = await adminClient
+        .from("profiles")
+        .select("email")
+        .in("email", lowered);
+      if (pErr) throw new Error("Vérification destinataires impossible");
+      const knownSet = new Set((knownProfiles || []).map((p: any) => (p.email || "").toLowerCase()));
+      const unknown = lowered.filter((e: string) => !knownSet.has(e));
+      if (unknown.length > 0) {
+        return new Response(JSON.stringify({
+          error: "Destinataire non autorisé : seuls les utilisateurs internes peuvent être contactés via cette fonction.",
+        }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
+
     const html = wrap(subject, body, numero_dossier || null);
 
 

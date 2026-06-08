@@ -2241,32 +2241,34 @@ export type Database = {
     }
     Functions: {
       cloturer_trimestres_objectifs: { Args: never; Returns: undefined }
-      compute_objectif_trimestre: {
-        Args: { _annee: number; _mandataire_id: string; _trimestre: number }
-        Returns: {
-          annee: number
-          ca_objectif: number
-          ca_realise: number
-          conseils_objectif: number
-          conseils_realises: number
-          created_at: string
-          id: string
-          leads_bloques: boolean
-          mandataire_id: string
-          mandats_objectif: number
-          mandats_realises: number
-          statut: string
-          trimestre: number
-          trimestres_rates_consecutifs: number
-          updated_at: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "objectifs_trimestriels"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+      compute_objectif_trimestre:
+        | { Args: never; Returns: Json }
+        | {
+            Args: { _annee: number; _mandataire_id: string; _trimestre: number }
+            Returns: {
+              annee: number
+              ca_objectif: number
+              ca_realise: number
+              conseils_objectif: number
+              conseils_realises: number
+              created_at: string
+              id: string
+              leads_bloques: boolean
+              mandataire_id: string
+              mandats_objectif: number
+              mandats_realises: number
+              statut: string
+              trimestre: number
+              trimestres_rates_consecutifs: number
+              updated_at: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "objectifs_trimestriels"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
       decide_validation_dossier: {
         Args: { _motif?: string; _statut: string; _validation_id: string }
         Returns: undefined

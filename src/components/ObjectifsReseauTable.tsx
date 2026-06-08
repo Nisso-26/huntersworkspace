@@ -1,8 +1,13 @@
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { useObjectifsReseauCourant } from '@/hooks/use-objectifs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertTriangle, Lock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, Lock, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 const statutColor: Record<string, string> = {
   atteint: 'bg-hunters-success/10 text-hunters-success',
@@ -15,12 +20,25 @@ const statutLabel: Record<string, string> = {
 
 export default function ObjectifsReseauTable() {
   const { data = [], isLoading } = useObjectifsReseauCourant();
+  const qc = useQueryClient();
+  const [computing, setComputing] = useState(false);
 
   if (isLoading) return <Skeleton className="h-48 rounded-xl" />;
 
   const t3 = data.filter(r => r.objectif.trimestres_rates_consecutifs >= 3);
   const t2 = data.filter(r => r.objectif.trimestres_rates_consecutifs === 2);
   const t1 = data.filter(r => r.objectif.trimestres_rates_consecutifs === 1);
+
+  const handleCompute = async () => {
+    setComputing(true);
+    const { data: res, error } = await supabase.rpc('compute_objectif_trimestre');
+    setComputing(false);
+    if (error) { toast.error(error.message); return; }
+    const r = res as any;
+    toast.success(`Calcul terminé — ${r?.atteints ?? 0} atteints · ${r?.insuffisants ?? 0} insuffisants`);
+    qc.invalidateQueries({ queryKey: ['objectifs-reseau-courant'] });
+    qc.invalidateQueries({ queryKey: ['objectif-trimestre'] });
+  };
 
   return (
     <div className="space-y-4">
@@ -51,8 +69,12 @@ export default function ObjectifsReseauTable() {
       )}
 
       <div className="bg-card rounded-xl border border-border/60 shadow-card overflow-hidden">
-        <div className="px-5 py-3 border-b border-border/50">
+        <div className="px-5 py-3 border-b border-border/50 flex items-center justify-between gap-2">
           <h2 className="font-heading font-semibold text-sm">Objectifs du trimestre — Réseau</h2>
+          <Button size="sm" variant="outline" onClick={handleCompute} disabled={computing}>
+            <RefreshCw className={cn('w-3.5 h-3.5 mr-1.5', computing && 'animate-spin')} />
+            Calculer maintenant
+          </Button>
         </div>
         <Table>
           <TableHeader>

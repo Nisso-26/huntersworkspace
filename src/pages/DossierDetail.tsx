@@ -207,8 +207,8 @@ export default function DossierDetail() {
             <TabsTrigger value="strategie" className="gap-1.5 text-xs">
               <TrendingUp className="w-3.5 h-3.5" />Stratégie
             </TabsTrigger>
-            <TabsTrigger value="devis" className="gap-1.5 text-xs">
-              <FileSignature className="w-3.5 h-3.5" />Devis
+            <TabsTrigger value="devis" className="gap-1.5 text-xs" disabled={(dossier as any).validation_directeur_requise}>
+              {(dossier as any).validation_directeur_requise ? <Lock className="w-3.5 h-3.5" /> : <FileSignature className="w-3.5 h-3.5" />}Devis
             </TabsTrigger>
             <TabsTrigger value="facturation" className="gap-1.5 text-xs">
               <Receipt className="w-3.5 h-3.5" />Facturation

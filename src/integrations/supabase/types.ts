@@ -2240,6 +2240,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cloturer_trimestres_objectifs: { Args: never; Returns: undefined }
       compute_objectif_trimestre: {
         Args: { _annee: number; _mandataire_id: string; _trimestre: number }
         Returns: {

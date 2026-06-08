@@ -127,6 +127,41 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
   const [financierSaisies, setFinancierSaisies] = useState<Record<string, Record<string, number>>>({});
   const [textOverrides, setTextOverrides] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [pdfPreview, setPdfPreview] = useState<{ url: string; pages: number } | null>(null);
+  const [generatingPreview, setGeneratingPreview] = useState(false);
+
+  const COVER_CATEGORIES = new Set([
+    'mandat_recherche',
+    'convention_honoraires',
+    'lettre_mission_amo',
+    'lettre_mission_deco',
+    'contrat_pack',
+  ]);
+  const hasCover = COVER_CATEGORIES.has(modele.categorie || '');
+
+  useEffect(() => {
+    return () => {
+      if (pdfPreview?.url) URL.revokeObjectURL(pdfPreview.url);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleGeneratePreview = () => {
+    setGeneratingPreview(true);
+    try {
+      const pdf = buildPdf();
+      const blob = pdf.output('blob');
+      const url = URL.createObjectURL(blob);
+      setPdfPreview((prev) => {
+        if (prev?.url) URL.revokeObjectURL(prev.url);
+        return { url, pages: pdf.getNumberOfPages() };
+      });
+    } catch (e: any) {
+      toast.error(e.message || "Erreur d'aperçu PDF");
+    } finally {
+      setGeneratingPreview(false);
+    }
+  };
 
   // Calcul des valeurs financières
   const financierValues = useMemo<Record<string, Record<string, number>>>(() => {

@@ -46,13 +46,14 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const isService = authHeader === `Bearer ${serviceRoleKey}`;
+    let userClient: ReturnType<typeof createClient> | null = null;
     if (!isService) {
       if (!authHeader.startsWith("Bearer ")) {
         return new Response(JSON.stringify({ error: "Non autorisé" }), {
           status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
         global: { headers: { Authorization: authHeader } },
       });
       const { data, error: aErr } = await userClient.auth.getClaims(authHeader.replace("Bearer ", ""));

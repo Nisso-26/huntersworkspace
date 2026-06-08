@@ -1,5 +1,7 @@
 // Envoi d'email transactionnel via Resend.
 // Body: { to: string|string[], subject: string, body: string (HTML inner) }
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -39,14 +41,46 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    // Auth guard: accept service-role (internal invocations) OR a valid authenticated JWT
+    const authHeader = req.headers.get("Authorization") || "";
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const isService = authHeader === `Bearer ${serviceRoleKey}`;
+    if (!isService) {
+      if (!authHeader.startsWith("Bearer ")) {
+        return new Response(JSON.stringify({ error: "Non autorisé" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data, error: aErr } = await userClient.auth.getClaims(authHeader.replace("Bearer ", ""));
+      if (aErr || !data?.claims) {
+        return new Response(JSON.stringify({ error: "Non autorisé" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const apiKey = Deno.env.get("RESEND_API_KEY");
     if (!apiKey) throw new Error("RESEND_API_KEY non configurée");
 
     const { to, subject, body, numero_dossier } = await req.json();
     if (!to || !subject || !body) throw new Error("Paramètres requis: to, subject, body");
 
+    // Basic input validation
     const recipients = Array.isArray(to) ? to : [to];
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (recipients.length === 0 || recipients.length > 50) throw new Error("Nombre de destinataires invalide");
+    if (!recipients.every((e: unknown) => typeof e === "string" && emailRe.test(e))) {
+      throw new Error("Adresse email invalide");
+    }
+    if (typeof subject !== "string" || subject.length > 300) throw new Error("Sujet invalide");
+    if (typeof body !== "string" || body.length > 100000) throw new Error("Corps invalide");
+
     const html = wrap(subject, body, numero_dossier || null);
+
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",

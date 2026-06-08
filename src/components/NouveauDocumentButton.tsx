@@ -91,11 +91,53 @@ export default function NouveauDocumentButton({
                       <p className="text-xs text-muted-foreground">
                         {CATEGORIE_LABELS[m.categorie] || m.categorie}
                       </p>
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+              {(() => {
+                const grouped = modeles.reduce((acc, m) => {
+                  const cat = CATEGORIE_LABELS[m.categorie] || m.categorie;
+                  if (!acc[cat]) acc[cat] = [];
+                  acc[cat].push(m);
+                  return acc;
+                }, {} as Record<string, ModeleDocument[]>);
+                const cats = Object.keys(grouped).sort((a, b) => {
+                  const ia = CATEGORIE_ORDER.indexOf(a);
+                  const ib = CATEGORIE_ORDER.indexOf(b);
+                  return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+                });
+                return cats.map((cat) => (
+                  <div key={cat} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-[#1A4D2E]">
+                        {cat}
+                      </span>
+                      <div className="flex-1 h-px bg-border" />
+                      <span className="text-[10px] text-muted-foreground">
+                        {grouped[cat].length}
+                      </span>
                     </div>
-                  </button>
-                </li>
-              ))}
-            </ul>
+                    <ul className="space-y-2">
+                      {grouped[cat].map((m) => (
+                        <li key={m.id}>
+                          <button
+                            onClick={() => {
+                              setSelected(m);
+                              setOpen(false);
+                            }}
+                            className="w-full text-left flex items-start gap-3 p-3 rounded-md border hover:border-[#1A4D2E] hover:bg-[#E8F2EC] transition"
+                          >
+                            <FileText className="w-5 h-5 text-[#1A4D2E] mt-0.5 shrink-0" />
+                            <div className="flex-1">
+                              <p className="font-semibold text-sm text-foreground">{m.titre}</p>
+                              <p className="text-xs text-muted-foreground">{cat}</p>
+                            </div>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ));
+              })()}
+            </div>
           )}
         </DialogContent>
       </Dialog>

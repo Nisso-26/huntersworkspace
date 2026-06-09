@@ -159,7 +159,7 @@ export async function exportFicheInterne(dossier: Dossier) {
     ['Ville', dossier.ville],
     ['Budget', fmtPdfEur(dossier.budget)],
     ['Honoraires', fmtPdfEur((dossier as any).honoraires)],
-    ['Statut', dossier.statut],
+    ['Statut', dossier.status],
     ['Accompagnement', (dossier as any).type_accompagnement || ''],
   ].forEach(([l, v]) => {
     ({ y } = kv(doc, margin, y, sanitizePdfText(l||''), sanitizePdfText(v?.toString()||'')));

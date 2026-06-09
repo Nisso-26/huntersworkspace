@@ -453,11 +453,11 @@ export async function exportDossierIntegral(dossier: Dossier) {
   y = ensureSpace(doc, y + 8, 40, { refDossier: ref, titrePage: 'Dossier integral' });
   y = drawSectionTitle(doc, 'Synthese', y);
   const steps = getWorkflowSteps(dossier);
-  const currentStep = steps.findIndex(s => s.key === dossier.statut);
+  const currentStep = steps.findIndex(s => s.label === dossier.status);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
   doc.setTextColor(...C.textDark);
-  doc.text(`Etape ${currentStep + 1} / ${steps.length} · Statut actuel : ${sanitizePdfText(dossier.statut || '')}`, margin, y);
+  doc.text(`Etape ${currentStep + 1} / ${steps.length} · Statut actuel : ${sanitizePdfText(dossier.status || '')}`, margin, y);
   y += 8;
   const iY2 = y;
   drawIvoryBox(doc, y, 28);

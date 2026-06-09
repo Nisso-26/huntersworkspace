@@ -19,8 +19,8 @@ export default function DossierExportMenu({ dossier }: Props) {
   const run = async (type: 'integral' | 'interne' | 'client') => {
     setLoading(type);
     try {
-      if (type === 'integral') await exportDossierIntegral(dossier, conseillerNom);
-      else if (type === 'interne') await exportFicheInterne(dossier, conseillerNom);
+      if (type === 'integral') await exportDossierIntegral(dossier);
+      else if (type === 'interne') await exportFicheInterne(dossier);
       else await exportFicheClient(dossier);
       toast.success('Document généré');
     } catch (e: any) {

@@ -26,6 +26,20 @@ export const LAYOUT = {
   footerY:  282,
 };
 
+// ─── TYPOGRAPHIE ──────────────────────────────────────────────────────────────
+
+export const T = {
+  coverTitle:    { size: 26, font: 'helvetica', style: 'bold'   },
+  coverSubtitle: { size: 13, font: 'helvetica', style: 'normal' },
+  sectionTitle:  { size: 12, font: 'helvetica', style: 'bold'   },
+  body:          { size: 9.5, font: 'helvetica', style: 'normal' },
+  label:         { size: 8,  font: 'helvetica', style: 'normal' },
+  small:         { size: 7,  font: 'helvetica', style: 'normal' },
+  tableHeader:   { size: 8.5, font: 'helvetica', style: 'bold'   },
+  tableCell:     { size: 8.5, font: 'helvetica', style: 'normal' },
+  caption:       { size: 7.5, font: 'helvetica', style: 'italic' },
+};
+
 // ─── LOGO ─────────────────────────────────────────────────────────────────────
 
 export async function loadLogo(): Promise<string | null> {

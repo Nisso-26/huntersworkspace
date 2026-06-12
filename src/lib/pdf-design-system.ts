@@ -28,6 +28,13 @@ export const C = {
 
   textMuted: [107, 117, 102] as [number, number, number], // #6B7566 neutre charte
 
+  // Alias de compatibilité — mappés sur la palette charte V2.0
+  textDark:   [35, 41, 31]    as [number, number, number], // → C.ink
+  textLight:  [107, 117, 102] as [number, number, number], // → C.textMuted
+  ivory:      [244, 236, 216] as [number, number, number], // → C.cream
+  ivoryDark:  [232, 224, 202] as [number, number, number], // → C.creamDark
+  greenLight: [45, 122, 79]   as [number, number, number], // → couleur d'état succès (digital only)
+
   // Couleurs d'état — DIGITAL UNIQUEMENT — jamais dans les PDFs clients (charte V2.0 p.6)
 
   // Ne pas utiliser dans les fonctions de rendu PDF

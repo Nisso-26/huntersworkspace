@@ -4,8 +4,8 @@
   "description": "CRM Hunters Immobilier — Conseil en investissement immobilier",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1A4D2E",
-  "theme_color": "#1A4D2E",
+  "background_color": "#06381E",
+  "theme_color": "#004621",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -146,10 +146,10 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleGeneratePreview = () => {
+  const handleGeneratePreview = async () => {
     setGeneratingPreview(true);
     try {
-      const pdf = buildPdf();
+      const pdf = await buildPdf();
       const blob = pdf.output('blob');
       const url = URL.createObjectURL(blob);
       setPdfPreview((prev) => {

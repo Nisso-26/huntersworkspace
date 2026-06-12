@@ -3,7 +3,7 @@ import huntersLogo from '@/assets/hunters-logo.jpg';
 
 export default function Signup() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-navy p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#06381E] p-4">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
           <img src={huntersLogo} alt="HUNTERS" className="h-16 object-contain" />

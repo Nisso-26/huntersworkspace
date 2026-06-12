@@ -120,7 +120,7 @@ export default function ClientPortal() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header premium */}
-      <header className="bg-gradient-hunters sticky top-0 z-50 shadow-sidebar">
+      <header className="bg-[#004621] sticky top-0 z-50 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-lg overflow-hidden bg-white/10">

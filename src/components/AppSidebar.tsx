@@ -82,7 +82,7 @@ export default function AppSidebar({ mobile = false }: AppSidebarProps) {
     <aside
       className={cn(
         'flex flex-col shadow-sidebar transition-all duration-300 select-none',
-        'bg-gradient-hunters',
+        'bg-[#004621]',
         mobile ? 'h-full w-full' : 'h-screen sticky top-0 hidden lg:flex',
         !mobile && (isCollapsed ? 'w-[68px]' : 'w-[256px]')
       )}

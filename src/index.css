@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
+/* ── POLICES GOOGLE FONTS — CHARTE V2.0 ─────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,97 +7,112 @@
 
 @layer base {
   :root {
-    /* Fond général — blanc cassé chaud */
-    --background: 40 20% 97%;
-    --foreground: 0 0% 12%;
+    /* ── PALETTE CHARTE HUNTERS V2.0 ────────────────────────────────────── */
+    /* Vert HUNTERS    #004621  Pantone 343 C                                */
+    /* Or laiton       #C8962F  Pantone 871 / 1245 C                        */
+    /* Vert profond    #06381E  Pantone 5535 C                               */
+    /* Crème           #F4ECD8  Pantone 7499 C                               */
+    /* Encre           #23291F  Pantone Black 6 C                            */
+    /* Or renforcé     #A87C25  texte sur fond clair uniquement              */
+
+    /* Fond général — crème charte */
+    --background: 37 48% 90%;      /* #F4ECD8 */
+    --foreground: 88 15% 14%;      /* #23291F encre */
 
     /* Cartes */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 12%;
+    --card-foreground: 88 15% 14%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 12%;
+    --popover-foreground: 88 15% 14%;
 
-    /* Primary = vert foncé Hunters */
-    --primary: 147 49% 20%;
+    /* Primary = vert HUNTERS exact */
+    --primary: 155 100% 19%;       /* #004621 */
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary = gris très clair */
-    --secondary: 40 15% 94%;
-    --secondary-foreground: 0 0% 20%;
+    /* Secondary = crème */
+    --secondary: 37 48% 90%;       /* #F4ECD8 */
+    --secondary-foreground: 88 15% 14%;
 
     /* Muted */
-    --muted: 40 15% 93%;
-    --muted-foreground: 0 0% 48%;
+    --muted: 37 30% 93%;
+    --muted-foreground: 88 8% 42%;
 
-    /* Accent = or Hunters */
-    --accent: 41 95% 50%;
-    --accent-foreground: 0 0% 10%;
+    /* Accent = or renforcé pour texte sur fond clair */
+    --accent: 38 62% 39%;          /* #A87C25 or renforcé */
+    --accent-foreground: 0 0% 100%;
 
+    /* Destructive */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 40 12% 88%;
-    --input: 40 12% 90%;
-    --ring: 147 49% 20%;
+    --border: 37 20% 82%;
+    --input: 37 20% 86%;
+    --ring: 155 100% 19%;
 
-    /* Border radius uniforme */
     --radius: 0.5rem;
 
-    /* Sidebar — vert foncé Hunters */
-    --sidebar-background: 147 52% 16%;
-    --sidebar-foreground: 60 20% 88%;
-    --sidebar-primary: 41 95% 50%;
-    --sidebar-primary-foreground: 147 52% 16%;
-    --sidebar-accent: 147 48% 22%;
+    /* ── SIDEBAR — vert profond ──────────────────────────────────────────── */
+    --sidebar-background: 158 76% 12%;   /* #06381E vert profond */
+    --sidebar-foreground: 37 48% 90%;    /* crème */
+    --sidebar-primary: 38 62% 39%;       /* or renforcé */
+    --sidebar-primary-foreground: 158 76% 12%;
+    --sidebar-accent: 155 100% 16%;      /* légèrement plus clair */
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 147 45% 20%;
-    --sidebar-ring: 41 95% 50%;
+    --sidebar-border: 158 70% 14%;
+    --sidebar-ring: 38 62% 39%;
 
-    /* Tokens Hunters */
-    --hunters-vert: 147 49% 20%;
-    --hunters-vert-clair: 147 46% 30%;
-    --hunters-or: 41 95% 50%;
-    --hunters-or-pale: 41 95% 94%;
-    --hunters-anthracite: 0 0% 12%;
-    --hunters-success: 142 72% 32%;
-    --hunters-warning: 38 92% 48%;
-    --hunters-info: 210 85% 50%;
-    --hunters-error: 0 72% 51%;
+    /* ── TOKENS HUNTERS — CHARTE V2.0 ───────────────────────────────────── */
+    --hunters-vert:          155 100% 19%;   /* #004621 */
+    --hunters-vert-profond:  158 76% 12%;    /* #06381E */
+    --hunters-or:            38 64% 48%;     /* #C8962F — décor/fond sombre */
+    --hunters-or-renforce:   38 62% 39%;     /* #A87C25 — texte fond clair */
+    --hunters-creme:         37 48% 90%;     /* #F4ECD8 */
+    --hunters-encre:         88 15% 14%;     /* #23291F */
 
-    /* Typographie */
-    --font-heading: 'Montserrat', sans-serif;
-    --font-body: 'Inter', sans-serif;
+    /* ── COULEURS D'ÉTAT — DIGITAL UNIQUEMENT ───────────────────────────── */
+    /* Jamais sur supports print clients (charte V2.0 page 6)               */
+    --hunters-succes:  147 46% 32%;   /* #2D7A4F */
+    --hunters-alerte:  35 66% 44%;    /* #C47D1A */
+    --hunters-erreur:  0 52% 39%;     /* #9B2D2D */
+    --hunters-neutre:  93 7% 43%;     /* #6B7566 */
+
+    /* ── TYPOGRAPHIE — CHARTE V2.0 ──────────────────────────────────────── */
+    /* Marcellus : titres H1/H2 — jamais en corps de texte < 16px           */
+    /* Jost      : sous-titres, corps, légendes                             */
+    /* Substitutions : Marcellus → Georgia | Jost → Arial                  */
+    --font-heading: 'Marcellus', 'Georgia', 'Times New Roman', serif;
+    --font-body:    'Jost', 'Arial', 'Helvetica Neue', sans-serif;
   }
 
   .dark {
-    --background: 147 30% 8%;
-    --foreground: 60 24% 90%;
-    --card: 147 45% 11%;
-    --card-foreground: 60 24% 90%;
-    --popover: 147 45% 11%;
-    --popover-foreground: 60 24% 90%;
-    --primary: 41 95% 50%;
-    --primary-foreground: 147 49% 20%;
-    --secondary: 147 38% 15%;
-    --secondary-foreground: 60 24% 90%;
-    --muted: 147 38% 14%;
-    --muted-foreground: 60 10% 55%;
-    --accent: 41 95% 50%;
-    --accent-foreground: 147 49% 20%;
+    --background: 158 76% 8%;
+    --foreground: 37 30% 88%;
+    --card: 158 70% 11%;
+    --card-foreground: 37 30% 88%;
+    --popover: 158 70% 11%;
+    --popover-foreground: 37 30% 88%;
+    --primary: 38 64% 48%;          /* or en mode sombre */
+    --primary-foreground: 158 76% 12%;
+    --secondary: 158 60% 15%;
+    --secondary-foreground: 37 30% 88%;
+    --muted: 158 55% 13%;
+    --muted-foreground: 37 15% 55%;
+    --accent: 38 64% 48%;           /* or laiton en mode sombre */
+    --accent-foreground: 158 76% 12%;
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 100%;
-    --border: 147 38% 17%;
-    --input: 147 38% 17%;
-    --ring: 41 95% 50%;
-    --sidebar-background: 147 52% 10%;
-    --sidebar-foreground: 60 20% 70%;
-    --sidebar-primary: 41 95% 50%;
-    --sidebar-primary-foreground: 147 52% 10%;
-    --sidebar-accent: 147 45% 14%;
-    --sidebar-accent-foreground: 60 24% 90%;
-    --sidebar-border: 147 40% 13%;
-    --sidebar-ring: 41 95% 50%;
+    --border: 158 50% 17%;
+    --input: 158 50% 17%;
+    --ring: 38 64% 48%;
+    --sidebar-background: 158 76% 7%;
+    --sidebar-foreground: 37 30% 70%;
+    --sidebar-primary: 38 64% 48%;
+    --sidebar-primary-foreground: 158 76% 7%;
+    --sidebar-accent: 158 65% 12%;
+    --sidebar-accent-foreground: 37 30% 88%;
+    --sidebar-border: 158 55% 12%;
+    --sidebar-ring: 38 64% 48%;
   }
 }
 
@@ -107,66 +123,83 @@
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.7;    /* charte : corps Jost interlignes 1,7 */
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  /* Titres — Marcellus selon charte V2.0 */
+  h1 {
     font-family: var(--font-heading);
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    font-size: 28pt;     /* charte H1 : 36px / 28pt */
+    line-height: 1.2;
+    font-weight: 400;    /* Marcellus est regular uniquement */
+  }
+  h2 {
+    font-family: var(--font-heading);
+    font-size: 18pt;     /* charte H2 : 24px / 18pt */
+    line-height: 1.3;
+    font-weight: 400;
+  }
+  h3 {
+    font-family: var(--font-body);
+    font-size: 14pt;     /* charte H3 : 18px / 14pt */
+    line-height: 1.4;
+    font-weight: 500;    /* Jost Medium 500 */
+  }
+  h4 {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;   /* charte H4 : caps */
+    line-height: 1;
+  }
+  h5, h6 {
+    font-family: var(--font-body);
+    font-weight: 500;
+  }
+
+  /* Légendes — Jost Light 300 */
+  .caption, figcaption, caption {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  /* Règle charte : Marcellus jamais < 16px */
+  h1, h2 {
+    min-font-size: 16px;
   }
 }
 
 @layer utilities {
-  /* Gradients */
-  .bg-gradient-hunters {
-    background: linear-gradient(135deg, hsl(147 52% 16%), hsl(147 48% 22%));
-  }
-  .bg-gradient-gold {
-    background: linear-gradient(135deg, hsl(41 95% 50%), hsl(43 88% 60%));
-  }
-  .bg-gradient-navy {
-    background: linear-gradient(160deg, hsl(147 52% 16%) 0%, hsl(147 48% 20%) 100%);
+  /* Couleurs utilitaires charte */
+  .text-hunters-vert    { color: hsl(var(--hunters-vert)); }
+  .text-hunters-or      { color: hsl(var(--hunters-or-renforce)); }
+  .text-hunters-encre   { color: hsl(var(--hunters-encre)); }
+  .text-hunters-creme   { color: hsl(var(--hunters-creme)); }
+
+  .bg-hunters-vert      { background-color: hsl(var(--hunters-vert)); }
+  .bg-hunters-profond   { background-color: hsl(var(--hunters-vert-profond)); }
+  .bg-hunters-creme     { background-color: hsl(var(--hunters-creme)); }
+  .bg-hunters-or        { background-color: hsl(var(--hunters-or)); }
+
+  .border-hunters-or    { border-color: hsl(var(--hunters-or)); }
+  .border-hunters-vert  { border-color: hsl(var(--hunters-vert)); }
+
+  /* Filet or charte — 1pt, 40mm */
+  .filet-or {
+    display: block;
+    width: 40mm;
+    height: 1pt;
+    background-color: hsl(var(--hunters-or));
+    margin: 3mm 0;
   }
 
-  /* Ombres */
-  .shadow-card {
-    box-shadow:
-      0 1px 2px hsl(0 0% 0% / 0.04),
-      0 4px 12px hsl(0 0% 0% / 0.06),
-      0 0 0 1px hsl(40 12% 88% / 0.8);
-  }
-  .shadow-card-hover {
-    box-shadow:
-      0 2px 4px hsl(0 0% 0% / 0.06),
-      0 8px 24px hsl(0 0% 0% / 0.10),
-      0 0 0 1px hsl(40 12% 85% / 0.9);
-  }
-  .shadow-gold {
-    box-shadow: 0 4px 20px -4px hsl(41 95% 50% / 0.35);
-  }
-  .shadow-sidebar {
-    box-shadow: 4px 0 24px hsl(0 0% 0% / 0.12);
-  }
-
-  /* Texte dégradé or */
-  .text-gradient-gold {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(41 95% 50%), hsl(43 88% 60%));
-  }
-
-  /* Label premium */
-  .label-premium {
-    @apply text-[10px] font-semibold uppercase tracking-widest text-muted-foreground;
-  }
-
-  /* Ligne décorative or */
-  .bar-or {
-    @apply h-0.5 w-10 rounded-full bg-accent mb-4;
-  }
-
-  /* Hover card */
-  .card-hover {
-    @apply transition-all duration-200 hover:shadow-card-hover hover:-translate-y-px;
+  /* Encadré citation charte — fond crème, bord gauche 3pt vert */
+  .encadre-citation {
+    background-color: hsl(var(--hunters-creme));
+    border-left: 3pt solid hsl(var(--hunters-vert));
+    padding: 12px;
   }
 }

@@ -78,13 +78,12 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   const lignes: DevisLigne[] = useMemo(() => {
     const out: DevisLigne[] = [];
     if (services.conseil !== false) {
-      const remise = packActif ? tarifConseil * 0.15 : 0;
-      const m = tarifConseil - remise;
+      const m = tarifConseil; // jamais remisé
       out.push({
         service: 'conseil',
         label: `Conseil patrimonial (${niveau})`,
         base: 0,
-        detail: packActif ? `${fmtPdfEur(tarifConseil)} − 15% pack` : `Forfait ${fmtPdfEur(tarifConseil)}`,
+        detail: `Forfait ${fmtPdfEur(tarifConseil)} — tarif plein`,
         montant_ht: m,
       });
     }
@@ -112,213 +111,216 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   const tva = totalHT * 0.2;
   const totalTTC = totalHT + tva;
 
-  const generatePdf = () => {
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const { margin, contentW, pageW, headerH } = LAYOUT;
-    const refDossier = dossier.numero_dossier || dossier.id.slice(0, 8);
-    const titre = 'Devis honoraires';
-    const ctxHeader = { refDossier, titre };
-    const dateStr = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+  const generatePdf = async () => {
+    const { default: jsPDF } = await import('jspdf');
+    const {
+      C, FONT, LAYOUT,
+      loadLogo, drawHeader, drawFooter,
+      drawIvoryBox, sanitizePdfText,
+    } = await import('@/lib/pdf-design-system');
 
-    // ─── EN-TÊTE SOBRE ─────────────────────────────────────────────
-    drawHeader(doc, refDossier, titre);
+    const logo = await loadLogo();
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const { marginL, marginR, contentW, pageW, headerH, footerY } = LAYOUT;
+    const today = new Date().toLocaleDateString('fr-FR',
+      { day: '2-digit', month: 'long', year: 'numeric' });
+    const ref = (dossier as any).numero_dossier || null;
+
+    // ── En-tête sobre — pas de couverture pour un devis ──────────────────────
+    drawHeader(doc, ref, 'Devis');
     let y = headerH + 10;
 
-    // Titre principal
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.setTextColor(...C.green);
-    doc.text(`Devis · ${dossier.client_name}`, margin, y);
-    y += 5;
-    doc.setDrawColor(...C.gold);
-    doc.setLineWidth(0.6);
-    doc.line(margin, y, margin + 40, y);
-    y += 8;
+    // ── Bloc client / cabinet en 2 colonnes ──────────────────────────────────
+    const halfW = contentW / 2 - 4;
 
-    // ─── BLOC CLIENT / CABINET (2 colonnes) ────────────────────────
-    const colW = (contentW - 12) / 2;
-    const blocY = y;
-    // Cabinet (gauche)
-    doc.setFont(T.label.font, T.label.style);
+    // Colonne gauche — client
+    doc.setFont(FONT.body, 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(...C.textMuted);
-    doc.text('ÉMETTEUR', margin, y);
-    y += 5;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.setTextColor(...C.green);
-    doc.text(company?.raison_sociale || 'HUNTERS Immobilier', margin, y);
-    y += 5;
-    doc.setFont(T.body.font, 'normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...C.textDark);
-    doc.text(company?.adresse_siege || '45 rue Michel Colombe, 37000 Tours', margin, y);
-    y += 4;
-    doc.text(company?.email_contact || 'hunters@huntersimmobilier.fr', margin, y);
+    doc.text('Prepare pour', marginL, y);
+    doc.setFont(FONT.heading, 'normal');
+    doc.setFontSize(12);
+    doc.setTextColor(...C.ink);
+    doc.text(sanitizePdfText(dossier.client_name || ''), marginL, y + 7);
 
-    // Client (droite)
-    let yr = blocY;
-    const xR = margin + colW + 12;
-    doc.setFont(T.label.font, T.label.style);
+    // Filet vertical or entre les 2 colonnes
+    doc.setFillColor(...C.gold);
+    doc.rect(marginL + halfW + 2, y - 2, 0.8, 20, 'F');
+
+    // Colonne droite — cabinet
+    const rx = marginL + halfW + 8;
+    doc.setFont(FONT.body, 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(...C.textMuted);
-    doc.text('CLIENT', xR, yr);
-    yr += 5;
-    doc.setFont('helvetica', 'bold');
+    doc.text('Emetteur', rx, y);
+    doc.setFont(FONT.heading, 'normal');
     doc.setFontSize(10);
-    doc.setTextColor(...C.green);
-    doc.text(dossier.client_name, xR, yr);
-    yr += 5;
-    doc.setFont(T.body.font, 'normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...C.textDark);
-    doc.text(`Réf. dossier : ${refDossier}`, xR, yr);
-    yr += 4;
-    doc.text(`Date : ${dateStr}`, xR, yr);
-
-    // Filet vertical or séparateur
-    doc.setDrawColor(...C.gold);
-    doc.setLineWidth(0.5);
-    doc.line(margin + colW + 6, blocY - 2, margin + colW + 6, blocY + 22);
-
-    y = blocY + 28;
-
-    // ─── TABLEAU DES PRESTATIONS ───────────────────────────────────
-    y = drawSectionTitle(doc, 'Détail des prestations', y);
-
-    const colService = margin;
-    const colCalcul  = margin + 60;
-    const colHT      = margin + contentW;
-    const rowH = 6.5;
-
-    // En-tête (fond blanc, texte vert)
-    doc.setFont(T.tableHeader.font, T.tableHeader.style);
-    doc.setFontSize(T.tableHeader.size);
-    doc.setTextColor(...C.green);
-    doc.text('SERVICE', colService, y + 4.2);
-    doc.text('CALCUL',  colCalcul,  y + 4.2);
-    doc.text('HT',      colHT,      y + 4.2, { align: 'right' });
-    y += rowH;
-    doc.setDrawColor(...C.green);
-    doc.setLineWidth(0.4);
-    doc.line(margin, y, margin + contentW, y);
-    y += 2;
-
-    doc.setDrawColor(...C.border);
-    doc.setLineWidth(0.3);
-
-    lignes.forEach((l, i) => {
-      y = ensureSpace(doc, y, rowH + 2, ctxHeader);
-      const detailLines: string[] = doc.splitTextToSize(l.detail, contentW - 80);
-      const h = Math.max(rowH, detailLines.length * 4.5 + 2);
-
-      if (i % 2 === 1) {
-        doc.setFillColor(...C.ivory);
-        doc.rect(margin, y, contentW, h, 'F');
-      }
-      doc.setFont(T.tableCell.font, 'bold');
-      doc.setFontSize(T.tableCell.size);
-      doc.setTextColor(...C.textDark);
-      doc.text(l.label, colService, y + 4.2);
-
-      doc.setFont(T.tableCell.font, 'normal');
-      doc.setTextColor(...C.textMuted);
-      doc.text(detailLines, colCalcul, y + 4.2);
-
-      doc.setFont(T.tableCell.font, 'bold');
-      doc.setTextColor(...C.textDark);
-      doc.text(fmtPdfEur(l.montant_ht), colHT, y + 4.2, { align: 'right' });
-
-      // Mention conseil — toujours afficher "(tarif plein)" (rule 7)
-      if (l.service === 'conseil') {
-        doc.setFont('helvetica', 'italic');
-        doc.setFontSize(7);
-        doc.setTextColor(...C.textMuted);
-        doc.text('(tarif plein — aucune remise)', colService, y + 4.2 + 4.5);
-      }
-
-      doc.line(margin, y + h, margin + contentW, y + h);
-      y += h;
-    });
-
-    // Ligne remise pack (italique muted) si applicable
-    if (packActif) {
-      y = ensureSpace(doc, y, rowH, ctxHeader);
-      doc.setFont('helvetica', 'italic');
-      doc.setFontSize(T.tableCell.size);
-      doc.setTextColor(...C.textMuted);
-      doc.text('Remise pack clé en main −10%', colService, y + 4.2);
-      doc.text(`− ${fmtPdfEur(remisePack)}`, colHT, y + 4.2, { align: 'right' });
-      doc.line(margin, y + rowH, margin + contentW, y + rowH);
-      y += rowH;
-    }
-    y += 6;
-
-    // ─── BLOC TOTAUX (ivoire à droite) ─────────────────────────────
-    y = ensureSpace(doc, y, 48, ctxHeader);
-    const totW = 80;
-    const totX = margin + contentW - totW;
-    const totH = 26;
-    drawIvoryBox(doc, y, totH);
-
-    doc.setFont(T.body.font, 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...C.textMuted);
-    let ty = y + 6;
-    doc.text('Sous-total HT', totX + 3, ty);
-    doc.setTextColor(...C.textDark);
-    doc.text(fmtPdfEur(sousTotal), margin + contentW - 3, ty, { align: 'right' });
-    ty += 5.5;
-
-    if (packActif) {
-      doc.setTextColor(...C.textMuted);
-      doc.text('Remise pack', totX + 3, ty);
-      doc.text(`− ${fmtPdfEur(remisePack)}`, margin + contentW - 3, ty, { align: 'right' });
-      ty += 5.5;
-    }
-    doc.setTextColor(...C.textMuted);
-    doc.text('Total HT', totX + 3, ty);
-    doc.setTextColor(...C.textDark);
-    doc.text(fmtPdfEur(totalHT), margin + contentW - 3, ty, { align: 'right' });
-    ty += 5.5;
-    doc.setTextColor(...C.textMuted);
-    doc.text('TVA 20%', totX + 3, ty);
-    doc.text(fmtPdfEur(tva), margin + contentW - 3, ty, { align: 'right' });
-    y += totH + 4;
-
-    // Total TTC en grand : fond vert
-    const ttcH = 14;
-    doc.setFillColor(...C.green);
-    doc.rect(margin, y, contentW, ttcH, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.setTextColor(...C.white);
-    doc.text('TOTAL TTC', margin + 4, y + 9);
-    doc.setTextColor(...C.gold);
-    doc.text(fmtPdfEur(totalTTC), margin + contentW - 4, y + 9, { align: 'right' });
-    y += ttcH + 6;
-
-    // Validité
-    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(...C.ink);
+    doc.text('HUNTERS Immobilier', rx, y + 7);
+    doc.setFont(FONT.body, 'normal');
     doc.setFontSize(8);
     doc.setTextColor(...C.textMuted);
-    doc.text('Devis valable 30 jours à compter de la date d\'émission · TVA non récupérable au taux de 20%.', margin, y);
-    y += 12;
+    doc.text(today, rx, y + 12);
+    if (ref) doc.text(`Ref. ${ref}`, rx, y + 17);
 
-    // ─── ZONE SIGNATURE DOUBLE ─────────────────────────────────────
-    y = ensureSpace(doc, y, 36, ctxHeader);
-    const sigW = (contentW - 10) / 2;
-    drawSignatureZone(doc, margin, y, sigW, dossier.client_name, 'Le client', 'Bon pour accord — Client');
-    drawSignatureZone(doc, margin + sigW + 10, y, sigW, company?.raison_sociale || 'HUNTERS Immobilier', 'Pour HUNTERS Immobilier', 'Le mandataire');
+    y += 26;
 
-    // ─── PIED DE PAGE ──────────────────────────────────────────────
-    const total = doc.getNumberOfPages();
-    for (let i = 1; i <= total; i++) {
-      doc.setPage(i);
-      drawFooter(doc, i, total);
+    // ── Titre Devis ───────────────────────────────────────────────────────────
+    doc.setFont(FONT.heading, 'normal');
+    doc.setFontSize(16);
+    doc.setTextColor(...C.green);
+    doc.text('DEVIS', marginL, y);
+    doc.setDrawColor(...C.gold);
+    doc.setLineWidth(0.35);
+    doc.line(marginL, y + 3, marginL + 40, y + 3);
+    y += 10;
+
+    // ── Encadré politique prix — non masquable ────────────────────────────────
+    const ivoireY = y;
+    drawIvoryBox(doc, y, 9);
+    doc.setFont(FONT.body, 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.green);
+    doc.text(
+      'Conseil patrimonial : toujours au tarif plein — aucune remise autorisee, y compris en pack.',
+      marginL + 6, y + 6,
+    );
+    y = ivoireY + 13;
+
+    // ── Tableau des prestations ───────────────────────────────────────────────
+    const rowH = 8;
+    const cols = {
+      service: marginL,
+      detail:  marginL + 55,
+      ht:      pageW - marginR,
+    };
+
+    // En-tête — vert HUNTERS
+    doc.setFillColor(...C.green);
+    doc.rect(marginL, y, contentW, rowH, 'F');
+    doc.setFont(FONT.body, 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...C.white);
+    doc.text('Service', cols.service + 2, y + 5.5);
+    doc.text('Detail', cols.detail, y + 5.5);
+    doc.text('Montant HT', cols.ht, y + 5.5, { align: 'right' });
+    y += rowH;
+
+    // Lignes prestations
+    lignes.forEach((ligne, i) => {
+      doc.setFillColor(...(i % 2 === 0 ? C.cream : C.white));
+      doc.rect(marginL, y, contentW, rowH, 'F');
+
+      doc.setFont(FONT.body, 'bold');
+      doc.setFontSize(8.5);
+      doc.setTextColor(...C.ink);
+      doc.text(sanitizePdfText(ligne.label), cols.service + 2, y + 5.5);
+
+      doc.setFont(FONT.body, 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...C.textMuted);
+      const detailLines = doc.splitTextToSize(
+        sanitizePdfText(ligne.detail), cols.ht - cols.detail - 35
+      );
+      doc.text(detailLines[0] || '', cols.detail, y + 5.5);
+
+      doc.setFont(FONT.body, 'bold');
+      doc.setFontSize(9);
+      // Conseil en encre — pas en vert pour distinguer du tarif plein
+      doc.setTextColor(
+        ...(ligne.service === 'conseil' ? C.ink : C.green)
+      );
+      doc.text(fmtPdfEur(ligne.montant_ht), cols.ht, y + 5.5, { align: 'right' });
+
+      // Mention tarif plein sous la ligne conseil
+      if (ligne.service === 'conseil') {
+        doc.setFont(FONT.body, 'italic');
+        doc.setFontSize(7);
+        doc.setTextColor(...C.textMuted);
+        doc.text('tarif plein', cols.ht, y + rowH - 1, { align: 'right' });
+      }
+
+      y += rowH;
+    });
+
+    // Filet bas tableau
+    doc.setDrawColor(...C.border);
+    doc.setLineWidth(0.3);
+    doc.line(marginL, y, marginL + contentW, y);
+    y += 6;
+
+    // ── Récapitulatif — bloc à droite ─────────────────────────────────────────
+    const recapX = marginL + contentW / 2;
+    const recapW = contentW / 2;
+
+    const addRecapLine = (
+      label: string,
+      value: string,
+      bold = false,
+      highlight = false,
+    ) => {
+      if (highlight) {
+        doc.setFillColor(...C.green);
+        doc.rect(recapX, y - 5, recapW, 9, 'F');
+        doc.setFont(FONT.heading, 'normal');
+        doc.setFontSize(13);
+        doc.setTextColor(...C.cream);
+        doc.text(label, recapX + 3, y + 1);
+        doc.text(value, recapX + recapW - 2, y + 1, { align: 'right' });
+        y += 11;
+      } else {
+        doc.setFont(FONT.body, bold ? 'bold' : 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(bold ? C.ink[0] : C.textMuted[0],
+                         bold ? C.ink[1] : C.textMuted[1],
+                         bold ? C.ink[2] : C.textMuted[2]);
+        doc.text(label, recapX + 3, y);
+        doc.text(value, recapX + recapW - 2, y, { align: 'right' });
+        y += 6;
+      }
+    };
+
+    addRecapLine('Sous-total HT', fmtPdfEur(sousTotal));
+
+    if (packActif && remisePack > 0) {
+      addRecapLine(
+        `Remise pack 10% (chasse + AMO + deco)`,
+        `- ${fmtPdfEur(remisePack)}`,
+      );
     }
 
-    doc.save(`devis-${refDossier}.pdf`);
+    addRecapLine('Total HT', fmtPdfEur(totalHT), true);
+    addRecapLine(`TVA ${company?.tva_taux_defaut ?? 20}%`, fmtPdfEur(totalHT * (company?.tva_taux_defaut ?? 20) / 100));
+    addRecapLine('TOTAL TTC', fmtPdfEur(totalTTC), false, true); // fond vert highlight
+
+    y += 8;
+
+    // ── Validité ──────────────────────────────────────────────────────────────
+    doc.setFont(FONT.body, 'italic');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.textMuted);
+    doc.text('Devis valable 30 jours — TVA 20% — Honoraires HT', marginL, y);
+    y += 8;
+
+    // ── Zone de signature double ───────────────────────────────────────────────
+    const { drawSignatureZone } = await import('@/lib/pdf-design-system');
+    const sigW = contentW / 2 - 6;
+    drawSignatureZone(
+      doc, marginL, y, sigW,
+      sanitizePdfText(dossier.client_name || ''), 'Client',
+      'Signature client',
+    );
+    drawSignatureZone(
+      doc, marginL + contentW / 2 + 6, y, sigW,
+      'Anais SAIZONOU', 'Conseiller HUNTERS Immobilier',
+      'Pour HUNTERS Immobilier',
+    );
+
+    // ── Pied de page ─────────────────────────────────────────────────────────
+    drawFooter(doc, 1, 1);
+
+    const fileName = `Devis_${sanitizePdfText(dossier.client_name || 'client').replace(/\s+/g, '_')}_${ref || 'HUNTERS'}.pdf`;
+    doc.save(fileName);
   };
 
 

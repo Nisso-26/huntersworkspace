@@ -191,7 +191,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
   const handleText = (sectionId: string, value: string) =>
     setTextOverrides((prev) => ({ ...prev, [sectionId]: value }));
 
-  const buildPdf = () =>
+  const buildPdf = async () =>
     buildDocumentPdf({
       titre: modele.titre,
       sections,
@@ -203,7 +203,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
       numeroDossier: dossier.numero_dossier,
       conseiller,
       company,
-      categorie: modele.categorie,
+      avecCouverture: hasCover,
     });
 
   const handleExport = async () => {

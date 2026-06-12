@@ -33,7 +33,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex bg-background">
       {/* Panneau gauche — décoratif */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-hunters flex-col items-center justify-center p-12 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-[#06381E] flex-col items-center justify-center p-12 relative overflow-hidden">
         {/* Cercles décoratifs */}
         <div className="absolute top-0 left-0 w-64 h-64 rounded-full bg-white/3 -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-accent/8 translate-x-1/3 translate-y-1/3" />

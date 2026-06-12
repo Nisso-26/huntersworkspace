@@ -61,7 +61,7 @@ export default function ResetPassword() {
 
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-navy p-4">
+      <div className="min-h-screen flex items-center justify-center bg-[#06381E] p-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
@@ -69,8 +69,8 @@ export default function ResetPassword() {
 
   if (!ready) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-navy p-4">
-        <div className="bg-card rounded-xl border border-border/60 shadow-card p-8 text-center max-w-md">
+      <div className="min-h-screen flex items-center justify-center bg-[#06381E] p-4">
+        <div className="bg-card rounded-xl border border-border/60 shadow-sm ring-1 ring-[#A87C25]/20 p-8 text-center max-w-md">
           <img src={huntersLogo} alt="HUNTERS" className="h-12 object-contain mx-auto mb-4" />
           <p className="text-muted-foreground">Lien invalide ou expiré.</p>
         </div>
@@ -79,7 +79,7 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-navy p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#06381E] p-4">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
           <img src={huntersLogo} alt="HUNTERS" className="h-16 object-contain" />

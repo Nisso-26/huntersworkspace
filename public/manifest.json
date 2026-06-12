@@ -1,26 +1,23 @@
 {
   "name": "HUNTERS Workspace",
   "short_name": "HUNTERS",
-  "description": "CRM Hunters Immobilier — Conseil en investissement immobilier",
+  "description": "Cabinet de conseil en investissement immobilier",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#06381E",
+  "orientation": "portrait",
   "theme_color": "#004621",
-  "orientation": "portrait-primary",
+  "background_color": "#06381E",
   "icons": [
     {
-      "src": "/hunters-icon-192.png",
+      "src": "/favicon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "/hunters-icon-512.png",
+      "src": "/favicon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "categories": ["business", "productivity"],
-  "lang": "fr"
+  ]
 }

@@ -28,10 +28,32 @@ export const C = {
 
   textMuted: [107, 117, 102] as [number, number, number], // #6B7566 neutre charte
 
+  // Alias de compatibilité — mappés sur la palette charte V2.0
+  textDark:   [35, 41, 31]    as [number, number, number], // → C.ink
+  textLight:  [107, 117, 102] as [number, number, number], // → C.textMuted
+  ivory:      [244, 236, 216] as [number, number, number], // → C.cream
+  ivoryDark:  [232, 224, 202] as [number, number, number], // → C.creamDark
+  greenLight: [45, 122, 79]   as [number, number, number], // → couleur d'état succès (digital only)
+
   // Couleurs d'état — DIGITAL UNIQUEMENT — jamais dans les PDFs clients (charte V2.0 p.6)
 
   // Ne pas utiliser dans les fonctions de rendu PDF
 
+};
+
+// ─── TYPOGRAPHIE — EXPORT T ───────────────────────────────────────────────────
+// Alias utilisés par les fichiers PDF existants
+// Substitutions charte V2.0 : Marcellus → times · Jost → helvetica
+export const T = {
+  coverTitle:    { size: 24,   font: 'times',     style: 'normal' },
+  coverSubtitle: { size: 10,   font: 'helvetica', style: 'normal' },
+  sectionTitle:  { size: 13,   font: 'times',     style: 'normal' },
+  body:          { size: 9.5,  font: 'helvetica', style: 'normal' },
+  label:         { size: 8,    font: 'helvetica', style: 'normal' },
+  small:         { size: 7,    font: 'helvetica', style: 'normal' },
+  tableHeader:   { size: 8.5,  font: 'helvetica', style: 'bold'   },
+  tableCell:     { size: 8.5,  font: 'helvetica', style: 'normal' },
+  caption:       { size: 7.5,  font: 'helvetica', style: 'italic' },
 };
 
 // ─── GRILLE A4 — CHARTE V2.0 PAGE 7 ─────────────────────────────────────────

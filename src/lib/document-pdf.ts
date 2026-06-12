@@ -1,14 +1,13 @@
-// Génération PDF pour les documents générés depuis un modèle.
-// Rendu basé sur pdf-design-system : charte Hunters sobre et institutionnelle.
 import jsPDF from 'jspdf';
 import { fmtPdfEur, fmtPdfNum } from '@/lib/pdf-utils';
 import { interpolate } from '@/lib/document-template';
 import type { ModeleSection } from '@/hooks/use-modeles-documents';
 import type { CompanySettings } from '@/hooks/use-company-settings';
 import {
-  C, T, LAYOUT,
+  C, FONT, LAYOUT,
   drawHeader, drawFooter, drawSectionTitle,
-  drawIvoryBox, ensureSpace, drawSignatureZone, drawCoverPage,
+  drawIvoryBox, drawSignatureZone,
+  ensureSpace, sanitizePdfText, loadLogo, drawCoverPage,
 } from '@/lib/pdf-design-system';
 
 export interface DocumentBuildContext {
@@ -22,250 +21,255 @@ export interface DocumentBuildContext {
   numeroDossier?: string | null;
   conseiller?: string | null;
   company?: Partial<CompanySettings> | null;
-  categorie?: string | null;
+  client?: string | null;
+  avecCouverture?: boolean; // true pour mandat, convention, lettre de mission, pack
 }
 
-const COVER_CATEGORIES = new Set([
-  'mandat_recherche',
-  'convention_honoraires',
-  'lettre_mission_amo',
-  'lettre_mission_deco',
-  'contrat_pack',
-]);
-
-const CATEGORIE_LABELS: Record<string, string> = {
-  mandat_recherche:       'Mandat de recherche',
-  convention_honoraires:  'Convention d’honoraires',
-  lettre_mission_amo:     'Lettre de mission AMO',
-  lettre_mission_deco:    'Lettre de mission Décoration',
-  contrat_pack:           'Contrat Pack clé en main',
-  proposition_commerciale:'Proposition commerciale',
-  fiche_rentabilite:      'Fiche de rentabilité',
-  compte_rendu:           'Compte-rendu de visite',
-  autre:                  'Document',
-};
-
-function renderText(
-  doc: jsPDF,
-  text: string,
-  y: number,
-  ctxHeader: { refDossier?: string | null; titre?: string },
-): number {
-  const { margin, contentW } = LAYOUT;
-  doc.setFont(T.body.font, T.body.style);
-  doc.setFontSize(T.body.size);
-  doc.setTextColor(...C.textDark);
-  const lines = doc.splitTextToSize(text || '', contentW);
-  for (const line of lines) {
-    y = ensureSpace(doc, y, 5.5, ctxHeader);
-    doc.text(line, margin, y);
-    y += 5.5;
-  }
-  return y + 3;
-}
-
+// ─── TABLEAU FINANCIER ────────────────────────────────────────────────────────
 function renderFinancier(
   doc: jsPDF,
   section: ModeleSection,
   values: Record<string, number>,
   y: number,
-  ctxHeader: { refDossier?: string | null; titre?: string },
+  ctx: DocumentBuildContext,
 ): number {
-  const { margin, contentW } = LAYOUT;
-  const left = margin;
-  const right = margin + contentW;
-  const colTypeX = right - 28;        // colonne type
-  const colValueX = colTypeX - 4;     // valeur alignée droite avant type
-  const rowH = 6.5;
+  const { marginL, marginR, contentW, pageW, pageH, footerY } = LAYOUT;
+  const rowH = 7;
+  const colLabelW = 100;
+  const colValX = marginL + colLabelW;
+  const colTypeX = pageW - marginR - 22;
 
-  // En-tête tableau
+  // En-tête tableau — vert HUNTERS #004621
   doc.setFillColor(...C.green);
-  doc.rect(left, y, contentW, rowH, 'F');
+  doc.rect(marginL, y, contentW, rowH, 'F');
   doc.setTextColor(...C.white);
-  doc.setFont(T.tableHeader.font, T.tableHeader.style);
-  doc.setFontSize(T.tableHeader.size);
-  doc.text('POSTE', left + 3, y + 4.3);
-  doc.text('VALEUR', colValueX, y + 4.3, { align: 'right' });
-  doc.text('TYPE', colTypeX + 2, y + 4.3);
+  doc.setFont(FONT.body, 'bold');
+  doc.setFontSize(8.5);
+  doc.text('Poste', marginL + 3, y + 5);
+  doc.text('Valeur', colTypeX - 3, y + 5, { align: 'right' });
+  doc.text('Type', colTypeX + 3, y + 5);
   y += rowH;
 
-  const champs = section.champs || [];
   let zebra = false;
-  let totalKey: string | null = null;
-  // Détection ligne de total (clé contenant "total" ou "net" ou "rentabilite")
-  for (const c of champs) {
-    if (/^(total|resultat_final|rendement_net|cash_flow_net)$/i.test(c.key)) {
-      totalKey = c.key;
-    }
-  }
+  for (const c of section.champs || []) {
+    y = ensureSpace(doc, y, rowH + 2,
+      { refDossier: ctx.numeroDossier, titrePage: ctx.titre });
 
-  for (const c of champs) {
-    y = ensureSpace(doc, y, rowH + 2, ctxHeader);
-    const isTotal = c.key === totalKey;
-
-    // Fond
-    if (isTotal) {
-      doc.setFillColor(...C.ivoryDark);
-      doc.rect(left, y, contentW, rowH, 'F');
-    } else if (zebra) {
-      doc.setFillColor(...C.ivory);
-      doc.rect(left, y, contentW, rowH, 'F');
-    }
+    // Alternance crème/blanc — charte
+    doc.setFillColor(...(zebra ? C.cream : C.white));
+    doc.rect(marginL, y, contentW, rowH, 'F');
     zebra = !zebra;
 
     const v = values[c.key] ?? 0;
-    const isPct = /(%|pct|taux|rentabilite|vacance|rendement)/i.test(c.key);
-    const formatted = isPct ? `${fmtPdfNum(v, 2)} %` : fmtPdfEur(v);
+    const isPct = /(%|pct|taux|rentabilite|vacance)/i.test(c.key);
+    const formatted = isPct
+      ? `${fmtPdfNum(v, 2)} %`
+      : fmtPdfEur(v);
 
-    // Label
-    doc.setFont(T.tableCell.font, isTotal ? 'bold' : 'normal');
-    doc.setFontSize(T.tableCell.size);
-    doc.setTextColor(...(isTotal ? C.green : C.textMuted));
-    doc.text(c.label, left + 3, y + 4.3);
+    doc.setTextColor(...C.ink);
+    doc.setFont(FONT.body, 'normal');
+    doc.setFontSize(9);
+    doc.text(sanitizePdfText(c.label), marginL + 3, y + 5);
 
-    // Valeur
-    doc.setFont(T.tableCell.font, 'bold');
-    doc.setTextColor(...(isTotal ? C.green : C.textDark));
-    doc.text(formatted, colValueX, y + 4.3, { align: 'right' });
+    doc.setFont(FONT.body, 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...C.green);
+    doc.text(formatted, colTypeX - 3, y + 5, { align: 'right' });
 
-    // Type
-    doc.setFont(T.label.font, T.label.style);
-    doc.setFontSize(T.label.size);
-    doc.setTextColor(...C.textLight);
-    doc.text(c.type === 'calc' ? 'Calculé' : 'Saisie', colTypeX + 2, y + 4.3);
+    doc.setFont(FONT.body, 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.textMuted);
+    doc.text(c.type === 'calc' ? 'Calcule' : 'Saisie', colTypeX + 3, y + 5);
 
     y += rowH;
   }
 
-  // Bordure légère
+  // Bordure horizontale basse — filet crème foncée
   doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.2);
-  doc.rect(left, y - rowH * (champs.length + 1) - rowH, contentW, rowH * (champs.length + 1) + rowH);
+  doc.setLineWidth(0.3);
+  doc.line(marginL, y, marginL + contentW, y);
 
-  return y + 5;
+  return y + 6;
 }
 
-export function buildDocumentPdf(ctx: DocumentBuildContext): jsPDF {
+// ─── SECTION TEXTE ────────────────────────────────────────────────────────────
+function renderText(
+  doc: jsPDF,
+  text: string,
+  y: number,
+  ctx: DocumentBuildContext,
+): number {
+  const { marginL, contentW } = LAYOUT;
+  const clean = sanitizePdfText(text || '');
+  const lines = doc.splitTextToSize(clean, contentW);
+
+  doc.setFont(FONT.body, 'normal');
+  doc.setFontSize(9.5);
+  doc.setTextColor(...C.ink);
+
+  for (const line of lines) {
+    y = ensureSpace(doc, y, 6,
+      { refDossier: ctx.numeroDossier, titrePage: ctx.titre });
+    doc.text(line, marginL, y);
+    y += 5.5;
+  }
+  return y + 3;
+}
+
+// ─── EXPORT PRINCIPAL ─────────────────────────────────────────────────────────
+export async function buildDocumentPdf(ctx: DocumentBuildContext): Promise<jsPDF> {
+  const [logo] = await Promise.all([
+    ctx.avecCouverture ? loadLogo() : Promise.resolve(null),
+  ]);
+
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const { margin, pageW, contentW } = LAYOUT;
-  const ctxHeader = { refDossier: ctx.numeroDossier ?? null, titre: ctx.titre };
+  const { marginL, marginR, pageW, headerH, contentW } = LAYOUT;
 
-  const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+  const today = new Date().toLocaleDateString('fr-FR', {
+    day: '2-digit', month: 'long', year: 'numeric',
+  });
 
-  // ─── Page de couverture pour certaines catégories ──────────────────────
-  const hasCover = ctx.categorie ? COVER_CATEGORIES.has(ctx.categorie) : false;
-  if (hasCover) {
-    // drawCoverPage est async mais sans await interne quand logo=null
-    // -> rendu synchrone sur le doc
-    void drawCoverPage(doc, {
-      logo: null,
-      typeDocument: CATEGORIE_LABELS[ctx.categorie!] || 'Document',
-      titre: ctx.titre,
-      sousTitre: ctx.variables.nom_client ? `Préparé pour ${ctx.variables.nom_client}` : undefined,
-      client: ctx.variables.nom_client || '—',
-      conseiller: ctx.conseiller || '—',
-      refDossier: ctx.numeroDossier ?? null,
+  // ── Couverture si demandée ────────────────────────────────────────────────
+  const CATS_AVEC_COUVERTURE = [
+    'mandat_recherche', 'convention_honoraires',
+    'lettre_mission_amo', 'lettre_mission_deco', 'contrat_pack',
+  ];
+  const needsCover = ctx.avecCouverture ?? false;
+
+  if (needsCover) {
+    await drawCoverPage(doc, {
+      logo,
+      typeDocument: 'Document contractuel',
+      titre: sanitizePdfText(ctx.titre),
+      client: sanitizePdfText(ctx.client || ctx.variables?.nom_client || ''),
+      conseiller: sanitizePdfText(ctx.conseiller || ''),
+      refDossier: ctx.numeroDossier,
       date: today,
-      confidentiel: true,
+      confidentiel: false,
     });
     doc.addPage();
   }
 
-  // ─── En-tête courant ───────────────────────────────────────────────────
-  drawHeader(doc, ctxHeader.refDossier, ctxHeader.titre);
-  let y = LAYOUT.headerH + 8;
+  drawHeader(doc, ctx.numeroDossier, sanitizePdfText(ctx.titre));
+  let y = headerH + 10;
 
-  // Titre du document
-  doc.setFont('helvetica', 'bold');
+  // ── Titre du document ────────────────────────────────────────────────────
+  doc.setFont(FONT.heading, 'normal');
   doc.setFontSize(16);
   doc.setTextColor(...C.green);
-  doc.text(ctx.titre, margin, y);
-  y += 5;
+  doc.text(sanitizePdfText(ctx.titre), marginL, y);
+  y += 6;
+
+  // Filet or 40mm sous le titre — charte page 7
   doc.setDrawColor(...C.gold);
-  doc.setLineWidth(0.6);
-  doc.line(margin, y, margin + 40, y);
-  y += 7;
+  doc.setLineWidth(0.35);
+  doc.line(marginL, y, marginL + 40, y);
+  y += 8;
 
-  // Bloc contextuel
-  doc.setFont(T.label.font, T.label.style);
-  doc.setFontSize(T.label.size);
-  doc.setTextColor(...C.textMuted);
-  const headerLines = [
+  // ── Bloc contextuel sobre ───────────────────────────────────────────────
+  const ctxLines = [
     `Tours, le ${today}`,
-    ctx.variables.nom_client ? `Client : ${ctx.variables.nom_client}` : null,
+    ctx.variables?.nom_client ? `Client : ${sanitizePdfText(ctx.variables.nom_client)}` : null,
     ctx.numeroDossier ? `Dossier : ${ctx.numeroDossier}` : null,
-    ctx.conseiller ? `Conseiller : ${ctx.conseiller}` : null,
+    ctx.conseiller ? `Conseiller : ${sanitizePdfText(ctx.conseiller)}` : null,
   ].filter(Boolean) as string[];
-  for (const l of headerLines) {
-    doc.text(l, margin, y);
-    y += 4.2;
-  }
-  y += 5;
 
-  // ─── Sections ──────────────────────────────────────────────────────────
+  doc.setFont(FONT.body, 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(...C.textMuted);
+  for (const l of ctxLines) {
+    doc.text(l, marginL, y);
+    y += 5;
+  }
+  y += 6;
+
+  // ── Sections ─────────────────────────────────────────────────────────────
   for (const section of ctx.sections) {
     if (section.type === 'header') continue;
 
-    y = ensureSpace(doc, y, 22, ctxHeader);
+    y = ensureSpace(doc, y, 22,
+      { refDossier: ctx.numeroDossier, titrePage: ctx.titre });
     y = drawSectionTitle(doc, section.titre, y);
 
     if (section.type === 'text') {
       const raw = ctx.textOverrides[section.id] ?? section.contenu ?? '';
       const text = interpolate(raw, ctx.variables);
-      y = renderText(doc, text, y, ctxHeader);
+      y = renderText(doc, text, y, ctx);
+
     } else if (section.type === 'financier') {
       const values = ctx.financierValues[section.id] || {};
-      y = renderFinancier(doc, section, values, y, ctxHeader);
+      y = renderFinancier(doc, section, values, y, ctx);
+
     } else if (section.type === 'services_conditionnels') {
       const services = ctx.services || {};
       const labels = ctx.serviceLabels || {};
       const activeKeys = Object.keys(services).filter((k) => services[k]);
+
       if (activeKeys.length === 0) {
-        y = renderText(doc, 'Aucun service souscrit.', y, ctxHeader);
+        y = renderText(doc, 'Aucun service souscrit.', y, ctx);
       } else {
-        doc.setFont(T.body.font, T.body.style);
-        doc.setFontSize(T.body.size);
         for (const key of activeKeys) {
-          y = ensureSpace(doc, y, 6, ctxHeader);
-          doc.setTextColor(...C.gold);
-          doc.text('▪', margin + 1, y);
-          doc.setTextColor(...C.textDark);
-          doc.text(labels[key] || key, margin + 6, y);
-          y += 5.5;
+          y = ensureSpace(doc, y, 8,
+            { refDossier: ctx.numeroDossier, titrePage: ctx.titre });
+          doc.setFont(FONT.body, 'bold');
+          doc.setFontSize(9.5);
+          doc.setTextColor(...C.green);
+          doc.text(`· ${sanitizePdfText(labels[key] || key)}`, marginL + 4, y);
+          y += 6;
         }
         y += 3;
       }
+
     } else if (section.type === 'signatures') {
-      y = ensureSpace(doc, y, 38, ctxHeader);
-      const colW = (contentW - 10) / 2;
+      y = ensureSpace(doc, y, 45,
+        { refDossier: ctx.numeroDossier, titrePage: ctx.titre });
+
+      // Encadré crème avant les signatures
+      const ivoireY = y;
+      drawIvoryBox(doc, y, 10);
+      doc.setFont(FONT.body, 'italic');
+      doc.setFontSize(8);
+      doc.setTextColor(...C.textMuted);
+      doc.text(
+        sanitizePdfText(
+          ctx.textOverrides[section.id] ||
+          section.contenu ||
+          `Fait a Tours, le ${today}`
+        ),
+        marginL + 6,
+        y + 7,
+      );
+      y = ivoireY + 14;
+
+      // Zones de signature double colonne
+      const colW = contentW / 2 - 6;
+      const nomClient = sanitizePdfText(
+        ctx.client || ctx.variables?.nom_client || 'Le Client'
+      );
+      const nomConseiller = sanitizePdfText(ctx.conseiller || 'Anais SAIZONOU');
+
       drawSignatureZone(
-        doc,
-        margin,
-        y,
-        colW,
-        ctx.variables.nom_client || 'Le client',
-        'Client',
-        'Signature du client',
+        doc, marginL, y, colW,
+        nomClient, 'Client',
+        'Signature client',
       );
       drawSignatureZone(
-        doc,
-        margin + colW + 10,
-        y,
-        colW,
-        ctx.conseiller || 'HUNTERS Immobilier',
+        doc, marginL + contentW / 2 + 6, y, colW,
+        nomConseiller, 'Conseiller HUNTERS Immobilier',
         'Pour HUNTERS Immobilier',
-        'Signature du mandataire',
       );
-      y += 32;
+      y += 35;
     }
   }
 
-  // ─── Pied de page sur toutes les pages (hors couverture) ──────────────
-  const total = (doc as any).getNumberOfPages();
-  const firstContentPage = hasCover ? 2 : 1;
-  for (let i = firstContentPage; i <= total; i++) {
+  // ── Pieds de page sur toutes les pages ───────────────────────────────────
+  const total = doc.getNumberOfPages();
+  const startPage = needsCover ? 2 : 1;
+  for (let i = 1; i <= total; i++) {
     doc.setPage(i);
-    drawFooter(doc, i - (hasCover ? 1 : 0), total - (hasCover ? 1 : 0));
+    if (i >= startPage) {
+      drawFooter(doc, i - (needsCover ? 1 : 0), total - (needsCover ? 1 : 0));
+    }
   }
 
   return doc;

@@ -146,10 +146,10 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleGeneratePreview = () => {
+  const handleGeneratePreview = async () => {
     setGeneratingPreview(true);
     try {
-      const pdf = buildPdf();
+      const pdf = await buildPdf();
       const blob = pdf.output('blob');
       const url = URL.createObjectURL(blob);
       setPdfPreview((prev) => {
@@ -191,7 +191,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
   const handleText = (sectionId: string, value: string) =>
     setTextOverrides((prev) => ({ ...prev, [sectionId]: value }));
 
-  const buildPdf = () =>
+  const buildPdf = async () =>
     buildDocumentPdf({
       titre: modele.titre,
       sections,
@@ -203,13 +203,13 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
       numeroDossier: dossier.numero_dossier,
       conseiller,
       company,
-      categorie: modele.categorie,
+      avecCouverture: hasCover,
     });
 
   const handleExport = async () => {
     setSaving(true);
     try {
-      const pdf = buildPdf();
+      const pdf = await buildPdf();
       const safeTitre = modele.titre.replace(/[^a-z0-9_-]+/gi, '_');
       const filename = `${safeTitre}_${dossier.numero_dossier || dossier.id.slice(0, 8)}.pdf`;
       pdf.save(filename);

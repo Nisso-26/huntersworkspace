@@ -209,7 +209,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
   const handleExport = async () => {
     setSaving(true);
     try {
-      const pdf = buildPdf();
+      const pdf = await buildPdf();
       const safeTitre = modele.titre.replace(/[^a-z0-9_-]+/gi, '_');
       const filename = `${safeTitre}_${dossier.numero_dossier || dossier.id.slice(0, 8)}.pdf`;
       pdf.save(filename);

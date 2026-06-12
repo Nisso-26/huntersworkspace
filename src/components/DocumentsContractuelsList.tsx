@@ -45,7 +45,7 @@ export default function DocumentsContractuelsList({ dossier }: { dossier: Dossie
       const sections = (modele.contenu_template?.sections || []) as ModeleSection[];
       // Recompute financier values from snapshot saisies if any
       const financierValues: Record<string, Record<string, number>> = snap.financierValues || {};
-      const pdf = buildDocumentPdf({
+      const pdf = await buildDocumentPdf({
         titre: doc.titre || modele.titre,
         sections,
         variables: snap.variables || {},
@@ -56,7 +56,7 @@ export default function DocumentsContractuelsList({ dossier }: { dossier: Dossie
         numeroDossier: dossier.numero_dossier,
         conseiller: nameById.get(doc.genere_par || '') || '',
         company,
-        categorie: modele.categorie,
+        avecCouverture: true,
       });
       const safe = (doc.titre || 'document').replace(/[^a-z0-9_-]+/gi, '_');
       pdf.save(`${safe}_${dossier.numero_dossier || dossier.id.slice(0, 8)}.pdf`);

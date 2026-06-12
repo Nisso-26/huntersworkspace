@@ -78,13 +78,12 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   const lignes: DevisLigne[] = useMemo(() => {
     const out: DevisLigne[] = [];
     if (services.conseil !== false) {
-      const remise = packActif ? tarifConseil * 0.15 : 0;
-      const m = tarifConseil - remise;
+      const m = tarifConseil; // jamais remisé
       out.push({
         service: 'conseil',
         label: `Conseil patrimonial (${niveau})`,
         base: 0,
-        detail: packActif ? `${fmtPdfEur(tarifConseil)} − 15% pack` : `Forfait ${fmtPdfEur(tarifConseil)}`,
+        detail: `Forfait ${fmtPdfEur(tarifConseil)} — tarif plein`,
         montant_ht: m,
       });
     }

@@ -41,6 +41,21 @@ export const C = {
 
 };
 
+// ─── TYPOGRAPHIE — EXPORT T ───────────────────────────────────────────────────
+// Alias utilisés par les fichiers PDF existants
+// Substitutions charte V2.0 : Marcellus → times · Jost → helvetica
+export const T = {
+  coverTitle:    { size: 24,   font: 'times',     style: 'normal' },
+  coverSubtitle: { size: 10,   font: 'helvetica', style: 'normal' },
+  sectionTitle:  { size: 13,   font: 'times',     style: 'normal' },
+  body:          { size: 9.5,  font: 'helvetica', style: 'normal' },
+  label:         { size: 8,    font: 'helvetica', style: 'normal' },
+  small:         { size: 7,    font: 'helvetica', style: 'normal' },
+  tableHeader:   { size: 8.5,  font: 'helvetica', style: 'bold'   },
+  tableCell:     { size: 8.5,  font: 'helvetica', style: 'normal' },
+  caption:       { size: 7.5,  font: 'helvetica', style: 'italic' },
+};
+
 // ─── GRILLE A4 — CHARTE V2.0 PAGE 7 ─────────────────────────────────────────
 
 // Marges : 20mm haut · 20mm bas · 18mm gauche · 22mm droite

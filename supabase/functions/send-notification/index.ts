@@ -7,10 +7,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// TODO: rebasculer sur "Hunters Workspace <noreply@workspace.huntersimmobilier.fr>" une fois le domaine vérifié dans Resend.
 const FROM = "Hunters Workspace <noreply@workspace.huntersimmobilier.fr>";
+// Charte HUNTERS V2.0
 const HUNTERS_GREEN = "#004621";
 const HUNTERS_GOLD = "#C8962F";
+// Marcellus n'est pas supporté par les clients mail : fallback serif (Georgia).
+const FONT_HEADING = "Georgia, 'Times New Roman', Times, serif";
 
 function wrap(subject: string, innerHtml: string, numeroDossier?: string | null): string {
   const refChip = numeroDossier

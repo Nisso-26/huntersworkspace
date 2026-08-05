@@ -218,52 +218,10 @@ Deno.serve(async (req) => {
     }
   }
 
-  // 5. Factures pack impayées (type abonnement, en_attente, émise il y a plus de 5 jours)
-  const fiveDaysAgo = new Date(now.getTime() - 5 * 86400000).toISOString();
-  const { data: unpaidPacks } = await supabase
-    .from("factures")
-    .select("id, mandataire_id, reference")
-    .eq("type", "abonnement")
-    .eq("statut", "en_attente")
-    .lt("date_emission", fiveDaysAgo);
+  // 5. Impayés pack mensuel : géré par l'edge function dédiée `check-impayes-pack`
+  //    (workflow Art. 7.2 — mise en demeure J+15, suspension J+30, résiliation J+45)
 
-  for (const f of unpaidPacks || []) {
-    const { data: existing } = await supabase
-      .from("alertes")
-      .select("id")
-      .ilike("title", "%Impayé pack%")
-      .eq("user_id", f.mandataire_id)
-      .eq("is_read", false)
-      .limit(1);
-    if (!existing?.length) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name, email")
-        .eq("id", f.mandataire_id || "")
-        .single();
-      alerts.push({
-        user_id: null,
-        type: "urgente",
-        title: `Impayé pack ${profile?.full_name || ""}`,
-        detail: `Facture pack non réglée depuis plus de 5 jours`,
-      });
-      // Email mandataire
-      if (profile?.email) {
-        try {
-          await supabase.functions.invoke("send-notification", {
-            body: {
-              to: profile.email,
-              subject: "Pack mensuel en attente de paiement",
-              body: `<h2 style="color:#1A4D2E;margin:0 0 16px;">Pack mensuel impayé</h2>
-                <p>Bonjour ${profile.full_name || ''},</p>
-                <p>Votre pack mensuel est en attente de paiement (référence ${f.reference || ''}).</p>
-                <p>Merci de régulariser votre situation rapidement depuis votre espace Hunters.</p>`,
-            },
-          });
-        } catch (e) { console.error("pack email", e); }
-      }
-    }
-  }
+
 
   // 6. Dossier inactif depuis 30 jours (tous statuts hors nouveau/signe/cloture)
   const { data: staleDossiers } = await supabase

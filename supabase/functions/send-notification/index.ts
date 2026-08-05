@@ -10,34 +10,74 @@ const corsHeaders = {
 const FROM = "Hunters Workspace <noreply@workspace.huntersimmobilier.fr>";
 // Charte HUNTERS V2.0
 const HUNTERS_GREEN = "#004621";
+const HUNTERS_GREEN_DEEP = "#06381E";
 const HUNTERS_GOLD = "#C8962F";
+const HUNTERS_CREAM = "#F4ECD8";
+const HUNTERS_INK = "#23291F";
+const HUNTERS_MUTED = "#6B7566";
+const HUNTERS_BORDER = "#ECE6D8";
 // Marcellus n'est pas supporté par les clients mail : fallback serif (Georgia).
-const FONT_HEADING = "Georgia, 'Times New Roman', Times, serif";
+const FONT_HEADING = "Marcellus, Georgia, 'Times New Roman', Times, serif";
+const FONT_BODY = "Jost, 'Helvetica Neue', Arial, Helvetica, sans-serif";
 
-function wrap(subject: string, innerHtml: string, numeroDossier?: string | null): string {
-  const refChip = numeroDossier
-    ? `<div style="display:inline-block;background:${HUNTERS_GOLD};color:#004621;font-weight:700;font-size:11px;padding:3px 10px;border-radius:2px;margin-top:6px;letter-spacing:0.5px;">RÉF. ${numeroDossier}</div>`
+export interface WrapOptions {
+  eyebrow?: string | null;
+  title?: string | null;
+  cta?: { label: string; url: string } | null;
+  numeroDossier?: string | null;
+}
+
+// Gabarit unique HUNTERS — 600px, styles inline, compatible Outlook
+export function wrap(subject: string, innerHtml: string, opts: WrapOptions = {}): string {
+  const { eyebrow, title, cta, numeroDossier } = opts;
+
+  const eyebrowHtml = eyebrow
+    ? `<div style="font-family:${FONT_BODY};font-size:11px;font-weight:500;letter-spacing:1.76px;text-transform:uppercase;color:${HUNTERS_GOLD};">${eyebrow}</div>`
     : '';
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${subject}</title></head>
-<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;color:#2C2C2C;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:24px 0;">
+
+  const titleHtml = title
+    ? `<div style="font-family:${FONT_HEADING};font-size:21px;line-height:1.3;color:${HUNTERS_INK};margin-top:8px;">${title}</div>`
+    : '';
+
+  const refChip = numeroDossier
+    ? `<div style="font-family:${FONT_BODY};font-size:11px;letter-spacing:1px;color:${HUNTERS_GOLD};margin-top:6px;">RÉF. ${numeroDossier}</div>`
+    : '';
+
+  const ctaHtml = cta
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;">
+          <tr><td align="center" bgcolor="${HUNTERS_GREEN}" style="border-radius:3px;">
+            <a href="${cta.url}" style="display:inline-block;background:${HUNTERS_GREEN};color:#ffffff;font-family:${FONT_BODY};font-size:13px;font-weight:500;text-decoration:none;padding:12px 28px;border-radius:3px;">${cta.label}</a>
+          </td></tr>
+        </table>`
+    : '';
+
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${subject}</title></head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:${FONT_BODY};color:${HUNTERS_INK};">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="background:#f4f4f4;padding:24px 0;">
     <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:2px;overflow:hidden;max-width:600px;width:100%;">
-        <tr><td style="background:${HUNTERS_GREEN};padding:20px 24px;">
-          <div style="font-family:${FONT_HEADING};color:#ffffff;font-size:22px;font-weight:400;letter-spacing:2px;">HUNTERS<span style="color:${HUNTERS_GOLD};">·</span>IMMOBILIER</div>
+      <table width="600" cellpadding="0" cellspacing="0" border="0" role="presentation" style="background:#ffffff;border-radius:3px;overflow:hidden;max-width:600px;width:100%;">
+        <tr><td bgcolor="${HUNTERS_GREEN_DEEP}" style="background:${HUNTERS_GREEN_DEEP};padding:22px 26px;">
+          <div style="font-family:${FONT_HEADING};color:${HUNTERS_CREAM};font-size:15px;font-weight:400;letter-spacing:3px;">HUNTERS<span style="color:${HUNTERS_GOLD};">&nbsp;·&nbsp;</span>IMMOBILIER</div>
           ${refChip}
         </td></tr>
-        <tr><td style="padding:28px 24px;font-size:15px;line-height:1.6;color:#2C2C2C;">
-          ${innerHtml}
+        <tr><td style="padding:36px 32px;background:#ffffff;">
+          ${eyebrowHtml}
+          ${titleHtml}
+          <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.65;color:${HUNTERS_MUTED};margin-top:12px;">
+            ${innerHtml}
+          </div>
+          ${ctaHtml}
         </td></tr>
-        <tr><td style="background:#fafafa;padding:16px 24px;font-size:12px;color:#888;border-top:3px solid ${HUNTERS_GOLD};">
-          Hunters Immobilier — Ce message est envoyé automatiquement depuis votre espace de travail.${numeroDossier ? ` · Réf. dossier ${numeroDossier}` : ''}
+        <tr><td style="border-top:1px solid ${HUNTERS_BORDER};padding:16px 32px;font-family:${FONT_BODY};font-size:10px;line-height:1.6;color:${HUNTERS_MUTED};text-align:left;">
+          HUNTERS Immobilier — Cabinet de conseil en investissement immobilier<br/>
+          hunters-immobilier.fr · contact@huntersimmobilier.fr${numeroDossier ? `<br/>Réf. dossier ${numeroDossier}` : ''}
         </td></tr>
       </table>
     </td></tr>
   </table>
 </body></html>`;
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -69,7 +109,7 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get("RESEND_API_KEY");
     if (!apiKey) throw new Error("RESEND_API_KEY non configurée");
 
-    const { to, subject, body, numero_dossier } = await req.json();
+    const { to, subject, body, numero_dossier, eyebrow, title, cta } = await req.json();
     if (!to || !subject || !body) throw new Error("Paramètres requis: to, subject, body");
 
     // Basic input validation
@@ -102,7 +142,13 @@ Deno.serve(async (req) => {
     }
 
 
-    const html = wrap(subject, body, numero_dossier || null);
+    const html = wrap(subject, body, {
+      numeroDossier: numero_dossier || null,
+      eyebrow: typeof eyebrow === "string" ? eyebrow : null,
+      title: typeof title === "string" ? title : null,
+      cta: cta && typeof cta.url === "string" && typeof cta.label === "string" ? cta : null,
+    });
+
 
 
     const res = await fetch("https://api.resend.com/emails", {

@@ -83,19 +83,21 @@ Deno.serve(async (req) => {
 
       const numero = (dossier as any).numero_dossier || '';
       const refLabel = numero ? ` (réf. ${numero})` : '';
-      const html = `<h2 style="color:#004621;margin:0 0 16px;">Portail client non consulté</h2>
-        <p>Bonjour ${profile.full_name || ''},</p>
-        <p>Le portail client de <strong>${dossier.client_name}</strong>${refLabel} n'a pas été consulté depuis 5 jours.</p>
-        <p>Pensez à relancer votre client pour l'inviter à suivre l'avancement de son dossier.</p>`;
+      const html = `<p style="margin:0 0 12px;">Bonjour ${profile.full_name || ''},</p>
+        <p style="margin:0 0 12px;">Le portail client de <strong style="color:#23291F;">${dossier.client_name}</strong>${refLabel} n'a pas été consulté depuis 5 jours.</p>
+        <p style="margin:0;">Pensez à relancer votre client pour l'inviter à suivre l'avancement de son dossier.</p>`;
 
       const { error: invErr } = await supabase.functions.invoke("send-notification", {
         body: {
           to: profile.email,
           subject: `Relance portail client : ${dossier.client_name}${numero ? ` (${numero})` : ''}`,
           numero_dossier: numero || null,
+          eyebrow: "Suivi client",
+          title: "Portail client non consulté",
           body: html,
         },
       });
+
 
       if (!invErr) {
         await supabase.from("client_tokens").update({ last_relance_at: new Date().toISOString() }).eq("id", t.id);

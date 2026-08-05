@@ -99,22 +99,23 @@ function renderText(
   y: number,
   ctx: DocumentBuildContext,
 ): number {
-  const { marginL, contentW } = LAYOUT;
+  const { marginL, textW } = LAYOUT;
   const clean = sanitizePdfText(text || '');
-  const lines = doc.splitTextToSize(clean, contentW);
+  const lines = doc.splitTextToSize(clean, textW);
 
   doc.setFont(FONT.body, 'normal');
-  doc.setFontSize(9.5);
+  doc.setFontSize(11);
   doc.setTextColor(...C.ink);
 
   for (const line of lines) {
-    y = ensureSpace(doc, y, 6,
+    y = ensureSpace(doc, y, 6.5,
       { refDossier: ctx.numeroDossier, titrePage: ctx.titre });
     doc.text(line, marginL, y);
-    y += 5.5;
+    y += 5.8;
   }
-  return y + 3;
+  return y + 3.5;
 }
+
 
 // ─── EXPORT PRINCIPAL ─────────────────────────────────────────────────────────
 export async function buildDocumentPdf(ctx: DocumentBuildContext): Promise<jsPDF> {
@@ -151,20 +152,21 @@ export async function buildDocumentPdf(ctx: DocumentBuildContext): Promise<jsPDF
   }
 
   drawHeader(doc, ctx.numeroDossier, sanitizePdfText(ctx.titre));
-  let y = headerH + 10;
+  let y = LAYOUT.headerH + 4.2 + 6;
 
-  // ── Titre du document ────────────────────────────────────────────────────
+  // ── Titre du document — Marcellus 20pt ───────────────────────────────────
   doc.setFont(FONT.heading, 'normal');
-  doc.setFontSize(16);
+  doc.setFontSize(20);
   doc.setTextColor(...C.green);
   doc.text(sanitizePdfText(ctx.titre), marginL, y);
   y += 6;
 
-  // Filet or 40mm sous le titre — charte page 7
+  // Filet or 1.5pt · 80pt
   doc.setDrawColor(...C.gold);
-  doc.setLineWidth(0.35);
-  doc.line(marginL, y, marginL + 40, y);
+  doc.setLineWidth(0.53);
+  doc.line(marginL, y, marginL + 28, y);
   y += 8;
+
 
   // ── Bloc contextuel sobre ───────────────────────────────────────────────
   const ctxLines = [

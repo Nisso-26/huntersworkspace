@@ -98,13 +98,13 @@ Deno.serve(async (req) => {
             body: {
               to: email,
               subject: "Bienvenue chez Hunters Immobilier — Activez votre compte",
-              body: `<h2 style="color:#004621;margin:0 0 16px;">Bienvenue ${composedName} !</h2>
-                <p>Vous avez été invité(e) à rejoindre l'espace de travail Hunters Immobilier.</p>
-                <p>Cliquez sur le bouton ci-dessous pour activer votre compte et définir votre mot de passe :</p>
-                <p style="text-align:center;margin:28px 0;">
-                  <a href="${invitationLink}" style="background:#004621;color:#fff;text-decoration:none;padding:12px 28px;border-radius:2px;display:inline-block;font-weight:600;">Activer mon compte</a>
-                </p>
-                <p style="font-size:12px;color:#888;">Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br/><span style="word-break:break-all;">${invitationLink}</span></p>`,
+              eyebrow: "Invitation",
+              title: `Bienvenue ${composedName} !`,
+              cta: { label: "Activer mon compte", url: invitationLink },
+              body: `<p style="margin:0 0 12px;">Vous avez été invité(e) à rejoindre l'espace de travail Hunters Immobilier.</p>
+                <p style="margin:0 0 12px;">Cliquez sur le bouton ci-dessous pour activer votre compte et définir votre mot de passe.</p>
+                <p style="margin:0;font-size:11px;">Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br/><span style="word-break:break-all;">${invitationLink}</span></p>`,
+
             },
           });
         } catch (e) {

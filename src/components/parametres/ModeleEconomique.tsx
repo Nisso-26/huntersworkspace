@@ -93,9 +93,6 @@ export default function ModeleEconomique() {
           <Input type="number" step="0.5" min={0} max={100} disabled={!isAdmin}
             value={form.remise_pack_pct ?? 10}
             onChange={e => set('remise_pack_pct', Number(e.target.value))} />
-          <p className="text-xs italic text-muted-foreground">
-            S'applique sur chasse + AMO + déco uniquement. Le conseil patrimonial n'est jamais remisé, y compris en pack.
-          </p>
         </div>
       </div>
 
@@ -136,9 +133,6 @@ export default function ModeleEconomique() {
         </Table>
         <div className="text-xs text-muted-foreground space-y-1">
           <p>• <strong>Passage N2</strong> : automatique dès <strong>{Number(form.seuil_passage_n2 ?? 100000).toLocaleString('fr-FR')} €</strong> de CA HT cumulé encaissé par HUNTERS — non rétroactif.</p>
-        </div>
-        <div className="p-3 rounded-sm border-2 border-destructive bg-destructive/5 text-sm text-destructive font-medium">
-          ⚠️ Conseil patrimonial : toujours facturé au tarif plein — aucune remise autorisée, y compris en pack clé en main.
         </div>
       </div>
 

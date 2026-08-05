@@ -132,8 +132,8 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
             <Select value={form.niveau} onValueChange={v => setForm(f => ({ ...f, niveau: v }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="N1">N1 — 50%</SelectItem>
-                <SelectItem value="N2">N2 — 60%</SelectItem>
+                <SelectItem value="N1">N1</SelectItem>
+                <SelectItem value="N2">N2</SelectItem>
               </SelectContent>
             </Select>
           </div>

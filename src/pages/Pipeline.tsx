@@ -27,11 +27,52 @@ import {
 import { GripVertical, Hash } from 'lucide-react';
 import {
   shouldTriggerHonoraires,
-  commissionRateForLevel,
   computeCommission,
+  computeCommissionsParService,
+  computeCommissionsParService as _ccps,
   computeBonusParrainage,
   isValidPipelineStatus,
+  type ServiceMontant,
+  type CommissionService,
 } from '@/lib/pipeline-transitions';
+import { useBaremesHunters, type BaremeHunters } from '@/hooks/use-baremes-hunters';
+import { useCompanySettings } from '@/hooks/use-company-settings';
+
+// Montant HT d'un service à partir du barème HUNTERS (tranches par base)
+function montantBareme(baremes: BaremeHunters[], service: CommissionService, base: number): number {
+  const t = baremes.find(
+    (r) =>
+      r.service === service &&
+      base >= Number(r.tranche_min) &&
+      (r.tranche_max === null || base <= Number(r.tranche_max))
+  );
+  if (!t) return 0;
+  const fixe = Number(t.valeur_fixe) || 0;
+  if (t.type === 'forfait') return Number(t.valeur) || fixe || 0;
+  return fixe + (base * (Number(t.valeur) || 0)) / 100;
+}
+
+// Décomposition des montants HT par service souscrit sur le dossier
+function servicesMontants(dossier: Dossier, baremes: BaremeHunters[]): ServiceMontant[] {
+  const services = ((dossier as any).services_souscrits as Record<string, boolean>) || {};
+  const budget = Number(dossier.budget) || 0;
+  const out: ServiceMontant[] = [];
+
+  if (services.conseil !== false) {
+    out.push({ service: 'conseil', montant_ht: Number((dossier as any).tarif_conseil_ht) || 0 });
+  }
+  if (services.chasse) {
+    out.push({ service: 'chasse', montant_ht: montantBareme(baremes, 'chasse', budget) });
+  }
+  if (services.amo) {
+    out.push({ service: 'amo', montant_ht: montantBareme(baremes, 'amo', 0) });
+  }
+  if (services.deco) {
+    out.push({ service: 'deco', montant_ht: montantBareme(baremes, 'deco', 0) });
+  }
+  return out.filter((l) => l.montant_ht > 0);
+}
+
 
 // ─────────────────────────────────────────────
 // Carte dossier draggable (souris + tactile + clavier)

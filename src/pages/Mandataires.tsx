@@ -159,14 +159,20 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
           </div>
           <div className="space-y-2">
             <Label>Pack abonnement</Label>
-            <Select value={form.pack_status} onValueChange={v => setForm(f => ({ ...f, pack_status: v }))}>
+            <Select value={m.suspendu ? 'suspendu' : form.pack_status} onValueChange={v => setForm(f => ({ ...f, pack_status: v }))} disabled={m.suspendu}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="actif">Actif</SelectItem>
+                <SelectItem value="actif" disabled={m.suspendu}>Actif</SelectItem>
                 <SelectItem value="inactif">Inactif</SelectItem>
                 <SelectItem value="suspendu">Suspendu</SelectItem>
               </SelectContent>
             </Select>
+            {m.suspendu && (
+              <p className="text-xs text-destructive">
+                Accès suspendu pour impayé (Art. 7.2) — le statut du pack est piloté automatiquement.
+                Utilisez « Lever la suspension » ci-dessous pour rétablir l'accès.
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label>Montant pack (€ HT)</Label>
@@ -177,6 +183,43 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
             <Input value={form.iban} onChange={e => setForm(f => ({ ...f, iban: e.target.value }))} placeholder="FR76..." />
           </div>
         </div>
+
+        {m.suspendu && isAdmin && (
+          <div className="border border-destructive/40 bg-destructive/5 rounded-lg p-4 space-y-3">
+            <div className="flex items-start gap-2">
+              <Ban className="w-4 h-4 text-destructive mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-destructive">Accès suspendu — impayé pack (Art. 7.2)</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Lever la suspension rétablit l'accès aux outils et réinitialise le compteur de relances
+                  sur les factures pack en attente. Acte contractuel.
+                </p>
+              </div>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm">Lever la suspension</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Lever la suspension d'accès ?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {m.full_name || 'Ce conseiller'} retrouvera l'accès complet aux outils et le
+                    workflow d'impayés Art. 7.2 sera réinitialisé (relance_etape = 0) sur ses factures
+                    pack en attente
+                    {m.pack_impaye_montant > 0 && ` (${m.pack_impaye_montant.toLocaleString('fr-FR')} € restant dus)`}.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => leverSuspension.mutate(m.id)}>
+                    Confirmer la levée
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
 
         <div className="flex justify-end pt-2">
           <Button onClick={handleSave}>Enregistrer</Button>

@@ -1,5 +1,9 @@
 import AppLayout from '@/components/AppLayout';
-import { useMandataires, useUpdateProfile, MandataireProfile } from '@/hooks/use-mandataires';
+import { useMandataires, useUpdateProfile, useLeverSuspension, MandataireProfile } from '@/hooks/use-mandataires';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import SearchFilter from '@/components/SearchFilter';
 import ExportButton, { exportToCSV } from '@/components/ExportButton';
 import { motion } from 'framer-motion';

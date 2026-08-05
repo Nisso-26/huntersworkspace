@@ -570,13 +570,12 @@ function StepBancairePack({
 function StepZoneActivation({
   form,
   setField,
-  zone,
+  zones,
 }: {
   form: FormData;
   setField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
-  zone: number | null;
+  zones: ZoneAffectee[];
 }) {
-  const zoneInfo = zone ? ZONES[zone] : null;
   const ibanLast4 = form.iban ? form.iban.replace(/\s+/g, '').slice(-4) : '----';
 
   return (
@@ -590,13 +589,24 @@ function StepZoneActivation({
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <MapPin className="w-4 h-4" /> Zone prioritaire
         </h3>
-        {zoneInfo ? (
-          <div className="rounded-md border border-border bg-muted/30 p-4">
-            <p className="font-semibold">Zone prioritaire affectée : {zoneInfo.label}</p>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+        {zones.length > 0 ? (
+          <div className="rounded-md border border-border bg-muted/30 p-4 space-y-3">
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Lock className="w-3 h-3" /> Affectée par le Directeur — non modifiable
             </p>
-            <p className="text-sm text-muted-foreground mt-2">{zoneInfo.communes}</p>
+            {zones.map((z) => (
+              <div key={z.zone_label}>
+                <p className="font-semibold">
+                  {z.zone_label}
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    {z.statut === 'exclusive' ? 'Exclusivité stricte' : 'Prioritaire'} — rayon {z.perimetre_km} km
+                  </span>
+                </p>
+                {z.communes?.length > 0 && (
+                  <p className="text-sm text-muted-foreground mt-1">{z.communes.join(', ')}</p>
+                )}
+              </div>
+            ))}
           </div>
         ) : (
           <div className="rounded-md border border-hunters-warning/40 bg-hunters-warning/5 p-4 text-sm flex gap-2">
@@ -604,6 +614,7 @@ function StepZoneActivation({
             <p>Votre zone prioritaire n'a pas encore été affectée par le Directeur. Contactez le siège avant de poursuivre.</p>
           </div>
         )}
+
         <div className="rounded-md border border-hunters-success/30 bg-hunters-success/5 p-3 text-sm">
           Votre zone prioritaire définit votre territoire de prospection — pas vos clients. Vous pouvez traiter des dossiers sur toutes les communes du périmètre HUNTERS (25 km autour de Tours). Le client appartient au mandataire qui l'a qualifié en premier dans Workspace.
         </div>

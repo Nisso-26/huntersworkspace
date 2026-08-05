@@ -41,12 +41,22 @@ export function useEvenements() {
   return useQuery({
     queryKey: ['evenements'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: own, error } = await supabase
         .from('evenements')
         .select('*')
         .order('date_debut', { ascending: true })
         .limit(200);
       if (error) throw error;
+
+      // Événements réseau des autres membres : lecture via RPC (colonnes sensibles exclues)
+      const { data: reseau } = await supabase.rpc('get_evenements_reseau' as any);
+      const ownIds = new Set((own || []).map((e: any) => e.id));
+      const data = [
+        ...(own || []),
+        ...((reseau || []) as any[])
+          .filter((e: any) => !ownIds.has(e.id))
+          .map((e: any) => ({ ...e, notes: null, dossier_id: null, rappel: null })),
+      ].sort((a: any, b: any) => a.date_debut.localeCompare(b.date_debut));
 
       // Fetch mandataire names
       const mandIds = [...new Set((data || []).map(e => e.mandataire_id).filter(Boolean))];

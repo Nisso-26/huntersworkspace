@@ -336,14 +336,14 @@ function DocModal({ doc, onClose }: { doc: Doc; onClose: () => void }) {
         </div>
 
         <div className="flex gap-2 p-5 border-t border-border/40">
-          <a
-            href={doc.file}
-            download={doc.file}
-            className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white py-2.5 rounded-lg text-sm font-semibold transition-colors"
+          <button
+            onClick={() => downloadDoc(doc.file)}
+            disabled={!isAvailable(doc.file)}
+            className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-sm font-semibold transition-colors"
           >
             <Download className="w-4 h-4" />
             Télécharger
-          </a>
+          </button>
           <button
             onClick={onClose}
             className="px-4 py-2.5 border border-border/60 rounded-lg text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"

@@ -270,14 +270,14 @@ function DocCard({ doc, onDetail }: { doc: Doc; onDetail: (d: Doc) => void }) {
           >
             Détails
           </button>
-          <a
-            href={doc.file}
-            download={doc.file}
-            className="flex items-center gap-1 text-[11px] font-semibold bg-primary hover:bg-primary/90 text-white px-2.5 py-1 rounded transition-colors"
+          <button
+            onClick={() => downloadDoc(doc.file)}
+            disabled={!isAvailable(doc.file)}
+            className="flex items-center gap-1 text-[11px] font-semibold bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-white px-2.5 py-1 rounded transition-colors"
           >
             <Download className="w-3 h-3" />
             Télécharger
-          </a>
+          </button>
         </div>
       </div>
     </motion.div>

@@ -29,7 +29,7 @@ import {
   shouldTriggerHonoraires,
   computeCommission,
   computeCommissionsParService,
-  computeCommissionsParService as _ccps,
+  computeCommissionsParService,
   computeBonusParrainage,
   isValidPipelineStatus,
   type ServiceMontant,
@@ -190,7 +190,10 @@ export default function Pipeline() {
   const updateMut = useUpdateDossier();
   const { isAdmin } = useAuth();
   const qc = useQueryClient();
+  const { data: baremes = [] } = useBaremesHunters();
+  const { data: company } = useCompanySettings();
   const [activeDossier, setActiveDossier] = useState<Dossier | null>(null);
+
 
   // Sensors :
   // - PointerSensor pour souris/stylet (delay 0, distance 6px → laisse le clic ouvrir le dialog)

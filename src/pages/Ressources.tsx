@@ -4,6 +4,42 @@ import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { Search, Download, FileText, FileSpreadsheet, Globe, BookOpen, Wrench, TrendingUp, Tag, Info, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+// ── Storage ──
+const RESSOURCES_BUCKET = 'ressources-documents';
+const STORED_FILES = new Set([
+  'MANDAT_DE_RECHERCHE_EXCLUSIF.docx',
+  'CAHIER_DES_CHARGES_HUNTERS_.docx',
+  'RAPPORT_DE_VISITE_HUNTERS.docx',
+  'FICHE_PROFIL_INVESTISSEUR_.docx',
+  'MODELE_DE_PROPOSITION_COMMERCIALE.docx',
+  'Procedure_P03_Suivi_Chantier.docx',
+  'SIMULATEUR_RENTABILITE_HUNTERS_v2_0_2026.xlsx',
+  'CONVENTION_CADRE_HUNTERS.docx',
+  'BON_DE_COMMANDES_HUNTERS.docx',
+  'OFFRE_D_ACHAT_HUNTERS.docx',
+  'PROCEDURE_P01_CONSEIL_STRATEGIQUE.docx',
+  'Procedure_P04_Deco_Ameublement.docx',
+]);
+
+const isAvailable = (file: string) => STORED_FILES.has(file);
+
+async function downloadDoc(file: string) {
+  if (!isAvailable(file)) {
+    toast.error('Document non encore déposé dans la bibliothèque');
+    return;
+  }
+  const { data, error } = await supabase.storage
+    .from(RESSOURCES_BUCKET)
+    .createSignedUrl(file, 120, { download: file });
+  if (error || !data?.signedUrl) {
+    toast.error('Téléchargement impossible pour le moment');
+    return;
+  }
+  window.open(data.signedUrl, '_blank');
+}
 
 // ── Types ──
 interface Doc {

@@ -5,9 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import huntersLogoAsset from '@/assets/hunters-logo-v2.png.asset.json';
+import huntersLogo from '@/assets/hunters-symbol-dark.svg';
 
-const huntersLogo = huntersLogoAsset.url;
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 export default function Login() {

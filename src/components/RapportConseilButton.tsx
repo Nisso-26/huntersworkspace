@@ -1,4 +1,4 @@
-import huntersLogoAsset from '@/assets/hunters-logo-v2.png.asset.json';
+import huntersLogoAsset from '@/assets/hunters-symbol-dark.png.asset.json';
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';

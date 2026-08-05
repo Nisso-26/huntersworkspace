@@ -1,4 +1,4 @@
-import huntersLogoAsset from '@/assets/hunters-logo-v2.png.asset.json';
+import huntersLogoAsset from '@/assets/hunters-symbol-dark.png.asset.json';
 import jsPDF from 'jspdf';
 
 // ─── PALETTE CHARTE HUNTERS V2.0 ─────────────────────────────────────────────

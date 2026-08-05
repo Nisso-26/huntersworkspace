@@ -11,9 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, CheckCircle2, FileText, Home, HardHat, Calculator, Calendar, MessageSquare, TrendingUp, Star, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import huntersLogoAsset from '@/assets/hunters-logo-v2.png.asset.json';
+import huntersLogo from '@/assets/hunters-symbol-dark.svg';
 
-const huntersLogo = huntersLogoAsset.url;
 
 const PIPELINE_STEPS = [
   { key: 'nouveau', label: 'Nouveau', icon: '📋' },

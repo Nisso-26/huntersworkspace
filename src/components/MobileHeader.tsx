@@ -1,9 +1,8 @@
 import { Menu, Bell } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import AppSidebar from './AppSidebar';
-import huntersLogoAsset from '@/assets/hunters-logo-v2.png.asset.json';
+import huntersLogo from '@/assets/hunters-symbol-light.svg';
 
-const huntersLogo = huntersLogoAsset.url;
 import { useAlertes } from '@/hooks/use-alertes';
 import { Link } from 'react-router-dom';
 

@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import huntersLogoAsset from '@/assets/hunters-logo-v2.png.asset.json';
+import huntersLogoDark from '@/assets/hunters-symbol-dark.svg';
+import huntersLogoLight from '@/assets/hunters-symbol-light.svg';
 
-const huntersLogo = huntersLogoAsset.url;
 
 export default function ResetPassword() {
   const navigate = useNavigate();

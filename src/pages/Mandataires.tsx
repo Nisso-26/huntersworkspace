@@ -365,8 +365,8 @@ export default function Mandataires() {
                       </div>
                     </div>
                     <div className="flex items-center justify-between mt-3 pt-2 border-t">
-                      <span className={cn('text-xs px-2 py-0.5 rounded-full', m.pack_status === 'actif' ? 'bg-hunters-success/10 text-hunters-success' : 'bg-muted text-muted-foreground')}>
-                        Pack {m.pack_status === 'actif' ? '✓' : '✗'}
+                      <span className={cn('text-xs px-2 py-0.5 rounded-full', m.suspendu ? 'bg-destructive/10 text-destructive' : m.pack_status === 'actif' ? 'bg-hunters-success/10 text-hunters-success' : 'bg-muted text-muted-foreground')}>
+                        {m.suspendu ? 'Suspendu (impayé)' : `Pack ${m.pack_status === 'actif' ? '✓' : '✗'}`}
                       </span>
                       <p className="text-xs text-muted-foreground">{m.email}</p>
                     </div>

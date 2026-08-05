@@ -34,13 +34,13 @@ interface Props {
 const STEP_TITLES = ['Bienvenue', 'Identité', 'RSAC', 'Bancaire & Pack', 'Zone & Activation'];
 const TOTAL_STEPS = 5;
 
-const ZONES: Record<number, { label: string; communes: string }> = {
-  1: { label: 'Zone 1 — Tours centre', communes: 'Tours centre, Tours nord' },
-  2: { label: 'Zone 2 — Tours sud-ouest', communes: 'Joué-lès-Tours, Saint-Avertin' },
-  3: { label: 'Zone 3 — Ouest', communes: 'Saint-Cyr-sur-Loire, Fondettes, Luynes' },
-  4: { label: 'Zone 4 — Est', communes: 'Chambray-lès-Tours, Saint-Pierre-des-Corps, Montlouis-sur-Loire' },
-  5: { label: 'Zone 5 — Sud', communes: 'Veigné, Sorigny, Monts, Ballan-Miré' },
-};
+interface ZoneAffectee {
+  zone_label: string;
+  statut: string;
+  perimetre_km: number;
+  communes: string[];
+}
+
 
 const isValidFrIban = (v: string) => /^FR\d{2}[A-Z0-9]{23}$/i.test(v.replace(/\s+/g, ''));
 const isValidSiret = (v: string) => /^\d{14}$/.test(v.replace(/\s+/g, ''));
@@ -98,7 +98,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
   const [step, setStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
-  const [zonePrioritaire, setZonePrioritaire] = useState<number | null>(null);
+  const [zones, setZones] = useState<ZoneAffectee[]>([]);
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const debounceRef = useRef<number | null>(null);
@@ -107,10 +107,17 @@ export default function OnboardingWizard({ onComplete }: Props) {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: profile }, { data: progress }] = await Promise.all([
+      const [{ data: profile }, { data: progress }, { data: zonesRows }] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
         supabase.from('onboarding_progress').select('*').eq('mandataire_id', user.id).maybeSingle(),
+        supabase
+          .from('zones_mandataires')
+          .select('zone_label, statut, perimetre_km, communes')
+          .eq('mandataire_id', user.id)
+          .order('zone_label'),
       ]);
+      setZones((zonesRows ?? []) as ZoneAffectee[]);
+
 
       const next = { ...EMPTY_FORM };
       if (profile) {
@@ -126,9 +133,8 @@ export default function OnboardingWizard({ onComplete }: Props) {
         next.rsac_justificatif = (profile as any).rsac_justificatif || '';
         next.iban = (profile as any).iban || '';
         next.siret = (profile as any).siret || '';
-        const z = Number((profile as any).zone_prioritaire);
-        if (!Number.isNaN(z) && z >= 1 && z <= 5) setZonePrioritaire(z);
       }
+
       if (progress?.data && typeof progress.data === 'object') {
         Object.assign(next, progress.data as Partial<FormData>);
       }
@@ -214,11 +220,12 @@ export default function OnboardingWizard({ onComplete }: Props) {
         return ibanOk && siretOk && form.accept_pack;
       }
       case 5:
-        return Boolean(zonePrioritaire) && form.accept_zone && form.accept_prescripteurs && form.accept_objectifs && form.accept_encaissement;
+        return zones.length > 0 && form.accept_zone && form.accept_prescripteurs && form.accept_objectifs && form.accept_encaissement;
       default:
         return false;
     }
-  }, [step, form, zonePrioritaire]);
+  }, [step, form, zones]);
+
 
   const goNext = async () => {
     if (!canAdvance) return;
@@ -262,7 +269,9 @@ export default function OnboardingWizard({ onComplete }: Props) {
       // Notifier les super_admins
       const { data: admins } = await supabase.from('user_roles').select('user_id').eq('role', 'super_admin');
       const fullName = [form.first_name, form.last_name].filter(Boolean).join(' ').trim();
-      const detail = `Nouveau mandataire activé : ${fullName} — Zone ${zonePrioritaire ?? '?'} — Onboarding complet — Vérification dossier requise`;
+      const zonesLabel = zones.map((z) => z.zone_label).join(', ') || '?';
+      const detail = `Nouveau mandataire activé : ${fullName} — Zone(s) : ${zonesLabel} — Onboarding complet — Vérification dossier requise`;
+
       if (admins?.length) {
         await supabase.from('alertes').insert(
           admins.map((a) => ({
@@ -320,7 +329,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                 <StepZoneActivation
                   form={form}
                   setField={setField}
-                  zone={zonePrioritaire}
+                  zones={zones}
                 />
               )}
             </>
@@ -561,13 +570,12 @@ function StepBancairePack({
 function StepZoneActivation({
   form,
   setField,
-  zone,
+  zones,
 }: {
   form: FormData;
   setField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
-  zone: number | null;
+  zones: ZoneAffectee[];
 }) {
-  const zoneInfo = zone ? ZONES[zone] : null;
   const ibanLast4 = form.iban ? form.iban.replace(/\s+/g, '').slice(-4) : '----';
 
   return (
@@ -581,13 +589,24 @@ function StepZoneActivation({
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <MapPin className="w-4 h-4" /> Zone prioritaire
         </h3>
-        {zoneInfo ? (
-          <div className="rounded-md border border-border bg-muted/30 p-4">
-            <p className="font-semibold">Zone prioritaire affectée : {zoneInfo.label}</p>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+        {zones.length > 0 ? (
+          <div className="rounded-md border border-border bg-muted/30 p-4 space-y-3">
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Lock className="w-3 h-3" /> Affectée par le Directeur — non modifiable
             </p>
-            <p className="text-sm text-muted-foreground mt-2">{zoneInfo.communes}</p>
+            {zones.map((z) => (
+              <div key={z.zone_label}>
+                <p className="font-semibold">
+                  {z.zone_label}
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    {z.statut === 'exclusive' ? 'Exclusivité stricte' : 'Prioritaire'} — rayon {z.perimetre_km} km
+                  </span>
+                </p>
+                {z.communes?.length > 0 && (
+                  <p className="text-sm text-muted-foreground mt-1">{z.communes.join(', ')}</p>
+                )}
+              </div>
+            ))}
           </div>
         ) : (
           <div className="rounded-md border border-hunters-warning/40 bg-hunters-warning/5 p-4 text-sm flex gap-2">
@@ -595,6 +614,7 @@ function StepZoneActivation({
             <p>Votre zone prioritaire n'a pas encore été affectée par le Directeur. Contactez le siège avant de poursuivre.</p>
           </div>
         )}
+
         <div className="rounded-md border border-hunters-success/30 bg-hunters-success/5 p-3 text-sm">
           Votre zone prioritaire définit votre territoire de prospection — pas vos clients. Vous pouvez traiter des dossiers sur toutes les communes du périmètre HUNTERS (25 km autour de Tours). Le client appartient au mandataire qui l'a qualifié en premier dans Workspace.
         </div>
@@ -682,7 +702,7 @@ function StepZoneActivation({
           <Row label="Statut juridique" value={form.statut_juridique || '—'} />
           <Row label="N° RSAC / Greffe" value={`${form.rsac_numero} — ${form.rsac_greffe}`} />
           <Row label="IBAN" value={`•••• •••• •••• ${ibanLast4}`} />
-          <Row label="Zone prioritaire" value={zoneInfo?.label || 'Non affectée'} />
+          <Row label="Zone prioritaire" value={zones.map((z) => z.zone_label).join(', ') || 'Non affectée'} />
           <Row label="Niveau" value="N1" />
           <Row label="Pack mensuel" value="149 € HT / mois — sans franchise" />
         </dl>

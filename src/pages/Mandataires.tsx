@@ -66,7 +66,7 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
       niveau: form.niveau,
       parrain_id: form.parrain_id || null,
       zone: form.zone,
-      pack_status: form.pack_status,
+      pack_status: m.suspendu ? 'suspendu' : form.pack_status,
       pack_montant: Number(form.pack_montant),
       iban: form.iban,
       status: form.status,

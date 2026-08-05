@@ -107,10 +107,17 @@ export default function OnboardingWizard({ onComplete }: Props) {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: profile }, { data: progress }] = await Promise.all([
+      const [{ data: profile }, { data: progress }, { data: zonesRows }] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
         supabase.from('onboarding_progress').select('*').eq('mandataire_id', user.id).maybeSingle(),
+        supabase
+          .from('zones_mandataires')
+          .select('zone_label, statut, perimetre_km, communes')
+          .eq('mandataire_id', user.id)
+          .order('zone_label'),
       ]);
+      setZones((zonesRows ?? []) as ZoneAffectee[]);
+
 
       const next = { ...EMPTY_FORM };
       if (profile) {

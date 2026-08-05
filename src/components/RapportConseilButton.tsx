@@ -107,7 +107,7 @@ function drawPageHeader(
   doc.setFillColor(...GREEN);
   doc.rect(0, 0, W, 14, 'F');
   if (logoBase64) {
-    try { doc.addImage(logoBase64, 'JPEG', M, 2, 10, 10); } catch { /* ignore */ }
+    try { doc.addImage(logoBase64, 'PNG', M, 2, 9, 10); } catch { /* ignore */ }
   }
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
@@ -267,7 +267,7 @@ export default function RapportConseilButton({ dossier }: Props) {
 
       // Logo dans le bandeau vert
       if (logoBase64) {
-        try { doc.addImage(logoBase64, 'JPEG', M, 10, 28, 28); } catch { /* ignore */ }
+        try { doc.addImage(logoBase64, 'PNG', M, 10, 25, 28); } catch { /* ignore */ }
       }
 
       // Nom cabinet dans le bandeau
@@ -353,7 +353,7 @@ export default function RapportConseilButton({ dossier }: Props) {
 
       // Logo bas page de garde
       if (logoBase64) {
-        try { doc.addImage(logoBase64, 'JPEG', W / 2 - 8, 240, 16, 16); } catch { /* ignore */ }
+        try { doc.addImage(logoBase64, 'PNG', W / 2 - 7, 240, 14.5, 16); } catch { /* ignore */ }
       }
 
       // Tagline
@@ -590,7 +590,7 @@ export default function RapportConseilButton({ dossier }: Props) {
         doc.setFillColor(...GOLD);
         doc.rect(0, H - 12, W, 0.6, 'F');
         if (logoBase64) {
-          try { doc.addImage(logoBase64, 'JPEG', M, H - 10, 6, 6); } catch { /* ignore */ }
+          try { doc.addImage(logoBase64, 'PNG', M, H - 10, 5.5, 6); } catch { /* ignore */ }
         }
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(6.5);

@@ -26,6 +26,9 @@ export interface MandataireProfile {
   bonus_parrainage: number;
   dossiers_signes: number;
   dossiers_clotures: number;
+  suspendu: boolean;
+  pack_relance_etape: number;
+  pack_impaye_montant: number;
 }
 
 interface DossierRow {
@@ -38,6 +41,12 @@ interface CommissionRow {
   type: string;
   montant: number;
   statut: string;
+}
+interface FactureAbonnementRow {
+  mandataire_id: string | null;
+  montant: number | null;
+  montant_ttc: number | null;
+  relance_etape: number | null;
 }
 
 export function useMandataires() {
@@ -73,6 +82,14 @@ export function useMandataires() {
         .in('mandataire_id', userIds);
       const commissions = (commissionsRaw ?? []) as CommissionRow[];
 
+      const { data: facturesRaw } = await supabase
+        .from('factures')
+        .select('mandataire_id, montant, montant_ttc, relance_etape')
+        .eq('type', 'abonnement')
+        .eq('statut', 'en_attente')
+        .in('mandataire_id', userIds);
+      const facturesPack = (facturesRaw ?? []) as FactureAbonnementRow[];
+
       const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
 
       return (profiles ?? []).map((p) => {
@@ -97,6 +114,12 @@ export function useMandataires() {
 
         const parrainProfile = p.parrain_id ? profileMap.get(p.parrain_id) : null;
 
+        const mandFactures = facturesPack.filter((f) => f.mandataire_id === p.id);
+        const packRelanceEtape = mandFactures.reduce((max, f) => Math.max(max, Number(f.relance_etape) || 0), 0);
+        const packImpaye = mandFactures.reduce((s, f) => s + Number(f.montant_ttc ?? f.montant ?? 0), 0);
+
+
+
         return {
           id: p.id,
           full_name: p.full_name,
@@ -120,6 +143,9 @@ export function useMandataires() {
           commissions_dues: commDues,
           commissions_versees: commVersees,
           bonus_parrainage: bonusParrainage,
+          suspendu: Boolean(p.suspendu),
+          pack_relance_etape: packRelanceEtape,
+          pack_impaye_montant: packImpaye,
         };
       });
     },

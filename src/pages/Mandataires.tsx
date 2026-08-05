@@ -3,7 +3,7 @@ import { useMandataires, useUpdateProfile, MandataireProfile } from '@/hooks/use
 import SearchFilter from '@/components/SearchFilter';
 import ExportButton, { exportToCSV } from '@/components/ExportButton';
 import { motion } from 'framer-motion';
-import { MapPin, TrendingUp, FolderOpen, Award, Users, CreditCard } from 'lucide-react';
+import { MapPin, TrendingUp, FolderOpen, Award, Users, CreditCard, Ban, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState } from 'react';
@@ -15,7 +15,15 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ConformiteTab from '@/components/mandataires/ConformiteTab';
 import ObjectifsTab from '@/components/mandataires/ObjectifsTab';
+import ZonesTab from '@/components/mandataires/ZonesTab';
+import ZonesOverview from '@/components/mandataires/ZonesOverview';
 import { useAuth } from '@/contexts/AuthContext';
+
+const relanceLabels: Record<number, string> = {
+  1: 'Mise en demeure (J+15)',
+  2: 'Suspension appliquée (J+30)',
+  3: 'Résiliation à examiner (J+45)',
+};
 
 const statusBadge: Record<string, string> = {
   actif: 'bg-hunters-success/10 text-hunters-success',
@@ -63,10 +71,23 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
   return (
     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
-        <DialogTitle>{m.full_name || 'Conseiller'}</DialogTitle>
+        <DialogTitle className="flex flex-wrap items-center gap-2">
+          {m.full_name || 'Conseiller'}
+          {m.suspendu && (
+            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">
+              <Ban className="w-3 h-3" /> Accès suspendu
+            </span>
+          )}
+          {m.pack_relance_etape > 0 && (
+            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-hunters-warning/10 text-hunters-warning">
+              <AlertTriangle className="w-3 h-3" /> {relanceLabels[m.pack_relance_etape]}
+              {m.pack_impaye_montant > 0 && ` — ${m.pack_impaye_montant.toLocaleString('fr-FR')} €`}
+            </span>
+          )}
+        </DialogTitle>
       </DialogHeader>
       <Tabs defaultValue="profil">
-        <TabsList><TabsTrigger value="profil">Profil</TabsTrigger><TabsTrigger value="conformite">Conformité</TabsTrigger><TabsTrigger value="objectifs">Objectifs</TabsTrigger></TabsList>
+        <TabsList><TabsTrigger value="profil">Profil</TabsTrigger><TabsTrigger value="zones">Zones</TabsTrigger><TabsTrigger value="conformite">Conformité</TabsTrigger><TabsTrigger value="objectifs">Objectifs</TabsTrigger></TabsList>
         <TabsContent value="profil" className="mt-4">
       <div className="space-y-6">
         {/* KPIs */}
@@ -162,6 +183,9 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
         </div>
       </div>
         </TabsContent>
+        <TabsContent value="zones" className="mt-4">
+          <ZonesTab mandataireId={m.id} canEdit={isAdmin} />
+        </TabsContent>
         <TabsContent value="conformite" className="mt-4">
           <ConformiteTab mandataireId={m.id} />
         </TabsContent>
@@ -220,6 +244,10 @@ export default function Mandataires() {
           ]}
         />
 
+        <ZonesOverview />
+
+
+
         {isLoading ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-48 rounded-xl" />)}
@@ -255,9 +283,21 @@ export default function Mandataires() {
                           </div>
                         </div>
                       </div>
-                      <span className={cn('text-xs font-medium px-2 py-0.5 rounded-full', statusBadge[m.status || 'actif'])}>
-                        {statusLabel[m.status || 'actif']}
-                      </span>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className={cn('text-xs font-medium px-2 py-0.5 rounded-full', statusBadge[m.status || 'actif'])}>
+                          {statusLabel[m.status || 'actif']}
+                        </span>
+                        {m.suspendu && (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">
+                            <Ban className="w-3 h-3" /> Suspendu
+                          </span>
+                        )}
+                        {m.pack_relance_etape > 0 && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-hunters-warning/10 text-hunters-warning text-right">
+                            <AlertTriangle className="w-3 h-3" /> {relanceLabels[m.pack_relance_etape]}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="grid grid-cols-3 gap-3 mt-5 pt-4 border-t">
                       <div className="text-center">

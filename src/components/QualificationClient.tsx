@@ -90,8 +90,8 @@ export default function QualificationClient({ values, onChange }: Props) {
       </div>
 
       {isExpert && (
-        <div className="flex items-start gap-2 rounded-md border border-[#F5A800] bg-[#F5A800]/10 p-3">
-          <AlertTriangle className="w-5 h-5 text-[#F5A800] shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2 rounded-md border border-[#C8962F] bg-[#C8962F]/10 p-3">
+          <AlertTriangle className="w-5 h-5 text-[#C8962F] shrink-0 mt-0.5" />
           <div className="text-sm font-medium text-foreground">
             Dossier Expert — validation directeur requise
           </div>

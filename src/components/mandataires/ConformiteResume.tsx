@@ -13,7 +13,7 @@ const fmt = (s: string) => {
 };
 const tone = (s: string) => {
   if (['conforme', 'valide'].includes(s)) return 'bg-hunters-success/15 text-hunters-success';
-  if (['en_cours', 'expirante'].includes(s)) return 'bg-[#F5A800]/15 text-[#F5A800]';
+  if (['en_cours', 'expirante'].includes(s)) return 'bg-[#C8962F]/15 text-[#C8962F]';
   if (['non_conforme', 'expiree'].includes(s)) return 'bg-destructive/15 text-destructive';
   return 'bg-secondary text-muted-foreground';
 };
@@ -32,7 +32,7 @@ export default function ConformiteResume() {
     <Card className="p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <ShieldAlert className="w-5 h-5 text-[#1A4D2E]" />
+          <ShieldAlert className="w-5 h-5 text-[#004621]" />
           <h2 className="font-heading font-bold text-foreground">Conformité du réseau</h2>
         </div>
         {alertes.length > 0 && (

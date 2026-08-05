@@ -77,14 +77,14 @@ const BLOCS: Record<string, string> = {
 export function GrilleStatutBadge({ statut }: { statut?: string | null }) {
   if (statut === 'valide') {
     return (
-      <Badge className="bg-[#1A4D2E] text-white border-transparent hover:bg-[#1A4D2E] gap-1">
+      <Badge className="bg-[#004621] text-white border-transparent hover:bg-[#004621] gap-1">
         <ShieldCheck className="w-3 h-3" /> Grille validée
       </Badge>
     );
   }
   if (statut === 'en_cours') {
     return (
-      <Badge className="bg-[#F5A800] text-[#1A4D2E] border-transparent hover:bg-[#F5A800] gap-1">
+      <Badge className="bg-[#C8962F] text-[#004621] border-transparent hover:bg-[#C8962F] gap-1">
         <AlertTriangle className="w-3 h-3" /> Grille en cours
       </Badge>
     );
@@ -175,7 +175,7 @@ export default function GrilleControleAnalyste({ dossier }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h3 className="text-base font-heading font-bold text-[#1A4D2E]">
+          <h3 className="text-base font-heading font-bold text-[#004621]">
             Grille de contrôle qualité — 25 points
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -192,7 +192,7 @@ export default function GrilleControleAnalyste({ dossier }: Props) {
           <div key={bloc} className="border rounded-lg overflow-hidden">
             <div
               className="flex items-center justify-between px-4 py-2"
-              style={{ backgroundColor: '#F5A800', color: '#1A4D2E' }}
+              style={{ backgroundColor: '#C8962F', color: '#004621' }}
             >
               <span className="font-bold text-sm">
                 Bloc {bloc} — {BLOCS[bloc]}
@@ -233,8 +233,8 @@ export default function GrilleControleAnalyste({ dossier }: Props) {
                           const active = statut === s;
                           const colors = {
                             ok: active
-                              ? 'bg-[#1A4D2E] text-white border-[#1A4D2E]'
-                              : 'border-[#1A4D2E]/30 text-[#1A4D2E] hover:bg-[#1A4D2E]/10',
+                              ? 'bg-[#004621] text-white border-[#004621]'
+                              : 'border-[#004621]/30 text-[#004621] hover:bg-[#004621]/10',
                             ko: active
                               ? 'bg-destructive text-destructive-foreground border-destructive'
                               : 'border-destructive/30 text-destructive hover:bg-destructive/10',
@@ -280,7 +280,7 @@ export default function GrilleControleAnalyste({ dossier }: Props) {
       {/* Tableau de traçabilité */}
       <div className="border rounded-lg p-4 space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <h4 className="font-semibold text-sm text-[#1A4D2E]">
+          <h4 className="font-semibold text-sm text-[#004621]">
             Traçabilité des modifications apportées au rapport
           </h4>
           <Button
@@ -390,7 +390,7 @@ export default function GrilleControleAnalyste({ dossier }: Props) {
       </div>
 
       {/* Bandeau sticky */}
-      <div className="sticky bottom-2 z-10 bg-card border-2 border-[#1A4D2E]/20 rounded-lg p-4 shadow-lg space-y-3">
+      <div className="sticky bottom-2 z-10 bg-card border-2 border-[#004621]/20 rounded-lg p-4 shadow-lg space-y-3">
         <div className="flex items-center gap-3 flex-wrap">
           <Badge
             variant={nbBloquantsKO > 0 ? 'destructive' : 'outline'}
@@ -434,7 +434,7 @@ export default function GrilleControleAnalyste({ dossier }: Props) {
             type="button"
             onClick={() => handleSave('valide')}
             disabled={!rapportValide || !visaAnalyste.trim() || updateMut.isPending}
-            className="bg-[#1A4D2E] hover:bg-[#1A4D2E]/90 text-white gap-1"
+            className="bg-[#004621] hover:bg-[#004621]/90 text-white gap-1"
           >
             <ShieldCheck className="w-4 h-4" />
             Valider et transmettre

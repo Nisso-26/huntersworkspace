@@ -17,8 +17,8 @@ const STATUT_LABELS: Record<string, string> = {
   nouveau: 'Nouveau', conseil: 'En conseil', chasse: 'En chasse', visite: 'Visites',
   offre: 'Offre déposée', compromis: 'Compromis signé', signe: 'Acte signé', cloture: 'Clôturé',
 };
-const HUNTERS_GREEN = '#1A4D2E';
-const HUNTERS_GOLD = '#F5A800';
+const HUNTERS_GREEN = '#004621';
+const HUNTERS_GOLD = '#C8962F';
 
 export default function HistoriqueStatuts({ dossierId }: { dossierId: string }) {
   const [items, setItems] = useState<HistoriqueRow[]>([]);

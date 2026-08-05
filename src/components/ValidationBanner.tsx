@@ -8,8 +8,8 @@ export default function ValidationBanner({ dossierId }: { dossierId: string }) {
 
   if (validation.statut === 'en_attente') {
     return (
-      <Card className="p-4 border-l-4 border-l-[#F5A800] bg-[#F5A800]/5 flex items-start gap-3">
-        <Clock className="w-5 h-5 text-[#F5A800] mt-0.5" />
+      <Card className="p-4 border-l-4 border-l-[#C8962F] bg-[#C8962F]/5 flex items-start gap-3">
+        <Clock className="w-5 h-5 text-[#C8962F] mt-0.5" />
         <div>
           <p className="font-semibold text-foreground">En attente de validation directeur</p>
           <p className="text-sm text-muted-foreground">
@@ -34,8 +34,8 @@ export default function ValidationBanner({ dossierId }: { dossierId: string }) {
 
   if (validation.statut === 'infos_demandees') {
     return (
-      <Card className="p-4 border-l-4 border-l-[#F5A800] bg-[#F5A800]/5 flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-[#F5A800] mt-0.5" />
+      <Card className="p-4 border-l-4 border-l-[#C8962F] bg-[#C8962F]/5 flex items-start gap-3">
+        <AlertTriangle className="w-5 h-5 text-[#C8962F] mt-0.5" />
         <div>
           <p className="font-semibold text-foreground">Informations complémentaires demandées</p>
           {validation.motif && <p className="text-sm text-muted-foreground mt-1">{validation.motif}</p>}

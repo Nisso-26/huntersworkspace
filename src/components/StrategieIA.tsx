@@ -128,7 +128,7 @@ export default function StrategieIA({ dossier }: Props) {
               variant="outline"
               size="sm"
               onClick={() => setReferentielOpen(true)}
-              className="gap-2 border-[#1A4D2E] text-[#1A4D2E] hover:bg-[#1A4D2E] hover:text-white"
+              className="gap-2 border-[#004621] text-[#004621] hover:bg-[#004621] hover:text-white"
             >
               <BookOpen className="w-3.5 h-3.5" />
               Référentiel fiscal

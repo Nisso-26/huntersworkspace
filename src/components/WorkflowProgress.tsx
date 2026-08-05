@@ -17,8 +17,8 @@ interface ChecklistState {
   [stepId: number]: boolean[];
 }
 
-const HUNTERS_GREEN = '#1A4D2E';
-const HUNTERS_GOLD = '#F5A800';
+const HUNTERS_GREEN = '#004621';
+const HUNTERS_GOLD = '#C8962F';
 
 export default function WorkflowProgress({ dossier }: Props) {
   const steps = useMemo(() => getWorkflowSteps(dossier), [dossier]);

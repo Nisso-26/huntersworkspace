@@ -246,7 +246,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
     <div className="space-y-6">
       {/* Variables */}
       <section className="space-y-3">
-        <h3 className="text-sm font-semibold text-[#1A4D2E]">Variables du dossier</h3>
+        <h3 className="text-sm font-semibold text-[#004621]">Variables du dossier</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Object.keys(baseVariables).map((k) => {
             const empty = !variables[k];
@@ -276,7 +276,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
           const raw = textOverrides[section.id] ?? section.contenu ?? '';
           return (
             <section key={section.id} className="space-y-2">
-              <h3 className="text-sm font-semibold text-[#1A4D2E]">{section.titre}</h3>
+              <h3 className="text-sm font-semibold text-[#004621]">{section.titre}</h3>
               <Textarea
                 rows={6}
                 value={raw}
@@ -293,7 +293,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
           const values = financierValues[section.id] || {};
           return (
             <section key={section.id} className="space-y-2">
-              <h3 className="text-sm font-semibold text-[#1A4D2E]">{section.titre}</h3>
+              <h3 className="text-sm font-semibold text-[#004621]">{section.titre}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {(section.champs || []).map((c) => {
                   const v = values[c.key] ?? 0;
@@ -337,13 +337,13 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
           const active = Object.keys(services).filter((k) => services[k]);
           return (
             <section key={section.id} className="space-y-2">
-              <h3 className="text-sm font-semibold text-[#1A4D2E]">{section.titre}</h3>
+              <h3 className="text-sm font-semibold text-[#004621]">{section.titre}</h3>
               <div className="flex flex-wrap gap-2">
                 {active.length === 0 ? (
                   <span className="text-xs italic text-muted-foreground">Aucun service souscrit</span>
                 ) : (
                   active.map((k) => (
-                    <Badge key={k} className="bg-[#E8F2EC] text-[#1A4D2E] border border-[#1A4D2E]/20">
+                    <Badge key={k} className="bg-[#E8F2EC] text-[#004621] border border-[#004621]/20">
                       {SERVICE_LABELS[k] || k}
                     </Badge>
                   ))
@@ -355,7 +355,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
         if (section.type === 'signatures') {
           return (
             <section key={section.id} className="space-y-2">
-              <h3 className="text-sm font-semibold text-[#1A4D2E]">{section.titre}</h3>
+              <h3 className="text-sm font-semibold text-[#004621]">{section.titre}</h3>
               <p className="text-xs text-muted-foreground">
                 Les blocs de signature seront ajoutés automatiquement à la fin du PDF.
               </p>
@@ -370,13 +370,13 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
   // ---------- Aperçu ----------
   const renderPreview = () => (
     <div className="space-y-4 text-sm">
-      <div className="border-b-2 border-[#F5A800] pb-2">
+      <div className="border-b-2 border-[#C8962F] pb-2">
         <p className="text-xs text-muted-foreground">
           {company?.adresse_siege || '45 Rue Michel Colombe, 37000 Tours'} ·{' '}
           {company?.telephone || '+33 2 59 16 03 37'} ·{' '}
           {company?.email_contact || 'hunters@huntersimmobilier.fr'}
         </p>
-        <h2 className="text-xl font-bold text-[#1A4D2E] mt-2">{modele.titre}</h2>
+        <h2 className="text-xl font-bold text-[#004621] mt-2">{modele.titre}</h2>
         {dossier.numero_dossier && (
           <p className="text-xs text-muted-foreground">Réf. {dossier.numero_dossier}</p>
         )}
@@ -393,7 +393,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
           const raw = textOverrides[section.id] ?? section.contenu ?? '';
           return (
             <div key={section.id}>
-              <h3 className="text-xs font-bold text-[#1A4D2E] uppercase tracking-wider mb-1">
+              <h3 className="text-xs font-bold text-[#004621] uppercase tracking-wider mb-1">
                 {section.titre}
               </h3>
               <p className="text-xs whitespace-pre-wrap text-[#2C2C2C]">
@@ -406,7 +406,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
           const values = financierValues[section.id] || {};
           return (
             <div key={section.id}>
-              <h3 className="text-xs font-bold text-[#1A4D2E] uppercase tracking-wider mb-1">
+              <h3 className="text-xs font-bold text-[#004621] uppercase tracking-wider mb-1">
                 {section.titre}
               </h3>
               <table className="w-full text-xs border">
@@ -435,7 +435,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
           const active = Object.keys(services).filter((k) => services[k]);
           return (
             <div key={section.id}>
-              <h3 className="text-xs font-bold text-[#1A4D2E] uppercase tracking-wider mb-1">
+              <h3 className="text-xs font-bold text-[#004621] uppercase tracking-wider mb-1">
                 {section.titre}
               </h3>
               <ul className="text-xs list-disc pl-5">
@@ -456,7 +456,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
     if (!pdfPreview) {
       return (
         <div className="flex flex-col items-center justify-center h-full text-center gap-3 p-6">
-          <FileSearch className="w-10 h-10 text-[#1A4D2E]/60" />
+          <FileSearch className="w-10 h-10 text-[#004621]/60" />
           <p className="text-sm text-muted-foreground max-w-sm">
             Génère un rendu PDF réel pour vérifier la mise en page, et valider que la couverture
             occupe bien une page seule.
@@ -464,7 +464,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
           <Button
             onClick={handleGeneratePreview}
             disabled={generatingPreview}
-            className="bg-[#1A4D2E] hover:bg-[#1A4D2E]/90 text-white"
+            className="bg-[#004621] hover:bg-[#004621]/90 text-white"
           >
             <FileSearch className="w-4 h-4 mr-1" />
             {generatingPreview ? 'Génération…' : "Générer l'aperçu PDF"}
@@ -517,7 +517,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
           <div className="flex flex-col border rounded-md overflow-hidden bg-white">
-            <div className="px-3 py-1.5 text-xs font-semibold bg-[#1A4D2E] text-white">
+            <div className="px-3 py-1.5 text-xs font-semibold bg-[#004621] text-white">
               {hasCover ? 'Page 1 — Couverture' : 'Page 1'}
             </div>
             <iframe
@@ -528,7 +528,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
             />
           </div>
           <div className="flex flex-col border rounded-md overflow-hidden bg-white">
-            <div className="px-3 py-1.5 text-xs font-semibold bg-[#F5A800] text-[#2C2C2C]">
+            <div className="px-3 py-1.5 text-xs font-semibold bg-[#C8962F] text-[#2C2C2C]">
               {pages >= 2 ? `Pages 2 → ${pages} — Contenu` : 'Aucune page de contenu'}
             </div>
             {pages >= 2 ? (
@@ -553,7 +553,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] sm:max-w-6xl h-[90vh] flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-3 border-b">
-          <DialogTitle className="flex items-center gap-2 text-[#1A4D2E]">
+          <DialogTitle className="flex items-center gap-2 text-[#004621]">
             <FileText className="w-5 h-5" />
             {modele.titre}
           </DialogTitle>
@@ -614,7 +614,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
           <Button
             onClick={handleExport}
             disabled={saving}
-            className="bg-[#F5A800] hover:bg-[#F5A800]/90 text-[#2C2C2C] font-semibold"
+            className="bg-[#C8962F] hover:bg-[#C8962F]/90 text-[#2C2C2C] font-semibold"
           >
             <Download className="w-4 h-4 mr-1" />
             {saving ? 'Génération…' : 'Exporter en PDF'}

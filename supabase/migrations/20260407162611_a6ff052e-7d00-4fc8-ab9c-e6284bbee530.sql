@@ -22,7 +22,7 @@ CREATE TABLE public.company_settings (
   delai_suspension_jours integer DEFAULT 5,
   -- Section 4: Documents
   logo_url text,
-  couleur_primaire text DEFAULT '#1A4D2E',
+  couleur_primaire text DEFAULT '#004621',
   couleur_secondaire text DEFAULT '#D4A017',
   clause_mediation text DEFAULT '',
   clause_rgpd text DEFAULT '',

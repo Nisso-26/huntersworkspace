@@ -98,7 +98,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
   const [step, setStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
-  const [zonePrioritaire, setZonePrioritaire] = useState<number | null>(null);
+  const [zones, setZones] = useState<ZoneAffectee[]>([]);
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const debounceRef = useRef<number | null>(null);

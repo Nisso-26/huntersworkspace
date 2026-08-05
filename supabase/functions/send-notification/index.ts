@@ -7,14 +7,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// TODO: rebasculer sur "Hunters Workspace <noreply@workspace.huntersimmobilier.fr>" une fois le domaine vérifié dans Resend.
 const FROM = "Hunters Workspace <noreply@workspace.huntersimmobilier.fr>";
-const HUNTERS_GREEN = "#1A4D2E";
-const HUNTERS_GOLD = "#F5A800";
+// Charte HUNTERS V2.0
+const HUNTERS_GREEN = "#004621";
+const HUNTERS_GOLD = "#C8962F";
+// Marcellus n'est pas supporté par les clients mail : fallback serif (Georgia).
+const FONT_HEADING = "Georgia, 'Times New Roman', Times, serif";
 
 function wrap(subject: string, innerHtml: string, numeroDossier?: string | null): string {
   const refChip = numeroDossier
-    ? `<div style="display:inline-block;background:${HUNTERS_GOLD};color:#1A4D2E;font-weight:700;font-size:11px;padding:3px 10px;border-radius:2px;margin-top:6px;letter-spacing:0.5px;">RÉF. ${numeroDossier}</div>`
+    ? `<div style="display:inline-block;background:${HUNTERS_GOLD};color:#004621;font-weight:700;font-size:11px;padding:3px 10px;border-radius:2px;margin-top:6px;letter-spacing:0.5px;">RÉF. ${numeroDossier}</div>`
     : '';
   return `<!doctype html><html><head><meta charset="utf-8"><title>${subject}</title></head>
 <body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;color:#2C2C2C;">
@@ -22,7 +24,7 @@ function wrap(subject: string, innerHtml: string, numeroDossier?: string | null)
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:2px;overflow:hidden;max-width:600px;width:100%;">
         <tr><td style="background:${HUNTERS_GREEN};padding:20px 24px;">
-          <div style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:1px;">HUNTERS<span style="color:${HUNTERS_GOLD};">·</span>IMMOBILIER</div>
+          <div style="font-family:${FONT_HEADING};color:#ffffff;font-size:22px;font-weight:400;letter-spacing:2px;">HUNTERS<span style="color:${HUNTERS_GOLD};">·</span>IMMOBILIER</div>
           ${refChip}
         </td></tr>
         <tr><td style="padding:28px 24px;font-size:15px;line-height:1.6;color:#2C2C2C;">

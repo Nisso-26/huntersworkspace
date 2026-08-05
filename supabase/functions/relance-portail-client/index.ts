@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
 
       const numero = (dossier as any).numero_dossier || '';
       const refLabel = numero ? ` (réf. ${numero})` : '';
-      const html = `<h2 style="color:#1A4D2E;margin:0 0 16px;">Portail client non consulté</h2>
+      const html = `<h2 style="color:#004621;margin:0 0 16px;">Portail client non consulté</h2>
         <p>Bonjour ${profile.full_name || ''},</p>
         <p>Le portail client de <strong>${dossier.client_name}</strong>${refLabel} n'a pas été consulté depuis 5 jours.</p>
         <p>Pensez à relancer votre client pour l'inviter à suivre l'avancement de son dossier.</p>`;

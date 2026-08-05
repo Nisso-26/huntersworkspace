@@ -260,7 +260,7 @@ Deno.serve(async (req) => {
           body: {
             to: profile.email,
             subject: `Dossier inactif : ${d.client_name}`,
-            body: `<h2 style="color:#1A4D2E;margin:0 0 16px;">Dossier inactif</h2>
+            body: `<h2 style="color:#004621;margin:0 0 16px;">Dossier inactif</h2>
               <p>Bonjour ${profile.full_name || ''},</p>
               <p>Le dossier <strong>${d.client_name}</strong> n'a pas été mis à jour depuis 30 jours.</p>
               <p>Pensez à le relancer ou à mettre à jour son statut depuis votre espace Hunters.</p>`,

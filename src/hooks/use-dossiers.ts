@@ -82,7 +82,7 @@ async function notifyAssignment(mandataireId: string, clientName: string, numero
         to: profile.email,
         subject: `Nouveau dossier assigné : ${clientName}${numeroDossier ? ` (${numeroDossier})` : ''}`,
         numero_dossier: numeroDossier || null,
-        body: `<h2 style="color:#1A4D2E;margin:0 0 16px;">Nouveau dossier assigné</h2>
+        body: `<h2 style="color:#004621;margin:0 0 16px;">Nouveau dossier assigné</h2>
           ${refLine}
           <p>Bonjour ${profile.full_name || ''},</p>
           <p>Un nouveau dossier vous a été assigné : <strong>${clientName}</strong>${numeroDossier ? ` — réf. <strong>${numeroDossier}</strong>` : ''}.</p>

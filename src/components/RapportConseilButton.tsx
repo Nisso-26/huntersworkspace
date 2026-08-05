@@ -718,8 +718,8 @@ export default function RapportConseilButton({ dossier }: Props) {
                   <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="Rendement brut (%)"      fill="#1A4D2E" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="Cash-flow net (€/mois)"  fill="#F5A800" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Rendement brut (%)"      fill="#004621" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Cash-flow net (€/mois)"  fill="#C8962F" radius={[3, 3, 0, 0]} />
                   <Bar dataKey="Effort épargne (€/mois)" fill="#9ca3af" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -734,7 +734,7 @@ export default function RapportConseilButton({ dossier }: Props) {
                   <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Line type="monotone" dataKey="Cash-flow cumulé (€)" stroke="#1A4D2E" strokeWidth={2.5} dot={{ fill: '#F5A800', r: 5, strokeWidth: 2, stroke: '#1A4D2E' }} />
+                  <Line type="monotone" dataKey="Cash-flow cumulé (€)" stroke="#004621" strokeWidth={2.5} dot={{ fill: '#C8962F', r: 5, strokeWidth: 2, stroke: '#004621' }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>

@@ -75,7 +75,7 @@ export default function ValidationsEnAttente() {
                       {v.numero_dossier && (
                         <span className="text-xs font-mono bg-secondary px-2 py-0.5 rounded">{v.numero_dossier}</span>
                       )}
-                      <Badge className="bg-[#F5A800] text-primary hover:bg-[#F5A800]">{v.niveau_qualification || 'Expert'}</Badge>
+                      <Badge className="bg-[#C8962F] text-primary hover:bg-[#C8962F]">{v.niveau_qualification || 'Expert'}</Badge>
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                       <span>Score : <strong className="text-foreground">{score}</strong></span>
@@ -95,7 +95,7 @@ export default function ValidationsEnAttente() {
                     <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10" onClick={() => openMotif(v, 'refuse')}>
                       <X className="w-3.5 h-3.5 mr-1.5" />Refuser
                     </Button>
-                    <Button size="sm" className="bg-[#1A4D2E] hover:bg-[#1A4D2E]/90" onClick={() => onValidate(v)} disabled={decideMut.isPending}>
+                    <Button size="sm" className="bg-[#004621] hover:bg-[#004621]/90" onClick={() => onValidate(v)} disabled={decideMut.isPending}>
                       <Check className="w-3.5 h-3.5 mr-1.5" />Valider
                     </Button>
                   </div>
@@ -138,7 +138,7 @@ export default function ValidationsEnAttente() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-[#F5A800]" />
+              <AlertTriangle className="w-4 h-4 text-[#C8962F]" />
               {active ? ACTION_LABEL[active.action] : ''} — {active?.v.client_name}
             </DialogTitle>
           </DialogHeader>

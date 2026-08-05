@@ -12,14 +12,14 @@ import { toast } from 'sonner';
 
 const formationBadge = (s: string) => {
   if (s === 'conforme') return <Badge className="bg-hunters-success/15 text-hunters-success hover:bg-hunters-success/15"><CheckCircle2 className="w-3 h-3 mr-1" />Conforme</Badge>;
-  if (s === 'en_cours') return <Badge className="bg-[#F5A800]/15 text-[#F5A800] hover:bg-[#F5A800]/15"><AlertTriangle className="w-3 h-3 mr-1" />En cours</Badge>;
+  if (s === 'en_cours') return <Badge className="bg-[#C8962F]/15 text-[#C8962F] hover:bg-[#C8962F]/15"><AlertTriangle className="w-3 h-3 mr-1" />En cours</Badge>;
   return <Badge variant="destructive">Non conforme</Badge>;
 };
 const attestBadge = (s: string, fin: string | null) => {
   if (s === 'valide') return <Badge className="bg-hunters-success/15 text-hunters-success hover:bg-hunters-success/15">Valide</Badge>;
   if (s === 'expirante') {
     const j = fin ? Math.max(0, Math.ceil((new Date(fin).getTime() - Date.now()) / 86400000)) : 0;
-    return <Badge className="bg-[#F5A800]/15 text-[#F5A800] hover:bg-[#F5A800]/15">Expire dans {j}j</Badge>;
+    return <Badge className="bg-[#C8962F]/15 text-[#C8962F] hover:bg-[#C8962F]/15">Expire dans {j}j</Badge>;
   }
   if (s === 'expiree') return <Badge variant="destructive">Expirée</Badge>;
   return <Badge variant="outline">Inactive</Badge>;
@@ -122,7 +122,7 @@ export default function ConformiteTab({ mandataireId, readonly = false }: Props)
       <Card className="p-5 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <GraduationCap className="w-5 h-5 text-[#1A4D2E]" />
+            <GraduationCap className="w-5 h-5 text-[#004621]" />
             <h3 className="font-heading font-semibold">Formation ALUR — {annee}</h3>
           </div>
           {formationBadge(c?.statut_formation || 'non_conforme')}
@@ -190,7 +190,7 @@ export default function ConformiteTab({ mandataireId, readonly = false }: Props)
       <Card className="p-5 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-[#1A4D2E]" />
+            <ShieldCheck className="w-5 h-5 text-[#004621]" />
             <h3 className="font-heading font-semibold">Attestation d'habilitation</h3>
           </div>
           {attestBadge(c?.statut_attestation || 'inactive', c?.attestation_fin || null)}

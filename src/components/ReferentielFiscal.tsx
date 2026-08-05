@@ -34,9 +34,9 @@ const sectionConfig: Record<
 > = {
   info: { container: 'bg-white border-l-4 border-gray-200' },
   avantage: {
-    container: 'bg-[#E8F0EB] border-l-4 border-[#1A4D2E]',
+    container: 'bg-[#E8F0EB] border-l-4 border-[#004621]',
     Icon: CheckCircle,
-    iconColor: 'text-[#1A4D2E]',
+    iconColor: 'text-[#004621]',
   },
   danger: {
     container: 'bg-[#FDECEA] border-l-4 border-red-400',
@@ -44,9 +44,9 @@ const sectionConfig: Record<
     iconColor: 'text-red-500',
   },
   profil: {
-    container: 'bg-[#FEF6E4] border-l-4 border-[#F5A800]',
+    container: 'bg-[#FEF6E4] border-l-4 border-[#C8962F]',
     Icon: User,
-    iconColor: 'text-[#F5A800]',
+    iconColor: 'text-[#C8962F]',
   },
   exemple: {
     container: 'bg-gray-50 border border-gray-200 rounded',
@@ -54,7 +54,7 @@ const sectionConfig: Record<
     iconColor: 'text-gray-600',
   },
   formule: {
-    container: 'bg-[#1A4D2E] rounded',
+    container: 'bg-[#004621] rounded',
     textColor: 'text-white',
     italic: true,
   },
@@ -139,7 +139,7 @@ function FicheView({ fiche, search }: { fiche: FicheDispositif; search: string }
 
   return (
     <div>
-      <h3 className="text-base font-bold text-[#1A4D2E] mb-3">{fiche.nom}</h3>
+      <h3 className="text-base font-bold text-[#004621] mb-3">{fiche.nom}</h3>
       {filtered.length === 0 ? (
         <p className="text-sm text-muted-foreground italic">Aucun résultat dans cette fiche.</p>
       ) : (
@@ -162,9 +162,9 @@ function ComparatifView({ search }: { search: string }) {
     <div className="overflow-x-auto">
       <table className="w-full text-xs border-collapse">
         <thead>
-          <tr className="bg-[#1A4D2E] text-white">
+          <tr className="bg-[#004621] text-white">
             {['Critère', 'LMNP', 'SCI IR', 'SCI IS', 'Nu-propriété', 'Déficit foncier'].map((h) => (
-              <th key={h} className="text-left p-2 font-semibold border border-[#1A4D2E]">
+              <th key={h} className="text-left p-2 font-semibold border border-[#004621]">
                 {h}
               </th>
             ))}
@@ -216,7 +216,7 @@ function ArbreView({ search }: { search: string }) {
       {nodes.map((n) => (
         <div key={n.id} className="border rounded-lg p-4 bg-white">
           <div className="flex items-start gap-2 mb-3">
-            <Badge className="bg-[#1A4D2E] hover:bg-[#1A4D2E] text-white shrink-0">{n.id}</Badge>
+            <Badge className="bg-[#004621] hover:bg-[#004621] text-white shrink-0">{n.id}</Badge>
             <p className="text-sm font-bold text-gray-800">{n.question}</p>
           </div>
           <div className="space-y-2 pl-2">
@@ -253,7 +253,7 @@ export default function ReferentielFiscal({ open, onOpenChange }: Props) {
   const CountBadge = ({ id }: { id: string }) => {
     if (!counts || !counts[id]) return null;
     return (
-      <Badge className="ml-1 bg-[#F5A800] hover:bg-[#F5A800] text-white text-[10px] h-4 px-1.5">
+      <Badge className="ml-1 bg-[#C8962F] hover:bg-[#C8962F] text-white text-[10px] h-4 px-1.5">
         {counts[id]}
       </Badge>
     );
@@ -266,7 +266,7 @@ export default function ReferentielFiscal({ open, onOpenChange }: Props) {
         className="w-full sm:max-w-[720px] p-0 flex flex-col"
       >
         <SheetHeader className="px-6 pt-6 pb-3 border-b shrink-0">
-          <SheetTitle className="flex items-center gap-2 text-[#1A4D2E]">
+          <SheetTitle className="flex items-center gap-2 text-[#004621]">
             <BookOpen className="h-5 w-5" />
             Référentiel fiscal
           </SheetTitle>

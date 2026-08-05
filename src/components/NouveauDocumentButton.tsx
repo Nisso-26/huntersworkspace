@@ -122,7 +122,7 @@ export default function NouveauDocumentButton({
     <>
       <Button
         onClick={() => setOpen(true)}
-        className="bg-[#1A4D2E] hover:bg-[#1A4D2E]/90 text-white gap-2"
+        className="bg-[#004621] hover:bg-[#004621]/90 text-white gap-2"
       >
         <FilePlus className="w-4 h-4" />
         Nouveau document
@@ -168,7 +168,7 @@ export default function NouveauDocumentButton({
                   cats.map((cat) => (
                     <div key={cat} className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#1A4D2E]">
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#004621]">
                           {cat}
                         </span>
                         <div className="flex-1 h-px bg-border" />
@@ -188,7 +188,7 @@ export default function NouveauDocumentButton({
                                   setSelected(m);
                                   setOpen(false);
                                 }}
-                                className="w-full text-left flex items-start gap-3 p-3 rounded-md border hover:border-[#1A4D2E] hover:bg-[#E8F2EC] transition"
+                                className="w-full text-left flex items-start gap-3 p-3 rounded-md border hover:border-[#004621] hover:bg-[#E8F2EC] transition"
                               >
                                 <span className="text-2xl leading-none mt-0.5 shrink-0" aria-hidden>
                                   {icon}
@@ -199,7 +199,7 @@ export default function NouveauDocumentButton({
                                       {m.titre}
                                     </p>
                                     {count > 0 && (
-                                      <span className="text-[10px] text-[#1A4D2E] bg-[#E8F2EC] px-1.5 py-0.5 rounded shrink-0">
+                                      <span className="text-[10px] text-[#004621] bg-[#E8F2EC] px-1.5 py-0.5 rounded shrink-0">
                                         {count} utilisé{count > 1 ? 's' : ''}
                                       </span>
                                     )}

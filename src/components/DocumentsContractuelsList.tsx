@@ -68,7 +68,7 @@ export default function DocumentsContractuelsList({ dossier }: { dossier: Dossie
   return (
     <div className="space-y-3 border-t pt-4 mt-4">
       <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-        <FileText className="w-4 h-4 text-[#1A4D2E]" />
+        <FileText className="w-4 h-4 text-[#004621]" />
         Documents contractuels ({items.length})
       </h4>
 
@@ -85,7 +85,7 @@ export default function DocumentsContractuelsList({ dossier }: { dossier: Dossie
               key={d.id}
               className="flex flex-wrap items-center gap-2 px-2.5 py-2 rounded-md bg-secondary/50"
             >
-              <FileText className="w-4 h-4 text-[#1A4D2E]" />
+              <FileText className="w-4 h-4 text-[#004621]" />
               <span className="text-xs font-medium text-foreground flex-1 min-w-0">
                 {d.titre || 'Document'}
               </span>
@@ -106,8 +106,8 @@ export default function DocumentsContractuelsList({ dossier }: { dossier: Dossie
               <Badge
                 className={
                   d.statut === 'envoye'
-                    ? 'bg-[#1A4D2E] text-white'
-                    : 'bg-[#E8F2EC] text-[#1A4D2E] border border-[#1A4D2E]/20'
+                    ? 'bg-[#004621] text-white'
+                    : 'bg-[#E8F2EC] text-[#004621] border border-[#004621]/20'
                 }
               >
                 {d.statut === 'envoye' ? 'Envoyé' : 'Généré'}

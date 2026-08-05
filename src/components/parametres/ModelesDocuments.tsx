@@ -190,8 +190,8 @@ export default function ModelesDocuments() {
           <div className="space-y-2">
             <Label>Couleur primaire</Label>
             <div className="flex items-center gap-2">
-              <input type="color" value={form.couleur_primaire || '#1A4D2E'} onChange={e => set('couleur_primaire', e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
-              <Input value={form.couleur_primaire || '#1A4D2E'} onChange={e => set('couleur_primaire', e.target.value)} className="w-32" />
+              <input type="color" value={form.couleur_primaire || '#004621'} onChange={e => set('couleur_primaire', e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
+              <Input value={form.couleur_primaire || '#004621'} onChange={e => set('couleur_primaire', e.target.value)} className="w-32" />
             </div>
           </div>
           <div className="space-y-2">

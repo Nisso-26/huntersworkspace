@@ -382,11 +382,11 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
         <div className="rounded-md bg-muted/40 p-3 space-y-1 text-sm">
           <div className="flex justify-between"><span>Sous-total HT</span><span>{fmtPdfEur(sousTotal)}</span></div>
           {packActif && (
-            <div className="flex justify-between text-[#1A4D2E]"><span>Remise pack -10%</span><span>- {fmtPdfEur(remisePack)}</span></div>
+            <div className="flex justify-between text-[#004621]"><span>Remise pack -10%</span><span>- {fmtPdfEur(remisePack)}</span></div>
           )}
           <div className="flex justify-between"><span>Total HT</span><span>{fmtPdfEur(totalHT)}</span></div>
           <div className="flex justify-between text-muted-foreground"><span>TVA 20%</span><span>{fmtPdfEur(tva)}</span></div>
-          <div className="flex justify-between font-bold text-base border-t pt-1"><span>Total TTC</span><span className="text-[#1A4D2E]">{fmtPdfEur(totalTTC)}</span></div>
+          <div className="flex justify-between font-bold text-base border-t pt-1"><span>Total TTC</span><span className="text-[#004621]">{fmtPdfEur(totalTTC)}</span></div>
         </div>
 
         <div className="flex flex-wrap gap-2 justify-end pt-2">
@@ -394,7 +394,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
           <Button variant="outline" onClick={() => handleSave('brouillon')} disabled={saveMut.isPending}>
             <Save className="w-4 h-4 mr-2" />Enregistrer
           </Button>
-          <Button onClick={() => handleSave('envoye')} disabled={saveMut.isPending} className="bg-[#1A4D2E] hover:bg-[#1A4D2E]/90">
+          <Button onClick={() => handleSave('envoye')} disabled={saveMut.isPending} className="bg-[#004621] hover:bg-[#004621]/90">
             <Send className="w-4 h-4 mr-2" />Envoyer au client
           </Button>
         </div>
@@ -402,7 +402,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
 
       <Card className="p-6 space-y-3">
         <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-[#F5A800]" />
+          <FileText className="w-4 h-4 text-[#C8962F]" />
           <h3 className="font-heading font-semibold">Historique des devis</h3>
         </div>
         {historique.length === 0 ? (

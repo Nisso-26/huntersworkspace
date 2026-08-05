@@ -29,8 +29,8 @@ const TYPES: { value: ActiviteType; label: string; icon: React.ComponentType<{ c
   { value: 'note', label: 'Note', icon: StickyNote },
 ];
 
-const HUNTERS_GREEN = '#1A4D2E';
-const HUNTERS_GOLD = '#F5A800';
+const HUNTERS_GREEN = '#004621';
+const HUNTERS_GOLD = '#C8962F';
 
 export default function JournalActivite({ dossierId }: { dossierId: string }) {
   const { user } = useAuth();

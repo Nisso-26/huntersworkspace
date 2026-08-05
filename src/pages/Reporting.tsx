@@ -20,8 +20,8 @@ const fmtEur = (n: number) =>
 const SERVICE_CATEGORIES = ['Conseil', 'Chasse', 'AMO', 'Déco', 'Clé en main'] as const;
 type ServiceCategory = typeof SERVICE_CATEGORIES[number];
 const HUNTERS_COLORS: Record<ServiceCategory, string> = {
-  'Conseil': '#1A4D2E',
-  'Chasse': '#F5A800',
+  'Conseil': '#004621',
+  'Chasse': '#C8962F',
   'AMO': '#2A6B40',
   'Déco': '#FFC94D',
   'Clé en main': '#E8F2EC',

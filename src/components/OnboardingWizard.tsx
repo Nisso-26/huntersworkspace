@@ -135,7 +135,6 @@ export default function OnboardingWizard({ onComplete }: Props) {
         next.siret = (profile as any).siret || '';
       }
 
-      }
       if (progress?.data && typeof progress.data === 'object') {
         Object.assign(next, progress.data as Partial<FormData>);
       }

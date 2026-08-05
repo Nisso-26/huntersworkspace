@@ -255,17 +255,25 @@ export default function Pipeline() {
               .single();
 
             const niveau = (profile as any)?.niveau ?? 'N1';
-            const taux = commissionRateForLevel(niveau);
-            const montantCommission = computeCommission(dossier.honoraires || 0, taux);
 
-            await supabase.from('commissions').insert({
-              mandataire_id: dossier.mandataire_id,
-              dossier_id: dossier.id,
-              type: 'commission',
-              taux,
-              montant: montantCommission,
-              statut: 'due',
-            } as any);
+            // Commission calculée service par service (taux réels company_settings)
+            let lignes = servicesMontants(dossier, baremes);
+            if (lignes.length === 0) {
+              // Aucun service chiffrable : repli sur les honoraires globaux (taux conseil)
+              lignes = [{ service: 'conseil', montant_ht: Number(dossier.honoraires) || 0 }];
+            }
+            const commissions = computeCommissionsParService(lignes, company as any, niveau);
+
+            for (const c of commissions) {
+              await supabase.from('commissions').insert({
+                mandataire_id: dossier.mandataire_id,
+                dossier_id: dossier.id,
+                type: 'commission',
+                taux: c.taux,
+                montant: c.montant,
+                statut: 'due',
+              } as any);
+            }
 
             const parrainId = (profile as any)?.parrain_id;
             if (parrainId) {
@@ -280,6 +288,7 @@ export default function Pipeline() {
               } as any);
             }
           }
+
 
           qc.invalidateQueries({ queryKey: ['factures'] });
           qc.invalidateQueries({ queryKey: ['commissions'] });

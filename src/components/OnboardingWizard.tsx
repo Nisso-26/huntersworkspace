@@ -220,11 +220,12 @@ export default function OnboardingWizard({ onComplete }: Props) {
         return ibanOk && siretOk && form.accept_pack;
       }
       case 5:
-        return Boolean(zonePrioritaire) && form.accept_zone && form.accept_prescripteurs && form.accept_objectifs && form.accept_encaissement;
+        return zones.length > 0 && form.accept_zone && form.accept_prescripteurs && form.accept_objectifs && form.accept_encaissement;
       default:
         return false;
     }
-  }, [step, form, zonePrioritaire]);
+  }, [step, form, zones]);
+
 
   const goNext = async () => {
     if (!canAdvance) return;

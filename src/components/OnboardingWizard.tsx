@@ -133,8 +133,8 @@ export default function OnboardingWizard({ onComplete }: Props) {
         next.rsac_justificatif = (profile as any).rsac_justificatif || '';
         next.iban = (profile as any).iban || '';
         next.siret = (profile as any).siret || '';
-        const z = Number((profile as any).zone_prioritaire);
-        if (!Number.isNaN(z) && z >= 1 && z <= 5) setZonePrioritaire(z);
+      }
+
       }
       if (progress?.data && typeof progress.data === 'object') {
         Object.assign(next, progress.data as Partial<FormData>);

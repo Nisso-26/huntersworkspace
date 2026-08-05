@@ -2278,6 +2278,21 @@ export type Database = {
         Returns: boolean
       }
       get_dossier_for_portal: { Args: { _dossier_id: string }; Returns: Json }
+      get_evenements_reseau: {
+        Args: never
+        Returns: {
+          created_at: string
+          date_debut: string
+          date_fin: string
+          id: string
+          is_reseau: boolean
+          lieu: string
+          mandataire_id: string
+          titre: string
+          type: string
+          updated_at: string
+        }[]
+      }
       get_mandataires_annuaire: {
         Args: never
         Returns: {

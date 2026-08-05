@@ -29,24 +29,24 @@ const DOCS: Doc[] = [
   // Documents clients
   {
     id: 'mandat_chasse', cat: 'client', name: 'Mandat de Recherche — Chasse Immobilière',
-    ref: 'Mandat_Recherche_Hunters_2026.docx', file: 'Mandat_Recherche_Hunters_2026.docx', type: 'docx',
+    ref: 'MANDAT_DE_RECHERCHE_EXCLUSIF.docx', file: 'MANDAT_DE_RECHERCHE_EXCLUSIF.docx', type: 'docx',
     tags: ['legal'], desc: 'Mandat exclusif conforme loi Hoguet. Clause de protection des honoraires, durée 90 jours renouvelable.',
     details: 'Contient : identification parties, mission détaillée, critères de recherche (CDC), honoraires TTC, clauses de résiliation, mentions légales obligatoires (Hoguet + RGPD). Validé par juriste.',
-    usage: 'Remis et signé au 1er rendez-vous conseil — obligatoire avant toute action de chasse', pages: '3 pages', version: 'v2.0 — 2026', size: '42 Ko',
+    usage: 'Remis et signé au 1er rendez-vous conseil — obligatoire avant toute action de chasse', pages: '3 pages', version: 'v1.0 — 2026', size: '24 Ko',
   },
   {
     id: 'cdc_client', cat: 'client', name: 'Cahier des Charges Client',
-    ref: 'CDC_Client_Hunters_2026.docx', file: 'CDC_Client_Hunters_2026.docx', type: 'docx',
+    ref: 'CAHIER_DES_CHARGES_HUNTERS_.docx', file: 'CAHIER_DES_CHARGES_HUNTERS_.docx', type: 'docx',
     tags: ['terrain'], desc: 'Recueil structuré des critères d\'investissement. Méthode MoSCoW intégrée pour prioriser les exigences.',
     details: 'Sections : profil investisseur, capacité financière, objectifs patrimoniaux, critères bien (Must/Should/Could/Won\'t), contraintes géographiques, horizon de détention.',
-    usage: 'Complété lors du 1er entretien conseil — base de la mission de chasse', pages: '4 pages', version: 'v1.0 — 2026', size: '38 Ko',
+    usage: 'Complété lors du 1er entretien conseil — base de la mission de chasse', pages: '4 pages', version: 'v1.0 — 2026', size: '19 Ko',
   },
   {
     id: 'rapport_visite', cat: 'client', name: 'Rapport de Visite',
-    ref: 'Rapport_Visite_Hunters_2026.docx', file: 'Rapport_Visite_Hunters_2026.docx', type: 'docx',
+    ref: 'RAPPORT_DE_VISITE_HUNTERS.docx', file: 'RAPPORT_DE_VISITE_HUNTERS.docx', type: 'docx',
     tags: ['terrain'], desc: 'Compte rendu détaillé post-visite avec analyse comparative et recommandation. Remis sous 24h.',
     details: 'Contient : fiche bien (adresse, surface, DPE), photos commentées, grille notation 5 critères, analyse conformité CDC, estimation travaux, avis conseiller, décision recommandée.',
-    usage: 'Envoyé au client dans les 24h après chaque visite', pages: '5 pages', version: 'v1.0 — 2026', size: '45 Ko',
+    usage: 'Envoyé au client dans les 24h après chaque visite', pages: '5 pages', version: 'v1.0 — 2026', size: '18 Ko',
   },
   {
     id: 'lettre_mission', cat: 'client', name: 'Lettre de Mission — Suivi Travaux',
@@ -57,19 +57,40 @@ const DOCS: Doc[] = [
   },
   {
     id: 'cr_conseil', cat: 'client', name: 'Compte Rendu de Conseil',
-    ref: 'CR_Conseil_Hunters_2026.docx', file: 'CR_Conseil_Hunters_2026.docx', type: 'docx',
+    ref: 'MODELE_DE_PROPOSITION_COMMERCIALE.docx', file: 'MODELE_DE_PROPOSITION_COMMERCIALE.docx', type: 'docx',
     tags: ['legal', 'terrain'], desc: 'Synthèse du rendez-vous conseil avec stratégie recommandée, budget validé et prochaines étapes.',
     details: 'Sections : rappel profil, stratégie retenue, simulation financière simplifiée, zones ciblées, budget validé, prochaines étapes, signature client.',
-    usage: 'Remis au client à la fin du rendez-vous conseil — trace écrite de la recommandation', pages: '3 pages', version: 'v1.0 — 2026', size: '35 Ko',
+    usage: 'Remis au client à la fin du rendez-vous conseil — trace écrite de la recommandation', pages: '3 pages', version: 'v1.0 — 2026', size: '16 Ko',
+  },
+  {
+    id: 'convention_cadre', cat: 'client', name: 'Convention de Mission Cadre',
+    ref: 'CONVENTION_CADRE_HUNTERS.docx', file: 'CONVENTION_CADRE_HUNTERS.docx', type: 'docx',
+    tags: ['legal'], desc: 'Contrat cadre définissant la relation client — chaque mission (conseil, chasse, travaux, déco) est activée séparément par un Bon de Commande.',
+    details: 'Objet, durée, obligations Hunters et client, honoraires par mission, confidentialité, RGPD, responsabilité, médiation. Document socle signé une seule fois avec le client.',
+    usage: 'Signé au tout premier rendez-vous, avant toute mission spécifique', pages: '4 pages', version: 'v1.0 — 2026', size: '15 Ko',
+  },
+  {
+    id: 'bon_commande', cat: 'client', name: 'Bon de Commande de Mission',
+    ref: 'BON_DE_COMMANDES_HUNTERS.docx', file: 'BON_DE_COMMANDES_HUNTERS.docx', type: 'docx',
+    tags: ['legal'], desc: 'Annexe à la Convention Cadre — à établir pour chaque mission activée (M01 conseil, M02 chasse, M03 travaux, M04 déco).',
+    details: 'Détail de la mission, honoraires précis, échéances de paiement, droit de rétractation 14 jours (article L.221-18 Code conso).',
+    usage: 'Un bon de commande par mission activée, en complément de la Convention Cadre', pages: '2 pages', version: 'v1.0 — 2026', size: '13 Ko',
+  },
+  {
+    id: 'offre_achat', cat: 'client', name: "Offre d'Achat",
+    ref: 'OFFRE_D_ACHAT_HUNTERS.docx', file: 'OFFRE_D_ACHAT_HUNTERS.docx', type: 'docx',
+    tags: ['legal', 'terrain'], desc: "Formalisation écrite de l'offre d'achat transmise au vendeur, avec rappel du barème honoraires chasse applicable.",
+    details: 'Prix proposé, conditions suspensives (financement, séquestre), barème honoraires détaillé par tranche, réponse du vendeur.',
+    usage: "Rédigée dès qu'un bien est validé par le client, avant compromis", pages: '3 pages', version: 'v1.0 — 2026', size: '15 Ko',
   },
 
   // Procédures internes
   {
     id: 'p01_accueil', cat: 'proc', name: 'P01 — Accueil & Qualification Prospect',
-    ref: 'P01_Accueil_Qualification.docx', file: 'P01_Accueil_Qualification.docx', type: 'docx',
+    ref: 'FICHE_PROFIL_INVESTISSEUR_.docx', file: 'FICHE_PROFIL_INVESTISSEUR_.docx', type: 'docx',
     tags: ['proc'], desc: 'Procédure complète d\'accueil et qualification d\'un nouveau prospect. Score de faisabilité intégré.',
     details: 'Étapes : prise de contact (script téléphonique), qualification financière (5 critères), score faisabilité (0-100), décision go/no-go, planification RDV conseil.',
-    usage: 'Usage interne conseiller — référence P01 v1.0', pages: '6 pages', version: 'v1.0 — 2026', size: '22 Ko', adminOnly: false,
+    usage: 'Usage interne conseiller — référence P01 v1.0', pages: '6 pages', version: 'v1.0 — 2026', size: '18 Ko', adminOnly: false,
   },
   {
     id: 'p02_chasse', cat: 'proc', name: 'P02 — Mission de Chasse Immobilière',
@@ -94,10 +115,10 @@ const DOCS: Doc[] = [
   },
   {
     id: 'p05_travaux', cat: 'proc', name: 'P05 — Coordination & Suivi Travaux',
-    ref: 'P05_Suivi_Travaux.docx', file: 'P05_Suivi_Travaux.docx', type: 'docx',
+    ref: 'Procedure_P03_Suivi_Chantier.docx', file: 'Procedure_P03_Suivi_Chantier.docx', type: 'docx',
     tags: ['proc'], desc: 'Procédure de coordination des artisans et suivi de chantier. Rapport hebdomadaire client inclus.',
     details: 'Sélection artisans, comparaison devis (grille), planning chantier, rapport photo hebdomadaire, réception des travaux, levée des réserves.',
-    usage: 'Usage interne conseiller + décoratrice — post-acquisition', pages: '7 pages', version: 'v1.0 — 2026', size: '25 Ko',
+    usage: 'Usage interne conseiller + décoratrice — post-acquisition', pages: '7 pages', version: 'v1.0 — 2026', size: '13 Ko',
   },
   {
     id: 'p06_location', cat: 'proc', name: 'P06 — Mise en Location',
@@ -113,14 +134,28 @@ const DOCS: Doc[] = [
     details: 'KPIs : prospects qualifiés, mandats actifs, visites réalisées, offres déposées, compromis signés, CA généré. Analyse et objectifs mois suivant.',
     usage: 'Usage interne conseiller — soumis au directeur le 1er de chaque mois', pages: '4 pages', version: 'v1.0 — 2026', size: '20 Ko', adminOnly: true,
   },
+  {
+    id: 'p01_conseil', cat: 'proc', name: 'P01 — Conseil Stratégique',
+    ref: 'PROCEDURE_P01_CONSEIL_STRATEGIQUE.docx', file: 'PROCEDURE_P01_CONSEIL_STRATEGIQUE.docx', type: 'docx',
+    tags: ['proc'], desc: "Procédure des 6 étapes obligatoires de la mission Conseil Stratégique — même niveau de qualité quel que soit le mandataire.",
+    details: 'Entretien structuré, règles de conduite, honoraires selon scoring, mentions obligatoires de la convention de mission.',
+    usage: 'Usage interne conseiller — référence P01 v2.0', pages: '5-10 jours ouvrés de délai', version: 'v2.0 — 2026', size: '36 Ko',
+  },
+  {
+    id: 'p04_deco', cat: 'proc', name: 'P04 — Déco & Ameublement',
+    ref: 'Procedure_P04_Deco_Ameublement.docx', file: 'Procedure_P04_Deco_Ameublement.docx', type: 'docx',
+    tags: ['proc'], desc: 'Procédure des 6 étapes de la mission déco — moodboard, shopping, installation, conformité LMNP.',
+    details: "Périmètre, typologies selon projet client, barème honoraires, liste mobilier minimum conforme au décret 2015-981.",
+    usage: 'Usage interne conseiller + décoratrice — après travaux ou directement après acte', pages: '6 étapes', version: 'v1.0 — 2026', size: '14 Ko',
+  },
 
   // Outils financiers
   {
     id: 'calc_excel', cat: 'fin', name: 'Calculateur de Rentabilité',
-    ref: 'Calculateur_Rentabilite_Hunters_2026.xlsx', file: 'Calculateur_Rentabilite_Hunters_2026.xlsx', type: 'xlsx',
+    ref: 'SIMULATEUR_RENTABILITE_HUNTERS_v2_0_2026.xlsx', file: 'SIMULATEUR_RENTABILITE_HUNTERS_v2_0_2026.xlsx', type: 'xlsx',
     tags: ['fin', 'terrain'], desc: 'Calculateur Excel avec barème Hunters automatique, projection sur 20 ans, cashflow mensuel.',
     details: 'Paramètres : prix FAI, travaux, financement, loyer, charges. Barème automatique intégré. Graphique projection 20 ans. Comparaison 3 scénarios.',
-    usage: 'Utilisation client — envoi par email ou présentation en rendez-vous', pages: '3 onglets', version: 'v2.0 — 2026', size: '18 Ko',
+    usage: 'Utilisation client — envoi par email ou présentation en rendez-vous', pages: '3 onglets', version: 'v2.0 — 2026', size: '22 Ko',
   },
   {
     id: 'calc_html', cat: 'fin', name: 'Calculateur de Rentabilité Web',

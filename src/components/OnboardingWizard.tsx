@@ -24,7 +24,9 @@ import {
   FileText,
   MapPin,
 } from 'lucide-react';
-import huntersLogo from '@/assets/hunters-logo.jpg';
+import huntersLogoAsset from '@/assets/hunters-logo-v2.png.asset.json';
+
+const huntersLogo = huntersLogoAsset.url;
 
 interface Props {
   onComplete: () => void;

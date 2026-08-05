@@ -1,3 +1,4 @@
+import huntersLogoAsset from '@/assets/hunters-logo-v2.png.asset.json';
 import jsPDF from 'jspdf';
 
 // ─── PALETTE CHARTE HUNTERS V2.0 ─────────────────────────────────────────────
@@ -136,7 +137,7 @@ export async function loadLogo(): Promise<string | null> {
 
   try {
 
-    const res = await fetch('/assets/hunters-logo.jpg');
+    const res = await fetch(huntersLogoAsset.url);
 
     if (!res.ok) return null;
 

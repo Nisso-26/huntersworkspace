@@ -284,12 +284,14 @@ Deno.serve(async (req) => {
           body: {
             to: profile.email,
             subject: `Document signé — ${row.signataire_nom}`,
-            body: `<h2 style="color:#004621;margin:0 0 16px;">Document signé</h2>
-              <p>Bonjour ${profile.full_name || ""},</p>
-              <p><strong>${row.signataire_nom}</strong> a signé le document
+            eyebrow: "Signature électronique",
+            title: "Document signé",
+            body: `<p style="margin:0 0 12px;">Bonjour ${profile.full_name || ""},</p>
+              <p style="margin:0 0 12px;"><strong style="color:#23291F;">${row.signataire_nom}</strong> a signé le document
               « ${TYPE_LABELS[row.type_document] || row.type_document} » le
               ${signedAt.toLocaleDateString("fr-FR")} à ${signedAt.toLocaleTimeString("fr-FR")}.</p>
-              <p>Le document signé et son certificat de preuves sont disponibles dans votre espace Hunters.</p>`,
+              <p style="margin:0;">Le document signé et son certificat de preuves sont disponibles dans votre espace Hunters.</p>`,
+
           },
         });
       }

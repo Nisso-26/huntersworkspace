@@ -76,19 +76,19 @@ async function notifyAssignment(mandataireId: string, clientName: string, numero
       .eq('id', mandataireId)
       .maybeSingle();
     if (!profile?.email) return;
-    const refLine = numeroDossier ? `<p style="margin:0 0 8px;color:#555;font-size:13px;">Référence dossier : <strong>${numeroDossier}</strong></p>` : '';
     await supabase.functions.invoke('send-notification', {
       body: {
         to: profile.email,
         subject: `Nouveau dossier assigné : ${clientName}${numeroDossier ? ` (${numeroDossier})` : ''}`,
         numero_dossier: numeroDossier || null,
-        body: `<h2 style="color:#004621;margin:0 0 16px;">Nouveau dossier assigné</h2>
-          ${refLine}
-          <p>Bonjour ${profile.full_name || ''},</p>
-          <p>Un nouveau dossier vous a été assigné : <strong>${clientName}</strong>${numeroDossier ? ` — réf. <strong>${numeroDossier}</strong>` : ''}.</p>
-          <p>Connectez-vous à votre espace Hunters pour le consulter.</p>`,
+        eyebrow: 'Affectation de dossier',
+        title: 'Nouveau dossier assigné',
+        body: `<p style="margin:0 0 12px;">Bonjour ${profile.full_name || ''},</p>
+          <p style="margin:0 0 12px;">Un nouveau dossier vous a été assigné : <strong style="color:#23291F;">${clientName}</strong>${numeroDossier ? ` — réf. <strong style="color:#23291F;">${numeroDossier}</strong>` : ''}.</p>
+          <p style="margin:0;">Connectez-vous à votre espace Hunters pour le consulter.</p>`,
       },
     });
+
   } catch (e) {
     console.error('notifyAssignment failed', e);
   }

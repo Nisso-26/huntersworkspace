@@ -121,17 +121,14 @@ export function useEnvoyerEnSignature() {
           to: payload.signataire_email,
           subject: `Document à signer — ${label}`,
           numero_dossier: payload.numero_dossier ?? null,
-          body: `<h2 style="color:#004621;margin:0 0 16px;font-family:Georgia,serif;">Document à signer</h2>
-            <p>Bonjour ${payload.signataire_nom},</p>
-            <p>Un document vous est adressé pour signature électronique :
-            <strong>${label}</strong>${payload.document_nom ? ` — ${payload.document_nom}` : ''}.</p>
-            <p style="margin:28px 0;">
-              <a href="${lien}" style="background:#004621;color:#ffffff;text-decoration:none;padding:13px 26px;border-radius:2px;font-weight:700;letter-spacing:0.5px;display:inline-block;border-bottom:3px solid #C8962F;">
-                SIGNER LE DOCUMENT
-              </a>
-            </p>
-            <p style="font-size:13px;color:#666;">Ce lien personnel est valable jusqu'au <strong>${echeance}</strong>.
-            Ne le transmettez à personne.</p>`,
+          eyebrow: 'Signature électronique',
+          title: 'Document à signer',
+          cta: { label: 'Signer le document', url: lien },
+          body: `<p style="margin:0 0 12px;">Bonjour ${payload.signataire_nom},</p>
+            <p style="margin:0 0 12px;">Un document vous est adressé pour signature électronique :
+            <strong style="color:#23291F;">${label}</strong>${payload.document_nom ? ` — ${payload.document_nom}` : ''}.</p>
+            <p style="margin:0;font-size:11px;">Ce lien personnel est valable jusqu'au <strong>${echeance}</strong>. Ne le transmettez à personne.</p>`,
+
         },
       });
       if (mailErr) throw new Error("Demande créée mais l'email n'a pas pu être envoyé");
@@ -157,15 +154,13 @@ export function useRelancerSignature() {
         body: {
           to: row.signataire_email,
           subject: `Rappel — document à signer : ${label}`,
-          body: `<h2 style="color:#004621;margin:0 0 16px;font-family:Georgia,serif;">Rappel de signature</h2>
-            <p>Bonjour ${row.signataire_nom},</p>
-            <p>Le document <strong>${label}</strong> attend toujours votre signature.</p>
-            <p style="margin:28px 0;">
-              <a href="${lien}" style="background:#004621;color:#ffffff;text-decoration:none;padding:13px 26px;border-radius:2px;font-weight:700;display:inline-block;border-bottom:3px solid #C8962F;">
-                SIGNER LE DOCUMENT
-              </a>
-            </p>
-            <p style="font-size:13px;color:#666;">Valable jusqu'au ${new Date(row.expires_at).toLocaleDateString('fr-FR')}.</p>`,
+          eyebrow: 'Signature électronique',
+          title: 'Rappel de signature',
+          cta: { label: 'Signer le document', url: lien },
+          body: `<p style="margin:0 0 12px;">Bonjour ${row.signataire_nom},</p>
+            <p style="margin:0 0 12px;">Le document <strong style="color:#23291F;">${label}</strong> attend toujours votre signature.</p>
+            <p style="margin:0;font-size:11px;">Valable jusqu'au ${new Date(row.expires_at).toLocaleDateString('fr-FR')}.</p>`,
+
         },
       });
       if (error) throw error;

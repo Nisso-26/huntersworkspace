@@ -87,22 +87,22 @@ Deno.serve(async (req) => {
     const montant = euro(Number(f.montant_ttc ?? f.montant));
     const dateEmission = new Date(f.date_emission).toLocaleDateString("fr-FR");
 
-    const sendMail = async (subject: string, body: string) => {
+    const sendMail = async (subject: string, body: string, title?: string) => {
       if (!profile?.email) return;
       try {
         await supabase.functions.invoke("send-notification", {
-          body: { to: profile.email, subject, body },
+          body: { to: profile.email, subject, body, eyebrow: "Facturation pack mensuel", title: title ?? null },
         });
       } catch (e) { console.error("email impayé", e); }
     };
+
 
     // On traite chaque palier manqué séquentiellement pour ne rien sauter
     for (let etape = actuelle + 1; etape <= cible; etape++) {
       if (etape === 1) {
         await sendMail(
           `Mise en demeure — pack mensuel impayé (${ref})`,
-          `<h2 style="color:#004621;margin:0 0 16px;">Mise en demeure de payer</h2>
-           <p>Bonjour ${nom},</p>
+          `<p>Bonjour ${nom},</p>
            <p>Nous constatons que la facture d'abonnement <strong>${ref}</strong>, émise le ${dateEmission}
            pour un montant de <strong>${montant}</strong>, demeure impayée à ce jour.</p>
            <p>Conformément à l'<strong>article 7.2</strong> de votre contrat de collaboration, nous vous mettons
@@ -112,7 +112,8 @@ Deno.serve(async (req) => {
            <strong>suspendu de plein droit</strong>. En l'absence de régularisation dans les trente (30) jours suivant
            cette suspension, la résiliation du contrat pourra être prononcée.</p>
            <p>Nous vous invitons à procéder au règlement sans délai depuis votre espace HUNTERS.</p>
-           <p style="color:#666;font-size:12px;">Cette notification constitue une mise en demeure au sens de l'article 7.2 du contrat.</p>`
+           <p style="font-size:11px;">Cette notification constitue une mise en demeure au sens de l'article 7.2 du contrat.</p>`,
+          "Mise en demeure de payer"
         );
         await supabase.from("alertes").insert({
           user_id: null,
@@ -127,14 +128,14 @@ Deno.serve(async (req) => {
         await supabase.from("profiles").update({ suspendu: true }).eq("id", f.mandataire_id);
         await sendMail(
           `Suspension de votre accès HUNTERS — pack impayé (${ref})`,
-          `<h2 style="color:#004621;margin:0 0 16px;">Suspension de l'accès aux outils</h2>
-           <p>Bonjour ${nom},</p>
+          `<p>Bonjour ${nom},</p>
            <p>La mise en demeure relative à la facture <strong>${ref}</strong> (${montant}, émise le ${dateEmission})
            étant restée sans effet pendant quinze (15) jours, votre accès aux outils et services HUNTERS est
            <strong>suspendu</strong> à compter de ce jour, en application de l'<strong>article 7.2</strong> du contrat.</p>
            <p>À défaut de régularisation dans un délai de <strong>trente (30) jours</strong>, la résiliation du contrat
            pourra être prononcée.</p>
-           <p>La levée de la suspension est immédiate dès réception du règlement intégral.</p>`
+           <p>La levée de la suspension est immédiate dès réception du règlement intégral.</p>`,
+          "Suspension de l'accès aux outils"
         );
         await supabase.from("alertes").insert({
           user_id: null,

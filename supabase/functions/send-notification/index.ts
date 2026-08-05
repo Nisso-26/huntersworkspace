@@ -58,8 +58,8 @@ Deno.serve(async (req) => {
       userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
         global: { headers: { Authorization: authHeader } },
       });
-      const { data, error: aErr } = await userClient.auth.getClaims(authHeader.replace("Bearer ", ""));
-      if (aErr || !data?.claims) {
+      const { data: userData, error: aErr } = await userClient.auth.getUser(authHeader.replace("Bearer ", ""));
+      if (aErr || !userData?.user) {
         return new Response(JSON.stringify({ error: "Non autorisé" }), {
           status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });

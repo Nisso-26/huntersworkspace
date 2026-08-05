@@ -2278,6 +2278,13 @@ export type Database = {
         Returns: boolean
       }
       get_dossier_for_portal: { Args: { _dossier_id: string }; Returns: Json }
+      get_mandataires_annuaire: {
+        Args: never
+        Returns: {
+          full_name: string
+          id: string
+        }[]
+      }
       get_portal_payload: { Args: { _token: string }; Returns: Json }
       get_portal_token: {
         Args: { _token: string }

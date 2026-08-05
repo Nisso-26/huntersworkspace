@@ -49,6 +49,7 @@ const niveauOptions = [
 
 function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandataireProfile; mandataires: MandataireProfile[]; onUpdate: (data: any) => void }) {
   const { isAdmin } = useAuth();
+  const leverSuspension = useLeverSuspension();
   const [form, setForm] = useState({
     niveau: m.niveau || 'N1',
     parrain_id: m.parrain_id || '',

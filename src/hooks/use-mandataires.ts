@@ -184,3 +184,35 @@ export function useUpdateProfile() {
     onError: (e: Error) => toast.error(e.message),
   });
 }
+
+/**
+ * Lève la suspension d'accès Art. 7.2 : remet profiles.suspendu = false
+ * et réinitialise relance_etape sur les factures pack en attente
+ * afin de ne pas redéclencher le workflow d'impayés dès le lendemain.
+ */
+export function useLeverSuspension() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (mandataireId: string) => {
+      const { error: profErr } = await supabase
+        .from('profiles')
+        .update({ suspendu: false, pack_status: 'actif', updated_at: new Date().toISOString() })
+        .eq('id', mandataireId);
+      if (profErr) throw profErr;
+
+      const { error: factErr } = await supabase
+        .from('factures')
+        .update({ relance_etape: 0 })
+        .eq('mandataire_id', mandataireId)
+        .eq('type', 'abonnement')
+        .eq('statut', 'en_attente');
+      if (factErr) throw factErr;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['mandataires'] });
+      qc.invalidateQueries({ queryKey: ['factures'] });
+      toast.success('Suspension levée — accès rétabli');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}

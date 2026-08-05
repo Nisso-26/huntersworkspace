@@ -1,5 +1,9 @@
 import AppLayout from '@/components/AppLayout';
-import { useMandataires, useUpdateProfile, MandataireProfile } from '@/hooks/use-mandataires';
+import { useMandataires, useUpdateProfile, useLeverSuspension, MandataireProfile } from '@/hooks/use-mandataires';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import SearchFilter from '@/components/SearchFilter';
 import ExportButton, { exportToCSV } from '@/components/ExportButton';
 import { motion } from 'framer-motion';
@@ -45,6 +49,7 @@ const niveauOptions = [
 
 function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandataireProfile; mandataires: MandataireProfile[]; onUpdate: (data: any) => void }) {
   const { isAdmin } = useAuth();
+  const leverSuspension = useLeverSuspension();
   const [form, setForm] = useState({
     niveau: m.niveau || 'N1',
     parrain_id: m.parrain_id || '',
@@ -61,7 +66,7 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
       niveau: form.niveau,
       parrain_id: form.parrain_id || null,
       zone: form.zone,
-      pack_status: form.pack_status,
+      pack_status: m.suspendu ? 'suspendu' : form.pack_status,
       pack_montant: Number(form.pack_montant),
       iban: form.iban,
       status: form.status,
@@ -159,14 +164,20 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
           </div>
           <div className="space-y-2">
             <Label>Pack abonnement</Label>
-            <Select value={form.pack_status} onValueChange={v => setForm(f => ({ ...f, pack_status: v }))}>
+            <Select value={m.suspendu ? 'suspendu' : form.pack_status} onValueChange={v => setForm(f => ({ ...f, pack_status: v }))} disabled={m.suspendu}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="actif">Actif</SelectItem>
+                <SelectItem value="actif" disabled={m.suspendu}>Actif</SelectItem>
                 <SelectItem value="inactif">Inactif</SelectItem>
                 <SelectItem value="suspendu">Suspendu</SelectItem>
               </SelectContent>
             </Select>
+            {m.suspendu && (
+              <p className="text-xs text-destructive">
+                Accès suspendu pour impayé (Art. 7.2) — le statut du pack est piloté automatiquement.
+                Utilisez « Lever la suspension » ci-dessous pour rétablir l'accès.
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label>Montant pack (€ HT)</Label>
@@ -177,6 +188,43 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
             <Input value={form.iban} onChange={e => setForm(f => ({ ...f, iban: e.target.value }))} placeholder="FR76..." />
           </div>
         </div>
+
+        {m.suspendu && isAdmin && (
+          <div className="border border-destructive/40 bg-destructive/5 rounded-lg p-4 space-y-3">
+            <div className="flex items-start gap-2">
+              <Ban className="w-4 h-4 text-destructive mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-destructive">Accès suspendu — impayé pack (Art. 7.2)</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Lever la suspension rétablit l'accès aux outils et réinitialise le compteur de relances
+                  sur les factures pack en attente. Acte contractuel.
+                </p>
+              </div>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm">Lever la suspension</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Lever la suspension d'accès ?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {m.full_name || 'Ce conseiller'} retrouvera l'accès complet aux outils et le
+                    workflow d'impayés Art. 7.2 sera réinitialisé (relance_etape = 0) sur ses factures
+                    pack en attente
+                    {m.pack_impaye_montant > 0 && ` (${m.pack_impaye_montant.toLocaleString('fr-FR')} € restant dus)`}.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => leverSuspension.mutate(m.id)}>
+                    Confirmer la levée
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
 
         <div className="flex justify-end pt-2">
           <Button onClick={handleSave}>Enregistrer</Button>
@@ -317,8 +365,8 @@ export default function Mandataires() {
                       </div>
                     </div>
                     <div className="flex items-center justify-between mt-3 pt-2 border-t">
-                      <span className={cn('text-xs px-2 py-0.5 rounded-full', m.pack_status === 'actif' ? 'bg-hunters-success/10 text-hunters-success' : 'bg-muted text-muted-foreground')}>
-                        Pack {m.pack_status === 'actif' ? '✓' : '✗'}
+                      <span className={cn('text-xs px-2 py-0.5 rounded-full', m.suspendu ? 'bg-destructive/10 text-destructive' : m.pack_status === 'actif' ? 'bg-hunters-success/10 text-hunters-success' : 'bg-muted text-muted-foreground')}>
+                        {m.suspendu ? 'Suspendu (impayé)' : `Pack ${m.pack_status === 'actif' ? '✓' : '✗'}`}
                       </span>
                       <p className="text-xs text-muted-foreground">{m.email}</p>
                     </div>

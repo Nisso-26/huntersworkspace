@@ -32,6 +32,7 @@ const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ClientPortal = lazy(() => import("./pages/ClientPortal"));
+const SignerDocument = lazy(() => import("./pages/SignerDocument"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">

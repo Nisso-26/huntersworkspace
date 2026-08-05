@@ -73,6 +73,7 @@ const App = () => (
               <Route path="/ressources" element={<ProtectedRoute><Ressources /></ProtectedRoute>} />
               <Route path="/parametres" element={<ProtectedRoute><Parametres /></ProtectedRoute>} />
               <Route path="/client/:token" element={<ClientPortal />} />
+              <Route path="/signer/:token" element={<SignerDocument />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

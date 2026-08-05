@@ -11,7 +11,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAlertes } from '@/hooks/use-alertes';
 import { useUnreadTotal } from '@/hooks/use-messagerie';
 import { useValidationsEnAttente } from '@/hooks/use-validations-dossiers';
-import huntersLogo from '@/assets/hunters-logo.jpg';
+import huntersLogoAsset from '@/assets/hunters-logo-v2.png.asset.json';
+
+const huntersLogo = huntersLogoAsset.url;
 
 const allNavItems = [
   { label: 'Tableau de bord', icon: LayoutDashboard, href: '/', roles: ['super_admin', 'mandataire', 'decoratrice', 'analyste'], group: 'principal' },

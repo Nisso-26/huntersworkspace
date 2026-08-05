@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
-import huntersLogo from '@/assets/hunters-logo.jpg';
+import huntersLogoAsset from '@/assets/hunters-logo-v2.png.asset.json';
+
+const huntersLogo = huntersLogoAsset.url;
 
 export default function Signup() {
   return (

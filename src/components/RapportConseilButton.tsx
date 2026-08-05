@@ -1,3 +1,4 @@
+import huntersLogoAsset from '@/assets/hunters-logo-v2.png.asset.json';
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -80,7 +81,7 @@ function splitSections(markdown: string): string[] {
 
 async function loadLogoBase64(): Promise<string | null> {
   try {
-    const res = await fetch('/assets/hunters-logo.jpg');
+    const res = await fetch(huntersLogoAsset.url);
     if (!res.ok) return null;
     const blob = await res.blob();
     return new Promise((resolve) => {

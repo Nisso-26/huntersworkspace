@@ -329,7 +329,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                 <StepZoneActivation
                   form={form}
                   setField={setField}
-                  zone={zonePrioritaire}
+                  zones={zones}
                 />
               )}
             </>

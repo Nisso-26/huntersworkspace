@@ -24,7 +24,7 @@ function wrap(subject: string, innerHtml: string, numeroDossier?: string | null)
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:2px;overflow:hidden;max-width:600px;width:100%;">
         <tr><td style="background:${HUNTERS_GREEN};padding:20px 24px;">
-          <div style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:1px;">HUNTERS<span style="color:${HUNTERS_GOLD};">·</span>IMMOBILIER</div>
+          <div style="font-family:${FONT_HEADING};color:#ffffff;font-size:22px;font-weight:400;letter-spacing:2px;">HUNTERS<span style="color:${HUNTERS_GOLD};">·</span>IMMOBILIER</div>
           ${refChip}
         </td></tr>
         <tr><td style="padding:28px 24px;font-size:15px;line-height:1.6;color:#2C2C2C;">

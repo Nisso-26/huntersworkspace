@@ -702,7 +702,7 @@ function StepZoneActivation({
           <Row label="Statut juridique" value={form.statut_juridique || '—'} />
           <Row label="N° RSAC / Greffe" value={`${form.rsac_numero} — ${form.rsac_greffe}`} />
           <Row label="IBAN" value={`•••• •••• •••• ${ibanLast4}`} />
-          <Row label="Zone prioritaire" value={zoneInfo?.label || 'Non affectée'} />
+          <Row label="Zone prioritaire" value={zones.map((z) => z.zone_label).join(', ') || 'Non affectée'} />
           <Row label="Niveau" value="N1" />
           <Row label="Pack mensuel" value="149 € HT / mois — sans franchise" />
         </dl>

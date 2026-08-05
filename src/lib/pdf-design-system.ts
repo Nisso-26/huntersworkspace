@@ -1,4 +1,4 @@
-import huntersLogoAsset from '@/assets/hunters-logo-v2.png.asset.json';
+import huntersLogoAsset from '@/assets/hunters-symbol-dark.png.asset.json';
 import jsPDF from 'jspdf';
 
 // ─── PALETTE CHARTE HUNTERS V2.0 ─────────────────────────────────────────────
@@ -548,7 +548,7 @@ export async function drawCoverPage(
 
     try {
 
-      doc.addImage(opts.logo, 'JPEG', marginL, 14, 22, 22);
+      doc.addImage(opts.logo, 'PNG', marginL, 14, 20, 22);
 
     } catch { /* ignore si logo absent */ }
 

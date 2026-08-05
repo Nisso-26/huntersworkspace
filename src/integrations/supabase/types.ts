@@ -2059,6 +2059,86 @@ export type Database = {
           },
         ]
       }
+      signatures_electroniques: {
+        Row: {
+          created_at: string
+          document_nom: string | null
+          document_signe_url: string | null
+          document_url: string | null
+          dossier_id: string | null
+          expires_at: string
+          id: string
+          ip_address: string | null
+          mandataire_id: string
+          motif_refus: string | null
+          relance_envoyee_at: string | null
+          signataire_email: string
+          signataire_nom: string
+          signature_data: string | null
+          signature_type: string | null
+          signed_at: string | null
+          statut: string
+          token: string
+          type_document: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_nom?: string | null
+          document_signe_url?: string | null
+          document_url?: string | null
+          dossier_id?: string | null
+          expires_at?: string
+          id?: string
+          ip_address?: string | null
+          mandataire_id: string
+          motif_refus?: string | null
+          relance_envoyee_at?: string | null
+          signataire_email: string
+          signataire_nom: string
+          signature_data?: string | null
+          signature_type?: string | null
+          signed_at?: string | null
+          statut?: string
+          token?: string
+          type_document: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_nom?: string | null
+          document_signe_url?: string | null
+          document_url?: string | null
+          dossier_id?: string | null
+          expires_at?: string
+          id?: string
+          ip_address?: string | null
+          mandataire_id?: string
+          motif_refus?: string | null
+          relance_envoyee_at?: string | null
+          signataire_email?: string
+          signataire_nom?: string
+          signature_data?: string | null
+          signature_type?: string | null
+          signed_at?: string | null
+          statut?: string
+          token?: string
+          type_document?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signatures_electroniques_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tarifs_services: {
         Row: {
           created_at: string

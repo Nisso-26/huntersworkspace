@@ -274,6 +274,53 @@ Deno.serve(async (req) => {
   const alurAlerts = await detectExpiringAlurAttestations(supabase, now);
   alerts.push(...alurAlerts);
 
+  // 8. Signature Hunters : expiration des demandes + relance J+5
+  const { data: expiredSignatures } = await supabase
+    .from("signatures_electroniques")
+    .select("id, type_document, signataire_nom, mandataire_id, dossier_id")
+    .eq("statut", "en_attente")
+    .lt("expires_at", now.toISOString());
+
+  for (const s of expiredSignatures || []) {
+    await supabase.from("signatures_electroniques")
+      .update({ statut: "expire" }).eq("id", s.id);
+    alerts.push({
+      user_id: s.mandataire_id,
+      type: "warning",
+      title: `Signature expirée : ${s.signataire_nom}`,
+      detail: `La demande de signature (${s.type_document}) a expiré sans être signée — renvoyez un nouveau lien.`,
+      ...(s.dossier_id ? { dossier_id: s.dossier_id } : {}),
+    });
+  }
+
+  // Relance : documents importants non signés après 5 jours
+  const fiveDaysAgo = new Date(now.getTime() - 5 * 86400000).toISOString();
+  const { data: pendingImportant } = await supabase
+    .from("signatures_electroniques")
+    .select("id, type_document, signataire_nom, mandataire_id, dossier_id, created_at")
+    .eq("statut", "en_attente")
+    .in("type_document", ["mandat_recherche", "convention_cadre"])
+    .is("relance_envoyee_at", null)
+    .lt("created_at", fiveDaysAgo);
+
+  for (const s of pendingImportant || []) {
+    const { data: existing } = await supabase
+      .from("alertes")
+      .select("id")
+      .ilike("title", `%Signature en attente%${s.signataire_nom}%`)
+      .eq("is_read", false)
+      .limit(1);
+    if (existing?.length) continue;
+    alerts.push({
+      user_id: null, // alerte direction
+      type: "urgente",
+      title: `Signature en attente depuis 5 jours : ${s.signataire_nom}`,
+      detail: `Document important (${s.type_document}) toujours non signé — relance à effectuer.`,
+      ...(s.dossier_id ? { dossier_id: s.dossier_id } : {}),
+    });
+  }
+
+
   // Insert all alerts
   if (alerts.length > 0) {
     await supabase.from("alertes").insert(alerts);

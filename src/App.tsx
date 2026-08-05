@@ -32,6 +32,7 @@ const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ClientPortal = lazy(() => import("./pages/ClientPortal"));
+const SignerDocument = lazy(() => import("./pages/SignerDocument"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
@@ -73,6 +74,7 @@ const App = () => (
               <Route path="/ressources" element={<ProtectedRoute><Ressources /></ProtectedRoute>} />
               <Route path="/parametres" element={<ProtectedRoute><Parametres /></ProtectedRoute>} />
               <Route path="/client/:token" element={<ClientPortal />} />
+              <Route path="/signer/:token" element={<SignerDocument />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

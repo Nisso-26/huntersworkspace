@@ -11,6 +11,7 @@ import RapportsGeneresList from '@/components/RapportsGeneresList';
 import NouveauDocumentButton from '@/components/NouveauDocumentButton';
 import DocumentsContractuelsList from '@/components/DocumentsContractuelsList';
 import SignatureSection from '@/components/SignatureSection';
+import SignatureHuntersSection from '@/components/SignatureHuntersSection';
 import ClientPortalSection, { ClientComments } from '@/components/ClientPortalSection';
 import StrategieIA from '@/components/StrategieIA';
 import GrilleControleAnalyste from '@/components/GrilleControleAnalyste';
@@ -345,7 +346,16 @@ export default function DossierDetail() {
           </TabsContent>
 
           {/* Signature */}
-          <TabsContent value="signature" className="mt-4">
+          <TabsContent value="signature" className="mt-4 space-y-4">
+            <div className="bg-card border rounded-xl p-6">
+              <SignatureHuntersSection
+                dossierId={dossier.id}
+                clientName={form.client_name}
+                clientEmail={form.email}
+                numeroDossier={dossier.numero_dossier}
+                typesDisponibles={['mandat_recherche', 'convention_cadre', 'bon_commande', 'offre_achat']}
+              />
+            </div>
             <div className="bg-card border rounded-xl p-6">
               <SignatureSection dossierId={dossier.id} clientName={form.client_name} clientEmail={form.email} numeroDossier={dossier.numero_dossier} />
             </div>

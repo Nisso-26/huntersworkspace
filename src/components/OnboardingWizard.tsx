@@ -34,13 +34,13 @@ interface Props {
 const STEP_TITLES = ['Bienvenue', 'Identité', 'RSAC', 'Bancaire & Pack', 'Zone & Activation'];
 const TOTAL_STEPS = 5;
 
-const ZONES: Record<number, { label: string; communes: string }> = {
-  1: { label: 'Zone 1 — Tours centre', communes: 'Tours centre, Tours nord' },
-  2: { label: 'Zone 2 — Tours sud-ouest', communes: 'Joué-lès-Tours, Saint-Avertin' },
-  3: { label: 'Zone 3 — Ouest', communes: 'Saint-Cyr-sur-Loire, Fondettes, Luynes' },
-  4: { label: 'Zone 4 — Est', communes: 'Chambray-lès-Tours, Saint-Pierre-des-Corps, Montlouis-sur-Loire' },
-  5: { label: 'Zone 5 — Sud', communes: 'Veigné, Sorigny, Monts, Ballan-Miré' },
-};
+interface ZoneAffectee {
+  zone_label: string;
+  statut: string;
+  perimetre_km: number;
+  communes: string[];
+}
+
 
 const isValidFrIban = (v: string) => /^FR\d{2}[A-Z0-9]{23}$/i.test(v.replace(/\s+/g, ''));
 const isValidSiret = (v: string) => /^\d{14}$/.test(v.replace(/\s+/g, ''));

@@ -91,7 +91,7 @@ Régime réel recommandé.
 Le projet est cohérent avec la capacité financière du client.
 `;
 
-(supabase as any).functions.invoke = async () => ({ data: { ok: true, rapport: FAKE_RAPPORT }, error: null });
+(supabase as any).functions.invoke = async (...a: any[]) => { console.log('QA invoke stub called', a[0]); return { data: { ok: true, rapport: FAKE_RAPPORT }, error: null }; };
 
 const dossier = {
   id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',

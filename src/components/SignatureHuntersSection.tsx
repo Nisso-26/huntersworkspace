@@ -250,10 +250,14 @@ export default function SignatureHuntersSection({
               <Plus className="w-3.5 h-3.5" /> Envoyer en signature
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className={step === 'preview' ? 'max-w-4xl' : 'max-w-md'}>
             <DialogHeader>
               <DialogTitle>
-                {step === 'form' ? 'Envoyer en signature' : 'Confirmer l\u2019envoi'}
+                {step === 'form'
+                  ? 'Envoyer en signature'
+                  : step === 'preview'
+                    ? `Aperçu — ${spec?.titre ?? typeLabel}`
+                    : 'Confirmer l\u2019envoi'}
                 {numeroDossier ? ` — Réf. ${numeroDossier}` : ''}
               </DialogTitle>
             </DialogHeader>
@@ -271,6 +275,11 @@ export default function SignatureHuntersSection({
                       {types.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  <p className="text-[10px] text-muted-foreground mt-1 flex items-start gap-1">
+                    <FileText className="w-3 h-3 shrink-0 mt-[1px]" />
+                    Le document est généré automatiquement à la charte HUNTERS depuis les données du dossier.
+                    Vous pourrez le vérifier et corriger chaque champ à l'étape suivante.
+                  </p>
                 </div>
                 <div>
                   <Label className="text-xs">Nom du destinataire</Label>
@@ -302,24 +311,92 @@ export default function SignatureHuntersSection({
                     placeholder="Ex : Mandat M. Dupont — Tours"
                   />
                 </div>
-                <div>
-                  <Label className="text-xs">PDF à signer (optionnel)</Label>
-                  <Input
-                    type="file"
-                    accept="application/pdf"
-                    onChange={e => setFile(e.target.files?.[0] ?? null)}
-                    className="h-9 text-sm"
-                  />
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    Sans PDF, seul le certificat de signature est généré.
-                  </p>
-                </div>
-                <Button onClick={goConfirm} className="w-full gap-2">
-                  Continuer
+                <details className="rounded-md border bg-secondary/30 px-3 py-2">
+                  <summary className="text-xs text-muted-foreground cursor-pointer flex items-center gap-1.5">
+                    <Paperclip className="w-3 h-3" /> Remplacer par mon propre PDF (cas particulier)
+                  </summary>
+                  <div className="pt-2">
+                    <Input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={e => setFile(e.target.files?.[0] ?? null)}
+                      className="h-9 text-sm"
+                    />
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Si vous joignez un fichier, la génération automatique et l'aperçu sont désactivés.
+                    </p>
+                  </div>
+                </details>
+                <Button onClick={goNext} className="w-full gap-2">
+                  {autoDoc ? <>Générer et vérifier le document</> : <>Continuer</>}
                 </Button>
+              </div>
+            ) : step === 'preview' ? (
+              <div className="grid gap-4 pt-2 md:grid-cols-2">
+                <div className="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
+                  <p className="text-[11px] text-muted-foreground">
+                    Champs pré-remplis depuis le dossier. Corrigez toute donnée absente ou erronée avant l'envoi.
+                  </p>
+                  {groupes.map(g => (
+                    <div key={g.group} className="space-y-2">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-accent-foreground">
+                        {g.group}
+                      </p>
+                      {g.fields.map(f => (
+                        <div key={f.key}>
+                          <Label className="text-xs">{f.label}</Label>
+                          {f.type === 'textarea' ? (
+                            <Textarea
+                              value={fields[f.key] ?? ''}
+                              onChange={e => setFields(v => ({ ...v, [f.key]: e.target.value }))}
+                              className="text-sm min-h-[60px]"
+                            />
+                          ) : (
+                            <Input
+                              value={fields[f.key] ?? ''}
+                              onChange={e => setFields(v => ({ ...v, [f.key]: e.target.value }))}
+                              className={`h-8 text-sm ${!(fields[f.key] ?? '').trim() ? 'border-destructive/40' : ''}`}
+                              placeholder="À compléter"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  <Button
+                    type="button" variant="outline" className="w-full gap-2"
+                    onClick={genererApercu} disabled={previewLoading}
+                  >
+                    {previewLoading
+                      ? <><Loader2 className="w-4 h-4 animate-spin" /> Génération…</>
+                      : <><Eye className="w-4 h-4" /> {previewUrl ? 'Régénérer l\u2019aperçu' : 'Afficher l\u2019aperçu PDF'}</>}
+                  </Button>
+                  {previewUrl ? (
+                    <iframe
+                      title="Aperçu du document"
+                      src={previewUrl}
+                      className="w-full h-[58vh] rounded-md border bg-muted"
+                    />
+                  ) : (
+                    <div className="h-[58vh] rounded-md border border-dashed flex items-center justify-center text-xs text-muted-foreground text-center px-6">
+                      Cliquez sur « Afficher l'aperçu PDF » pour vérifier le rendu avant l'envoi.
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" className="gap-1.5" onClick={() => setStep('form')}>
+                      <ArrowLeft className="w-4 h-4" /> Retour
+                    </Button>
+                    <Button className="flex-1 gap-2" onClick={() => setStep('confirm')}>
+                      Valider le document
+                    </Button>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="space-y-3 pt-2">
+
                 <div className="rounded-md border bg-secondary/40 p-3 space-y-2 text-sm">
                   <div className="flex justify-between gap-3">
                     <span className="text-xs text-muted-foreground">Document</span>

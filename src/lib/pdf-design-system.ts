@@ -81,7 +81,7 @@ export function sanitizePdfText(s: string): string {
     .replace(/\u2026/g, '...')
     .replace(/[\u2192\u21D2]/g, '->')
     .replace(/[\u2022\u25CF]/g, '\xB7')
-    .replace(/[^\x20-\x7E\xA0-\xFF]/g, '')
+    .replace(/[^\x20-\x7E\xA0-\xFF\u20AC]/g, '')
     .replace(/!'/g, '')
     .replace(/\s+/g, ' ')
     .trim();

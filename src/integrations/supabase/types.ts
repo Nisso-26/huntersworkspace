@@ -828,6 +828,10 @@ export type Database = {
           created_at: string
           date_generation: string
           dossier_id: string
+          email_destinataire: string | null
+          email_envoye_at: string | null
+          email_erreur: string | null
+          email_statut: string
           id: string
           numero_dossier: string | null
           type: string
@@ -837,6 +841,10 @@ export type Database = {
           created_at?: string
           date_generation?: string
           dossier_id: string
+          email_destinataire?: string | null
+          email_envoye_at?: string | null
+          email_erreur?: string | null
+          email_statut?: string
           id?: string
           numero_dossier?: string | null
           type?: string
@@ -846,6 +854,10 @@ export type Database = {
           created_at?: string
           date_generation?: string
           dossier_id?: string
+          email_destinataire?: string | null
+          email_envoye_at?: string | null
+          email_erreur?: string | null
+          email_statut?: string
           id?: string
           numero_dossier?: string | null
           type?: string
@@ -860,6 +872,9 @@ export type Database = {
           date_generation: string
           dossier_id: string
           email_destinataire: string | null
+          email_envoye_at: string | null
+          email_erreur: string | null
+          email_statut: string
           genere_par: string | null
           id: string
           modele_id: string | null
@@ -875,6 +890,9 @@ export type Database = {
           date_generation?: string
           dossier_id: string
           email_destinataire?: string | null
+          email_envoye_at?: string | null
+          email_erreur?: string | null
+          email_statut?: string
           genere_par?: string | null
           id?: string
           modele_id?: string | null
@@ -890,6 +908,9 @@ export type Database = {
           date_generation?: string
           dossier_id?: string
           email_destinataire?: string | null
+          email_envoye_at?: string | null
+          email_erreur?: string | null
+          email_statut?: string
           genere_par?: string | null
           id?: string
           modele_id?: string | null
@@ -1160,6 +1181,66 @@ export type Database = {
         }
         Relationships: []
       }
+      envois_documents: {
+        Row: {
+          chantier_id: string | null
+          contexte: string
+          created_at: string
+          created_by: string
+          destinataire: string | null
+          document_nom: string
+          dossier_id: string | null
+          email_envoye_at: string | null
+          email_erreur: string | null
+          email_statut: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          chantier_id?: string | null
+          contexte: string
+          created_at?: string
+          created_by?: string
+          destinataire?: string | null
+          document_nom: string
+          dossier_id?: string | null
+          email_envoye_at?: string | null
+          email_erreur?: string | null
+          email_statut?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          chantier_id?: string | null
+          contexte?: string
+          created_at?: string
+          created_by?: string
+          destinataire?: string | null
+          document_nom?: string
+          dossier_id?: string | null
+          email_envoye_at?: string | null
+          email_erreur?: string | null
+          email_statut?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "envois_documents_chantier_id_fkey"
+            columns: ["chantier_id"]
+            isOneToOne: false
+            referencedRelation: "chantiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "envois_documents_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evenements: {
         Row: {
           created_at: string | null
@@ -1240,6 +1321,10 @@ export type Database = {
           date_paiement: string | null
           dossier_client_name: string | null
           dossier_id: string | null
+          email_destinataire: string | null
+          email_envoye_at: string | null
+          email_erreur: string | null
+          email_statut: string
           id: string
           jalon_id: string | null
           lignes: Json | null
@@ -1264,6 +1349,10 @@ export type Database = {
           date_paiement?: string | null
           dossier_client_name?: string | null
           dossier_id?: string | null
+          email_destinataire?: string | null
+          email_envoye_at?: string | null
+          email_erreur?: string | null
+          email_statut?: string
           id?: string
           jalon_id?: string | null
           lignes?: Json | null
@@ -1288,6 +1377,10 @@ export type Database = {
           date_paiement?: string | null
           dossier_client_name?: string | null
           dossier_id?: string | null
+          email_destinataire?: string | null
+          email_envoye_at?: string | null
+          email_erreur?: string | null
+          email_statut?: string
           id?: string
           jalon_id?: string | null
           lignes?: Json | null

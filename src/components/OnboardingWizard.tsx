@@ -31,8 +31,23 @@ interface Props {
   onComplete: () => void;
 }
 
-const STEP_TITLES = ['Bienvenue', 'Identité', 'RSAC', 'Bancaire & Pack', 'Zone & Activation'];
-const TOTAL_STEPS = 5;
+type StepKey = 'bienvenue' | 'statut_deco' | 'identite' | 'rsac' | 'bancaire' | 'zone';
+type WizardRole = 'mandataire' | 'analyste' | 'decoratrice';
+
+const STEP_LABELS: Record<StepKey, string> = {
+  bienvenue: 'Bienvenue',
+  statut_deco: 'Votre statut',
+  identite: 'Identité',
+  rsac: 'RSAC',
+  bancaire: 'Bancaire & Pack',
+  zone: 'Zone & Activation',
+};
+
+const STEPS_BY_ROLE: Record<WizardRole, StepKey[]> = {
+  mandataire: ['bienvenue', 'identite', 'rsac', 'bancaire', 'zone'],
+  analyste: ['bienvenue', 'identite'],
+  decoratrice: ['bienvenue', 'statut_deco', 'identite'],
+};
 
 interface ZoneAffectee {
   zone_label: string;

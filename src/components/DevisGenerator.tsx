@@ -225,7 +225,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
     y += rowH;
 
     // Lignes prestations
-    lignes.forEach((ligne, i) => {
+    pdfLignes.forEach((ligne, i) => {
       doc.setFillColor(...(i % 2 === 0 ? C.cream : C.white));
       doc.rect(marginL, y, contentW, rowH, 'F');
 
@@ -298,18 +298,18 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
       }
     };
 
-    addRecapLine('Sous-total HT', fmtPdfEur(sousTotal));
+    addRecapLine('Sous-total HT', fmtPdfEur(pdfSousTotal));
 
-    if (packActif && remisePack > 0) {
+    if (pdfPack && pdfRemise > 0) {
       addRecapLine(
         `Remise pack 10% (chasse + AMO + deco)`,
-        `- ${fmtPdfEur(remisePack)}`,
+        `- ${fmtPdfEur(pdfRemise)}`,
       );
     }
 
-    addRecapLine('Total HT', fmtPdfEur(totalHT), true);
-    addRecapLine(`TVA ${company?.tva_taux_defaut ?? 20}%`, fmtPdfEur(totalHT * (company?.tva_taux_defaut ?? 20) / 100));
-    addRecapLine('TOTAL TTC', fmtPdfEur(totalTTC), false, true); // fond vert highlight
+    addRecapLine('Total HT', fmtPdfEur(pdfTotalHT), true);
+    addRecapLine(`TVA ${company?.tva_taux_defaut ?? 20}%`, fmtPdfEur(pdfTotalHT * (company?.tva_taux_defaut ?? 20) / 100));
+    addRecapLine('TOTAL TTC', fmtPdfEur(pdfTotalTTC), false, true); // fond vert highlight
 
     y += 8;
 

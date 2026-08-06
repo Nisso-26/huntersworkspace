@@ -22,8 +22,7 @@ import {
 } from 'lucide-react';
 import {
   useCompanySettings, useUpdateCompanySettings,
-  useHonorairesTranches, useSaveHonorairesTranches,
-  useAuditLog, type CompanySettings, type HonorairesTranche,
+  useAuditLog, type CompanySettings,
 } from '@/hooks/use-company-settings';
 import { useAlertSettings, type AlertSettings } from '@/hooks/use-alert-settings';
 import { format } from 'date-fns';

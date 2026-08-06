@@ -281,6 +281,9 @@ Deno.serve(async (req) => {
         .from("profiles").select("full_name, email").eq("id", row.mandataire_id).maybeSingle();
       if (profile?.email) {
         await supabase.functions.invoke("send-notification", {
+          // functions.invoke n'ajoute pas d'en-tête Authorization : on force la clé
+          // service_role pour que send-notification reconnaisse un appel interne.
+          headers: { Authorization: `Bearer ${serviceRoleKey}` },
           body: {
             to: profile.email,
             subject: `Document signé — ${row.signataire_nom}`,

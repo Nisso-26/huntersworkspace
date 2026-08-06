@@ -26,8 +26,10 @@ export default function Dashboard() {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Affiche l'onboarding tant que profiles.onboarding_completed = false
+  // (le super_admin ne passe jamais par ce parcours : c'est lui qui invite les autres)
   useEffect(() => {
-    if (!user?.id || isAdmin || role !== 'mandataire') return;
+    if (!user?.id || isAdmin) return;
+    if (role !== 'mandataire' && role !== 'decoratrice' && role !== 'analyste') return;
     (async () => {
       const { data } = await (await import('@/integrations/supabase/client')).supabase
         .from('profiles')

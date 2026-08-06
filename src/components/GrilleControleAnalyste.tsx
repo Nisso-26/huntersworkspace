@@ -177,8 +177,18 @@ export default function GrilleControleAnalyste({ dossier }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h3 className="text-base font-heading font-bold text-[#004621]">
+          <h3 className="text-base font-heading font-bold text-[#004621] flex items-center gap-2">
             Grille de contrôle qualité — 25 points
+            <HelpTip
+              title="Grille de contrôle qualité"
+              intro="C'est la relecture de la stratégie avant qu'elle ne parte au conseiller et au client. Vous vérifiez que les chiffres et les conseils tiennent la route."
+              points={[
+                { label: 'Comment faire', text: 'pour chaque ligne, cliquez OK (c\'est juste), KO (c\'est faux ou incohérent) ou NA (ne concerne pas ce dossier).' },
+                { label: 'Lignes « Bloquant »', text: 'ce sont les points que l\'on ne peut pas laisser passer. Un seul KO dessus et la grille ne peut pas être validée.' },
+                { label: 'Pour terminer', text: 'aucun point laissé vide, aucun KO bloquant, puis vous inscrivez votre visa et vous enregistrez.' },
+              ]}
+              note="Tant que la grille n'est pas validée, le conseiller voit seulement « Validation en cours » de son côté."
+            />
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
             Validation analyste avant transmission au mandataire

@@ -5,6 +5,11 @@ import { toast } from 'sonner';
 import { fetchAllPaginated } from '@/lib/supabase-pagination';
 import type { CompanySettings } from './use-company-settings';
 import { fmtPdfEur } from '@/lib/pdf-utils';
+import {
+  assertEmail, markEnvoiEnCours, pdfToBase64, safePdfFilename, sendDocumentEmail,
+  type DocEmailStatut,
+} from '@/lib/document-email';
+
 
 export interface FactureLigne {
   service_key?: string;
@@ -41,7 +46,12 @@ export interface Facture {
   mandataire_name?: string;
   mandataire_zone?: string;
   dossier_numero?: string | null;
+  email_statut?: DocEmailStatut | null;
+  email_destinataire?: string | null;
+  email_envoye_at?: string | null;
+  email_erreur?: string | null;
 }
+
 
 export function useFactures() {
   const { user } = useAuth();
@@ -142,7 +152,12 @@ const typeLabels: Record<string, string> = {
 };
 
 
-export async function generateFacturePDF(facture: Facture, settings?: Partial<CompanySettings> | null) {
+export async function generateFacturePDF(
+  facture: Facture,
+  settings?: Partial<CompanySettings> | null,
+  opts?: { mode?: 'save' | 'base64' },
+): Promise<string | void> {
+
   // Lazy-load jsPDF (≈ 350 kB) uniquement à la demande pour alléger le bundle initial
   const { default: jsPDF } = await import('jspdf');
   const doc = new jsPDF();

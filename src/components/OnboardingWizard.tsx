@@ -70,6 +70,10 @@ type FormData = {
   adresse_ville: string;
   telephone: string;
   statut_juridique: '' | 'auto-entrepreneur' | 'eurl' | 'sasu';
+  // Décoratrice
+  statut_deco: '' | 'salariee' | 'auto-entrepreneuse';
+  // Analyste patrimoniale
+  statut_pro: '' | 'salarie' | 'independant';
   // Étape 3
   rsac_numero: string;
   rsac_greffe: string;

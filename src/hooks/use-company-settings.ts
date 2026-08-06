@@ -40,14 +40,6 @@ export interface CompanySettings {
   rcs: string;
 }
 
-export interface HonorairesTranche {
-  id: string;
-  prix_min: number;
-  prix_max: number | null;
-  taux: number;
-  montant_minimum: number;
-  ordre: number;
-}
 
 export interface AuditLogEntry {
   id: string;

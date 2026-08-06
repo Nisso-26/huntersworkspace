@@ -12,6 +12,15 @@ export interface DevisLigne {
   montant_ht: number;
 }
 
+export type DevisEmailStatut = 'non_envoye' | 'envoi_en_cours' | 'envoye' | 'echec';
+
+export const DEVIS_EMAIL_LABELS: Record<DevisEmailStatut, string> = {
+  non_envoye: 'Non envoyé',
+  envoi_en_cours: 'Envoi en cours…',
+  envoye: 'Email envoyé',
+  echec: "Échec de l'envoi",
+};
+
 export interface Devis {
   id: string;
   dossier_id: string;
@@ -25,7 +34,12 @@ export interface Devis {
   pack_actif: boolean;
   contenu: { lignes: DevisLigne[] };
   created_at: string;
+  email_statut: DevisEmailStatut;
+  email_destinataire: string | null;
+  email_envoye_at: string | null;
+  email_erreur: string | null;
 }
+
 
 export function useDevis(dossierId: string | undefined) {
   return useQuery({

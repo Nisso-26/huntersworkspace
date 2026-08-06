@@ -792,6 +792,8 @@ export async function buildSignatureDocumentPdf(
     client: fields.nom_client || null,
     company: opts.company ?? null,
     avecCouverture: true,
+    typeDocument: spec.typeDocument,
+
   });
 }
 

@@ -260,7 +260,7 @@ export default function Agenda() {
 
         {!isLoading && evenements.length === 0 && (
           <div className="rounded-xl border border-border/60 bg-card py-8 text-center">
-            <CalendarIcon className="w-7 h-7 text-muted-foreground/30 mx-auto mb-2" />
+            <CalendarDays className="w-7 h-7 text-muted-foreground/30 mx-auto mb-2" />
             <p className="text-sm font-medium text-foreground">Aucun événement à l'agenda</p>
             <p className="text-xs text-muted-foreground mt-1">
               Cliquez sur un jour du calendrier ou sur « Événement » pour planifier une visite, un rendez-vous ou une formation.

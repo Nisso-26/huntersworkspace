@@ -19,6 +19,7 @@ const statutLabel: Record<string, string> = {
 };
 
 export default function ObjectifsReseauTable() {
+  const { isAdmin } = useAuth();
   const { data = [], isLoading } = useObjectifsReseauCourant();
   const qc = useQueryClient();
   const [computing, setComputing] = useState(false);
@@ -29,7 +30,10 @@ export default function ObjectifsReseauTable() {
   const t2 = data.filter(r => r.objectif.trimestres_rates_consecutifs === 2);
   const t1 = data.filter(r => r.objectif.trimestres_rates_consecutifs === 1);
 
+  // Le recalcul global (RPC sans argument) est réservé au Directeur :
+  // un mandataire doit passer par la version à 3 arguments (son propre trimestre).
   const handleCompute = async () => {
+    if (!isAdmin) return;
     setComputing(true);
     const { data: res, error } = await supabase.rpc('compute_objectif_trimestre');
     setComputing(false);

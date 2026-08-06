@@ -226,9 +226,6 @@ export default function Facturation() {
                                 envoyerMut.mutateAsync({ facture: f, settings: companySettings, email })
                               }
                             />
-
-                              <Download className="w-4 h-4" />
-                            </Button>
                             {f.statut !== 'payee' && f.statut !== 'annulee' && (
                               <Button variant="outline" size="sm" onClick={() => markPaid(f.id)}>
                                 Payée

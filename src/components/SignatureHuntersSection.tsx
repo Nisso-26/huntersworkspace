@@ -101,9 +101,15 @@ export default function SignatureHuntersSection({
   const envoyer = useEnvoyerEnSignature();
   const relancer = useRelancerSignature();
   const annuler = useAnnulerSignature();
+  const { data: company } = useCompanySettings();
+  const { data: baremes = [] } = useBaremesHunters();
+
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState<'form' | 'confirm'>('form');
+  const [step, setStep] = useState<'form' | 'preview' | 'confirm'>('form');
   const [file, setFile] = useState<File | null>(null);
+  const [fields, setFields] = useState<Record<string, string>>({});
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const [form, setForm] = useState({
     type_document: (typesDisponibles?.[0] ?? 'mandat_recherche') as TypeDocumentSignature,
     signataire_nom: clientName,
@@ -111,22 +117,62 @@ export default function SignatureHuntersSection({
     document_nom: '',
   });
 
+  // Données sources du pré-remplissage
+  const { data: source } = useQuery({
+    queryKey: ['signature-prefill-source', dossierId],
+    enabled: !!dossierId && open,
+    queryFn: async () => {
+      const { data: dossier, error } = await supabase
+        .from('dossiers').select('*').eq('id', dossierId!).single();
+      if (error) throw error;
+      let conseiller = '';
+      if ((dossier as any)?.mandataire_id) {
+        const { data: prof } = await supabase
+          .from('profiles').select('full_name').eq('id', (dossier as any).mandataire_id).maybeSingle();
+        conseiller = (prof as any)?.full_name || '';
+      }
+      return { dossier: dossier as any, conseiller };
+    },
+  });
+  const { data: zones = [] } = useZonesMandataires(source?.dossier?.mandataire_id ?? undefined);
+
   const types = typesDisponibles
     ? TYPES_DOCUMENT_SIGNATURE.filter(t => typesDisponibles.includes(t.value))
     : TYPES_DOCUMENT_SIGNATURE;
 
   const typeLabel = TYPES_DOCUMENT_SIGNATURE.find(t => t.value === form.type_document)?.label ?? form.type_document;
+  const spec = SIGNATURE_DOC_SPECS[form.type_document as SignatureDocType];
+  const autoDoc = !file;
+
+  const groupes = useMemo(() => {
+    const out: { group: string; fields: typeof spec.fields }[] = [];
+    for (const f of spec?.fields ?? []) {
+      const g = out.find(x => x.group === f.group);
+      if (g) g.fields.push(f);
+      else out.push({ group: f.group, fields: [f] });
+    }
+    return out;
+  }, [spec]);
+
+  const clearPreview = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+  };
+
+  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
 
   const resetDialog = (v: boolean) => {
     setOpen(v);
     if (!v) {
       setStep('form');
       setFile(null);
+      setFields({});
+      clearPreview();
       setForm(f => ({ ...f, document_nom: '' }));
     }
   };
 
-  const goConfirm = () => {
+  const goNext = () => {
     if (!form.signataire_nom.trim()) {
       toast.error('Nom du signataire requis');
       return;
@@ -135,7 +181,34 @@ export default function SignatureHuntersSection({
       toast.error('Adresse email du signataire invalide');
       return;
     }
-    setStep('confirm');
+    if (!autoDoc) { setStep('confirm'); return; }
+    // Pré-remplit les champs depuis le dossier puis ouvre l'aperçu modifiable
+    setFields(prefillSignatureDoc(form.type_document as SignatureDocType, {
+      dossier: source?.dossier ?? null,
+      company: company ?? null,
+      conseiller: source?.conseiller ?? null,
+      zones: zones.map(z => z.zone_label),
+      baremes,
+      signataireNom: form.signataire_nom.trim(),
+      signataireEmail: form.signataire_email.trim(),
+    }));
+    clearPreview();
+    setStep('preview');
+  };
+
+  const genererApercu = async () => {
+    setPreviewLoading(true);
+    try {
+      const doc = await buildSignatureDocumentPdf(
+        form.type_document as SignatureDocType, fields, { company: company ?? null },
+      );
+      clearPreview();
+      setPreviewUrl(URL.createObjectURL(doc.output('blob') as Blob));
+    } catch (e: any) {
+      toast.error(`Aperçu impossible : ${e.message}`);
+    } finally {
+      setPreviewLoading(false);
+    }
   };
 
   const handleSend = () => {
@@ -147,6 +220,9 @@ export default function SignatureHuntersSection({
         signataire_email: form.signataire_email.trim(),
         document_nom: form.document_nom.trim() || null,
         file,
+        autoDoc: autoDoc
+          ? { type: form.type_document as SignatureDocType, fields, company: company ?? null }
+          : null,
         numero_dossier: numeroDossier,
       },
       {
@@ -154,6 +230,7 @@ export default function SignatureHuntersSection({
       },
     );
   };
+
 
   const copierLien = (token: string) => {
     navigator.clipboard.writeText(`${window.location.origin}/signer/${token}`);

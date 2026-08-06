@@ -5,6 +5,9 @@ import { generateFacturePDF } from '@/hooks/use-factures';
 import SimulateurTab from '@/components/SimulateurTab';
 import RapportConseilButton from '@/components/RapportConseilButton';
 import { supabase } from '@/integrations/supabase/client';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+const qc = new QueryClient();
 
 const settings = {
   raison_sociale: 'HUNTERS Immobilier',
@@ -104,7 +107,9 @@ const dossier = {
 } as any;
 
 function App() {
-  return React.createElement(
+  return React.createElement(QueryClientProvider, { client: qc },
+   React.createElement(AuthProvider, null,
+    React.createElement(
     'div',
     { style: { padding: 24 } },
     React.createElement(SimulateurTab, {
@@ -115,7 +120,7 @@ function App() {
       dossierClient: 'Didier GBENOU',
     }),
     React.createElement(RapportConseilButton, { dossier }),
-  );
+  )));
 }
 
 const el = document.getElementById('root')!;

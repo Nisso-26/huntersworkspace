@@ -426,14 +426,20 @@ export default function OnboardingWizard({ onComplete }: Props) {
 
 // ============ ÉTAPES ============
 
-function StepBienvenue() {
+function StepBienvenue({ wizardRole, totalSteps }: { wizardRole: WizardRole; totalSteps: number }) {
+  const intro =
+    wizardRole === 'mandataire'
+      ? 'Votre espace mandataire est prêt.'
+      : wizardRole === 'analyste'
+        ? 'Votre espace analyste patrimoniale est prêt.'
+        : 'Votre espace décoration est prêt.';
   return (
     <div className="text-center space-y-6 py-8">
       <img src={huntersLogo} alt="HUNTERS" className="w-20 h-20 rounded-lg mx-auto" />
       <div>
         <h1 className="text-3xl font-heading font-bold">Bienvenue dans le réseau HUNTERS Immobilier</h1>
         <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-          Votre espace mandataire est prêt. Complétez votre dossier en 5 étapes pour activer votre accès complet à Hunters Workspace.
+          {intro} Complétez votre dossier en {totalSteps} étapes pour activer votre accès complet à Hunters Workspace.
         </p>
       </div>
       <div className="grid sm:grid-cols-3 gap-4 mt-8">

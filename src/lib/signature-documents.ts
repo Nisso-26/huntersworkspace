@@ -71,10 +71,16 @@ export function computeMontantBareme(t: BaremeHunters | undefined, base: number)
   return fixe + (base * (Number(t.valeur) || 0)) / 100;
 }
 
+/** Taux de TVA applicable (%) issu des paramètres société, repli légal 20%. */
+export function tvaRateFromSettings(company?: Partial<CompanySettings> | null): number {
+  const raw = Number(company?.tva_taux_defaut);
+  return Number.isFinite(raw) && raw >= 0 ? raw : 20;
+}
+
 /** Honoraires de chasse HT/TTC recalculés depuis les barèmes et le prix du bien. */
-export function honorairesChasse(baremes: BaremeHunters[], prix: number) {
+export function honorairesChasse(baremes: BaremeHunters[], prix: number, tvaRate = 20) {
   const ht = computeMontantBareme(pickTranche(baremes, 'chasse', prix), prix);
-  return { ht, ttc: ht * 1.2 };
+  return { ht, ttc: ht * (1 + tvaRate / 100) };
 }
 
 // ─── Spécifications par type de document ─────────────────────────────────────
@@ -403,7 +409,7 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
       { key: 'delai', label: "Délai d'exécution convenu", group: 'Mission' },
       { key: 'livrables', label: 'Livrables inclus', type: 'textarea', group: 'Mission' },
       { key: 'montant_ht', label: 'Montant HT', group: 'Honoraires' },
-      { key: 'montant_tva', label: 'TVA 20 %', group: 'Honoraires' },
+      { key: 'montant_tva', label: 'TVA', group: 'Honoraires' },
       { key: 'montant_ttc', label: 'Montant TTC', group: 'Honoraires' },
       { key: 'echeancier', label: 'Échéancier de paiement', group: 'Honoraires' },
       { key: 'conditions', label: 'Conditions particulières', type: 'textarea', group: 'Honoraires' },
@@ -435,7 +441,7 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
         id: 'honoraires', type: 'text', titre: 'Honoraires et conditions de paiement',
         contenu:
           `Montant HT : ${v(f.montant_ht)}\n` +
-          `TVA 20 % : ${v(f.montant_tva)}\n` +
+          `TVA : ${v(f.montant_tva)}\n` +
           `Montant TTC : ${v(f.montant_ttc)}\n` +
           `Echeancier : ${v(f.echeancier)}\n\n` +
           "Echeanciers de reference : M01 — 50 % a la signature / 50 % a la remise · M02 — 100 % a l'acte " +
@@ -665,7 +671,8 @@ export function prefillSignatureDoc(
   const c = src.company || {};
   const today = new Date();
   const budget = Number(d.budget) || 0;
-  const { ht, ttc } = honorairesChasse(src.baremes || [], budget);
+  const tvaRate = tvaRateFromSettings(c);
+  const { ht, ttc } = honorairesChasse(src.baremes || [], budget, tvaRate);
   const services = (d.services_souscrits as Record<string, boolean>) || {};
   const missions = Object.keys(services)
     .filter((k) => services[k])
@@ -737,8 +744,8 @@ export function prefillSignatureDoc(
       delai: d.delai_concretisation || '',
       livrables: 'Rapport de conseil strategique, plan de financement, strategie fiscale',
       montant_ht: mHt ? fmtEur(mHt) : '',
-      montant_tva: mHt ? fmtEur(mHt * 0.2) : '',
-      montant_ttc: mHt ? fmtEur(mHt * 1.2) : '',
+      montant_tva: mHt ? fmtEur(mHt * tvaRate / 100) : '',
+      montant_ttc: mHt ? fmtEur(mHt * (1 + tvaRate / 100)) : '',
       echeancier: '50 % a la signature / 50 % a la remise du livrable',
       conditions: '',
     };

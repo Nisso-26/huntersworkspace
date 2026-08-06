@@ -136,7 +136,14 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   const [packActif, setPackActif] = useState<boolean>(dossier.type_accompagnement === 'cle_en_main');
   const [emailClient, setEmailClient] = useState<string>(((dossier as any).email as string) || '');
 
-  const tarifConseil = Number((dossier as any).tarif_conseil_ht) || 1500;
+  // Tarif du conseil : valeur figée sur le dossier, sinon barème HUNTERS « conseil »
+  // indexé sur le score de qualification. Aucune valeur codée en dur.
+  const scoreClient = Number((dossier as any).score_qualification) || 0;
+  const tarifConseil = Number((dossier as any).tarif_conseil_ht)
+    || computeMontant(pickTranche(baremes, 'conseil', scoreClient), scoreClient).montant;
+  // Taux de TVA réel (paramètres société), en pourcentage
+  const tvaTaux = Number(company?.tva_taux_defaut);
+  const tvaRate = Number.isFinite(tvaTaux) && tvaTaux >= 0 ? tvaTaux : 20;
   const niveau = (dossier as any).niveau_qualification || 'Standard';
 
 
@@ -171,9 +178,11 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   }, [baremes, services, packActif, tarifConseil, niveau, prixBien, budgetTravaux, budgetDeco]);
 
   const sousTotal = lignes.reduce((s, l) => s + l.montant_ht, 0);
-  const remisePack = packActif ? sousTotal * 0.1 : 0;
+  // Le conseil patrimonial n'est jamais remisé : la remise pack ne porte que sur chasse/AMO/déco
+  const baseRemisable = lignes.filter(l => l.service !== 'conseil').reduce((s, l) => s + l.montant_ht, 0);
+  const remisePack = packActif ? baseRemisable * 0.1 : 0;
   const totalHT = sousTotal - remisePack;
-  const tva = totalHT * 0.2;
+  const tva = totalHT * (tvaRate / 100);
   const totalTTC = totalHT + tva;
 
   const buildPdf = async (override?: {
@@ -364,7 +373,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
     }
 
     addRecapLine('Total HT', fmtPdfEur(pdfTotalHT), true);
-    addRecapLine(`TVA ${company?.tva_taux_defaut ?? 20}%`, fmtPdfEur(pdfTotalHT * (company?.tva_taux_defaut ?? 20) / 100));
+    addRecapLine(`TVA ${tvaRate}%`, fmtPdfEur(pdfTotalHT * tvaRate / 100));
     addRecapLine('TOTAL TTC', fmtPdfEur(pdfTotalTTC), false, true); // fond vert highlight
 
     y += 8;
@@ -373,7 +382,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
     doc.setFont(FONT.body, 'italic');
     doc.setFontSize(8);
     doc.setTextColor(...C.textMuted);
-    doc.text('Devis valable 30 jours — TVA 20% — Honoraires HT', marginL, y);
+    doc.text(`Devis valable 30 jours — TVA ${tvaRate}% — Honoraires HT`, marginL, y);
     y += 8;
 
     // ── Zone de signature double ───────────────────────────────────────────────
@@ -408,7 +417,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
       dossier_id: dossier.id,
       montant_ht: totalHT,
       remise_pack: remisePack,
-      tva_taux: 20,
+      tva_taux: tvaRate,
       montant_ttc: totalTTC,
       statut,
       pack_actif: packActif,
@@ -425,7 +434,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
         dossier_id: dossier.id,
         montant_ht: totalHT,
         remise_pack: remisePack,
-        tva_taux: 20,
+        tva_taux: tvaRate,
         montant_ttc: totalTTC,
         pack_actif: packActif,
         contenu: { lignes } as any,
@@ -520,7 +529,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
             <div className="flex justify-between text-[#004621]"><span>Remise pack -10%</span><span>- {fmtPdfEur(remisePack)}</span></div>
           )}
           <div className="flex justify-between"><span>Total HT</span><span>{fmtPdfEur(totalHT)}</span></div>
-          <div className="flex justify-between text-muted-foreground"><span>TVA 20%</span><span>{fmtPdfEur(tva)}</span></div>
+          <div className="flex justify-between text-muted-foreground"><span>TVA {tvaRate}%</span><span>{fmtPdfEur(tva)}</span></div>
           <div className="flex justify-between font-bold text-base border-t pt-1"><span>Total TTC</span><span className="text-[#004621]">{fmtPdfEur(totalTTC)}</span></div>
         </div>
 

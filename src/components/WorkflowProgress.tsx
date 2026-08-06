@@ -35,12 +35,12 @@ export default function WorkflowProgress({ dossier }: Props) {
       // Step 1 — Qualification
       completion[1] = !!(dossier.client_name && dossier.budget && (dossier.email || dossier.phone));
 
-      // Step 2 — Contractualisation : signature signée
+      // Step 2 — Contractualisation : signature électronique signée
       const { data: sigs } = await supabase
-        .from('signature_requests')
-        .select('status')
+        .from('signatures_electroniques')
+        .select('statut')
         .eq('dossier_id', dossier.id);
-      completion[2] = (sigs || []).some(s => ['signe', 'signed', 'completed', 'done'].includes((s.status || '').toLowerCase()));
+      completion[2] = (sigs || []).some(s => (s.statut || '').toLowerCase() === 'signe');
 
       // Step 3 — Stratégie patrimoniale + rapport conseil exporté
       const hasStrategie = !!dossier.strategie && (typeof dossier.strategie === 'string' ? dossier.strategie.trim().length > 0 : Object.keys(dossier.strategie || {}).length > 0);

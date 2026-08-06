@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   shouldTriggerHonoraires,
-  commissionRateForLevel,
+  commissionRateForService,
   computeCommission,
   computeBonusParrainage,
   isValidPipelineStatus,
@@ -40,21 +40,21 @@ describe('Calcul financier complet à l\'acte signé', () => {
   const honoraires = 12000; // 12k€ d'honoraires sur un dossier type
 
   it('mandataire N1 sans parrain : commission 50%', () => {
-    const taux = commissionRateForLevel('N1');
+    const taux = commissionRateForService(null, 'conseil', 'N1');
     const commission = computeCommission(honoraires, taux);
     expect(taux).toBe(50);
     expect(commission).toBe(6000);
   });
 
   it('mandataire N2 sans parrain : commission 60%', () => {
-    const taux = commissionRateForLevel('N2');
+    const taux = commissionRateForService(null, 'conseil', 'N2');
     const commission = computeCommission(honoraires, taux);
     expect(taux).toBe(60);
     expect(commission).toBe(7200);
   });
 
   it('mandataire avec parrain : bonus 2% en plus pour le parrain', () => {
-    const commissionFilleul = computeCommission(honoraires, commissionRateForLevel('N1'));
+    const commissionFilleul = computeCommission(honoraires, commissionRateForService(null, 'conseil', 'N1'));
     const bonusParrain = computeBonusParrainage(honoraires);
     expect(commissionFilleul).toBe(6000);
     expect(bonusParrain).toBe(240);

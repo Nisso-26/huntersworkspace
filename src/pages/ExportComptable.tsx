@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Download, FileSpreadsheet } from 'lucide-react';
 import { useState } from 'react';
+import { useCompanySettings } from '@/hooks/use-company-settings';
 
 const typeLabels: Record<string, string> = {
   honoraires: 'Honoraires', abonnement: 'Abonnement mensuel', commission: 'Commission mandataire', avoir: 'Avoir / Remboursement',
@@ -19,6 +20,8 @@ const statutLabels: Record<string, string> = {
 export default function ExportComptable() {
   const { data: factures = [] } = useFactures();
   const { data: mandataires = [] } = useMandataires();
+  const { data: company } = useCompanySettings();
+  const tvaDefaut = Number(company?.tva_taux_defaut) >= 0 ? Number(company!.tva_taux_defaut) : 20;
   const now = new Date();
   const [dateDebut, setDateDebut] = useState(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`);
   const [dateFin, setDateFin] = useState(now.toISOString().slice(0, 10));
@@ -34,8 +37,8 @@ export default function ExportComptable() {
   });
 
   const totalHT = filtered.reduce((s, f) => s + f.montant, 0);
-  const totalTVA = filtered.reduce((s, f) => s + (f.montant * (f.tva_taux || 20) / 100), 0);
-  const totalTTC = filtered.reduce((s, f) => s + (f.montant_ttc || f.montant * 1.2), 0);
+  const totalTVA = filtered.reduce((s, f) => s + (f.montant * (f.tva_taux || tvaDefaut) / 100), 0);
+  const totalTTC = filtered.reduce((s, f) => s + (f.montant_ttc || f.montant * (1 + (f.tva_taux || tvaDefaut) / 100)), 0);
 
   const handleExportCSV = () => {
     exportToCSV(
@@ -47,9 +50,9 @@ export default function ExportComptable() {
         f.dossier_client_name || f.client_name || '',
         f.mandataire_name || '',
         f.montant.toFixed(2),
-        String(f.tva_taux || 20),
-        (f.montant * (f.tva_taux || 20) / 100).toFixed(2),
-        (f.montant_ttc || f.montant * 1.2).toFixed(2),
+        String(f.tva_taux || tvaDefaut),
+        (f.montant * (f.tva_taux || tvaDefaut) / 100).toFixed(2),
+        (f.montant_ttc || f.montant * (1 + (f.tva_taux || tvaDefaut) / 100)).toFixed(2),
         statutLabels[f.statut] || f.statut,
       ]),
       `export_comptable_${dateDebut}_${dateFin}`
@@ -139,7 +142,7 @@ export default function ExportComptable() {
                     <td className="px-4 py-2 hidden md:table-cell">{f.dossier_client_name || f.client_name || '—'}</td>
                     <td className="px-4 py-2 hidden lg:table-cell">{f.mandataire_name}</td>
                     <td className="px-4 py-2 text-right font-medium">{f.montant.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</td>
-                    <td className="px-4 py-2 text-right hidden sm:table-cell">{(f.montant_ttc || f.montant * 1.2).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</td>
+                    <td className="px-4 py-2 text-right hidden sm:table-cell">{(f.montant_ttc || f.montant * (1 + (f.tva_taux || tvaDefaut) / 100)).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</td>
                     <td className="px-4 py-2">{statutLabels[f.statut] || f.statut}</td>
                   </tr>
                 ))}

@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Receipt, Plus, Trash2, Save, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCompanySettings } from '@/hooks/use-company-settings';
 import {
   useBaremesHunters, useSaveBaremesService,
   type BaremeHunters, type BaremeService, type BaremeType,
@@ -24,6 +25,20 @@ const SERVICES: { key: BaremeService; label: string; baseLabel: string; note?: s
 
 function emptyRow(): Row {
   return { tranche_min: 0, tranche_max: null, type: 'forfait', valeur: 0, valeur_fixe: 0, ordre: 1 };
+}
+
+
+/** Rappel du taux de TVA réel issu des paramètres société. */
+function TvaNote() {
+  const { data: company } = useCompanySettings();
+  const raw = Number(company?.tva_taux_defaut);
+  const tvaRate = Number.isFinite(raw) && raw >= 0 ? raw : 20;
+  return (
+    <div className="flex items-start gap-2 text-xs text-muted-foreground border-t pt-3">
+      <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+      <span>Tous les montants sont exprimés HT. TVA applicable : {tvaRate}%.</span>
+    </div>
+  );
 }
 
 function ServiceEditor({ service, all }: { service: BaremeService; all: BaremeHunters[] }) {
@@ -101,10 +116,7 @@ function ServiceEditor({ service, all }: { service: BaremeService; all: BaremeHu
         </Button>
       </div>
 
-      <div className="flex items-start gap-2 text-xs text-muted-foreground border-t pt-3">
-        <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-        <span>Tous les montants sont exprimés HT. TVA applicable : 20%.</span>
-      </div>
+      <TvaNote />
     </Card>
   );
 }
@@ -117,10 +129,7 @@ function PackPanel() {
         Le tarif du pack est calculé automatiquement : <strong>somme des services engagés (Conseil + Chasse + AMO + Déco) − 10% de remise globale</strong>.
       </p>
       <p className="text-xs text-muted-foreground">Ce mode n'a pas de barème propre — il s'appuie sur les barèmes des autres services.</p>
-      <div className="flex items-start gap-2 text-xs text-muted-foreground border-t pt-3">
-        <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-        <span>Tous les montants sont exprimés HT. TVA applicable : 20%.</span>
-      </div>
+      <TvaNote />
     </Card>
   );
 }

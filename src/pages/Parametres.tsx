@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Bell, Building2, Receipt, Network, FileText, History, UserPlus, Tag,
+  MapPin, ShieldCheck, Target,
 } from 'lucide-react';
 
 // Section profil chargée en eager (visible pour tous les rôles)
@@ -20,6 +21,11 @@ const NotificationsSection = lazy(() => import('@/components/parametres/Notifica
 const JournalAudit = lazy(() => import('@/components/parametres/JournalAudit'));
 const TarifsServices = lazy(() => import('@/components/parametres/TarifsServices'));
 
+// Sections mandataire (lecture de ses propres données)
+const ZonesTab = lazy(() => import('@/components/mandataires/ZonesTab'));
+const ConformiteTab = lazy(() => import('@/components/mandataires/ConformiteTab'));
+const ObjectifsTab = lazy(() => import('@/components/mandataires/ObjectifsTab'));
+
 const SectionFallback = () => (
   <div className="space-y-3">
     <Skeleton className="h-8 w-48" />
@@ -29,7 +35,7 @@ const SectionFallback = () => (
 );
 
 export default function Parametres() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
 
   return (
     <AppLayout>
@@ -40,6 +46,21 @@ export default function Parametres() {
         </div>
 
         <ProfileSection />
+
+        {!isAdmin && user?.id && (
+          <Tabs defaultValue="zone" className="space-y-4">
+            <TabsList className="flex-wrap h-auto">
+              <TabsTrigger value="zone"><MapPin className="w-4 h-4 mr-1" />Ma zone</TabsTrigger>
+              <TabsTrigger value="conformite"><ShieldCheck className="w-4 h-4 mr-1" />Ma conformité</TabsTrigger>
+              <TabsTrigger value="objectifs"><Target className="w-4 h-4 mr-1" />Mes objectifs</TabsTrigger>
+            </TabsList>
+            <Suspense fallback={<SectionFallback />}>
+              <TabsContent value="zone"><ZonesTab mandataireId={user.id} /></TabsContent>
+              <TabsContent value="conformite"><ConformiteTab mandataireId={user.id} readonly /></TabsContent>
+              <TabsContent value="objectifs"><ObjectifsTab mandataireId={user.id} canEdit /></TabsContent>
+            </Suspense>
+          </Tabs>
+        )}
 
         {isAdmin && (
           <Tabs defaultValue="utilisateurs" className="space-y-4">

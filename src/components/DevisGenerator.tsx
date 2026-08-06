@@ -443,15 +443,36 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
           <div className="flex justify-between font-bold text-base border-t pt-1"><span>Total TTC</span><span className="text-[#004621]">{fmtPdfEur(totalTTC)}</span></div>
         </div>
 
-        <div className="flex flex-wrap gap-2 justify-end pt-2">
-          <Button variant="outline" onClick={generatePdf}><Download className="w-4 h-4 mr-2" />Générer PDF</Button>
-          <Button variant="outline" onClick={() => handleSave('brouillon')} disabled={saveMut.isPending}>
-            <Save className="w-4 h-4 mr-2" />Enregistrer
-          </Button>
-          <Button onClick={() => handleSave('envoye')} disabled={saveMut.isPending} className="bg-[#004621] hover:bg-[#004621]/90">
-            <Send className="w-4 h-4 mr-2" />Envoyer au client
-          </Button>
+        <div className="space-y-2 pt-2 border-t">
+          <Label className="text-xs">Email du client (destinataire du devis)</Label>
+          <div className="flex flex-wrap gap-2">
+            <Input
+              type="email"
+              value={emailClient}
+              onChange={e => setEmailClient(e.target.value)}
+              placeholder="client@email.com"
+              className="flex-1 min-w-[220px]"
+            />
+            <Button variant="outline" onClick={generatePdf}><Download className="w-4 h-4 mr-2" />Générer PDF</Button>
+            <Button variant="outline" onClick={() => handleSave('brouillon')} disabled={saveMut.isPending}>
+              <Save className="w-4 h-4 mr-2" />Enregistrer
+            </Button>
+            <Button
+              onClick={handleSend}
+              disabled={envoyerMut.isPending || lignes.length === 0 || !emailClient.trim()}
+              className="bg-[#004621] hover:bg-[#004621]/90"
+            >
+              {envoyerMut.isPending
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Envoi en cours…</>
+                : <><Send className="w-4 h-4 mr-2" />Envoyer au client</>}
+            </Button>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Le client reçoit un e-mail avec le PDF du devis en pièce jointe. Le statut réel de l'envoi
+            s'affiche dans l'historique ci-dessous.
+          </p>
         </div>
+
       </Card>
 
       <Card className="p-6 space-y-3">

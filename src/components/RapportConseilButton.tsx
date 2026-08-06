@@ -553,14 +553,24 @@ export default function RapportConseilButton({ dossier }: Props) {
               <X className="w-4 h-4" />
               Annuler
             </Button>
-            <Button
-              onClick={exportPdf}
-              disabled={loading || exporting || sections.some(s => !s.trim())}
-              className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
-            >
-              {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-              {exporting ? 'Export en cours…' : 'Exporter en PDF'}
-            </Button>
+            <div className="flex items-center gap-2">
+              <EnvoyerDocumentButton
+                documentLabel="Rapport de conseil"
+                defaultEmail={(dossier as any).email || null}
+                onSend={(email) => exportPdf(email)}
+                variant="outline"
+                size="default"
+              />
+              <Button
+                onClick={() => exportPdf()}
+                disabled={loading || exporting || sections.some(s => !s.trim())}
+                className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
+              >
+                {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {exporting ? 'Export en cours…' : 'Exporter en PDF'}
+              </Button>
+            </div>
+
           </DialogFooter>
         </DialogContent>
       </Dialog>

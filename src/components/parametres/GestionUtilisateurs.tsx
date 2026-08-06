@@ -34,13 +34,32 @@ export default function GestionUtilisateurs() {
     setLoadingUsers(true);
     const { data: profiles } = await supabase.from('profiles').select('id, full_name, email, status, created_at');
     const { data: roles } = await supabase.from('user_roles').select('user_id, role');
+    // Statut d'activation réel (last_sign_in_at) : accessible uniquement via l'edge function admin
+    let authMap: Record<string, { last_sign_in_at: string | null }> = {};
+    try {
+      const res = await supabase.functions.invoke('manage-user', { body: { action: 'list_status' } });
+      if (!res.error && !res.data?.error) {
+        authMap = (res.data?.users || []).reduce((acc: any, u: any) => {
+          acc[u.id] = { last_sign_in_at: u.last_sign_in_at };
+          return acc;
+        }, {});
+      }
+    } catch {
+      // Statut d'activation indisponible : la liste reste affichée sans badge d'attente
+    }
     const roleMap = (roles || []).reduce((acc: Record<string, string>, r: any) => {
       acc[r.user_id] = r.role;
       return acc;
     }, {});
-    setUsers((profiles || []).map(p => ({ ...p, role: roleMap[p.id] || 'mandataire' })));
+    setUsers((profiles || []).map(p => ({
+      ...p,
+      role: roleMap[p.id] || 'mandataire',
+      last_sign_in_at: authMap[p.id]?.last_sign_in_at ?? null,
+      auth_known: Object.prototype.hasOwnProperty.call(authMap, p.id),
+    })));
     setLoadingUsers(false);
   };
+
 
   const handleCreate = async () => {
     if (!email || !fullName) {

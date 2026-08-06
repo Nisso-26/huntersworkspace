@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Link2, Copy, XCircle, Loader2 } from 'lucide-react';
+import { Link2, Copy, XCircle, Loader2, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Props {
@@ -112,6 +112,19 @@ export default function ClientPortalSection({ dossierId, clientName }: Props) {
               <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyLink(t.token)}>
                 <Copy className="w-3 h-3" />
               </Button>
+              {t.client_email && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  title={`Renvoyer le lien à ${t.client_email}`}
+                  disabled={sending}
+                  onClick={() => envoyerLien(t.token, t.client_email!)}
+                >
+                  {sending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="ghost"
@@ -141,11 +154,11 @@ export default function ClientPortalSection({ dossierId, clientName }: Props) {
           type="button"
           size="sm"
           onClick={handleGenerate}
-          disabled={createMut.isPending}
+          disabled={createMut.isPending || sending}
           className="gap-1.5"
         >
-          {createMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
-          Générer lien
+          {createMut.isPending || sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
+          {email.trim() ? 'Générer et envoyer' : 'Générer lien'}
         </Button>
       </div>
     </div>

@@ -409,7 +409,7 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
       { key: 'delai', label: "Délai d'exécution convenu", group: 'Mission' },
       { key: 'livrables', label: 'Livrables inclus', type: 'textarea', group: 'Mission' },
       { key: 'montant_ht', label: 'Montant HT', group: 'Honoraires' },
-      { key: 'montant_tva', label: 'TVA 20 %', group: 'Honoraires' },
+      { key: 'montant_tva', label: 'TVA', group: 'Honoraires' },
       { key: 'montant_ttc', label: 'Montant TTC', group: 'Honoraires' },
       { key: 'echeancier', label: 'Échéancier de paiement', group: 'Honoraires' },
       { key: 'conditions', label: 'Conditions particulières', type: 'textarea', group: 'Honoraires' },
@@ -441,7 +441,7 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
         id: 'honoraires', type: 'text', titre: 'Honoraires et conditions de paiement',
         contenu:
           `Montant HT : ${v(f.montant_ht)}\n` +
-          `TVA 20 % : ${v(f.montant_tva)}\n` +
+          `TVA : ${v(f.montant_tva)}\n` +
           `Montant TTC : ${v(f.montant_ttc)}\n` +
           `Echeancier : ${v(f.echeancier)}\n\n` +
           "Echeanciers de reference : M01 — 50 % a la signature / 50 % a la remise · M02 — 100 % a l'acte " +

@@ -115,8 +115,13 @@ const EMPTY_FORM: FormData = {
 };
 
 export default function OnboardingWizard({ onComplete }: Props) {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
+  const wizardRole: WizardRole =
+    role === 'decoratrice' ? 'decoratrice' : role === 'analyste' ? 'analyste' : 'mandataire';
+  const steps = STEPS_BY_ROLE[wizardRole];
+  const TOTAL_STEPS = steps.length;
   const [step, setStep] = useState(1);
+  const currentKey: StepKey = steps[Math.min(step, TOTAL_STEPS) - 1];
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [zones, setZones] = useState<ZoneAffectee[]>([]);

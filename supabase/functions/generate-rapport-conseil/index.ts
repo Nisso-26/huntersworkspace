@@ -1,4 +1,5 @@
-import Anthropic from "npm:@anthropic-ai/sdk";
+import { streamText } from "npm:ai";
+import { createLovableAiGatewayProvider, AI_MODEL } from "../_shared/ai-gateway.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -150,8 +151,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!apiKey) throw new Error("Clé API Anthropic non configurée");
+    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!apiKey) throw new Error("Clé API IA non configurée");
 
     const body = await req.json();
     if (!body.client_name) throw new Error("client_name requis");
@@ -160,16 +161,17 @@ Deno.serve(async (req) => {
     const sectionTitle = sectionIndex != null ? SECTIONS[sectionIndex] : undefined;
     if (sectionIndex != null && !sectionTitle) throw new Error("section_index invalide");
 
-    const anthropic = new Anthropic({ apiKey });
-    const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: sectionTitle ? 2500 : 8000,
+    const gateway = createLovableAiGatewayProvider(apiKey);
+    const result = streamText({
+      model: gateway(AI_MODEL),
+      maxOutputTokens: sectionTitle ? 2500 : 8000,
       system: sectionTitle ? SYSTEM_PROMPT_SECTION(sectionTitle) : SYSTEM_PROMPT_FULL,
-      messages: [{ role: "user", content: buildPrompt(body, sectionTitle) }],
+      prompt: buildPrompt(body, sectionTitle),
     });
 
-    const rapport = message.content[0].type === "text" ? message.content[0].text.trim() : "";
+    const rapport = (await result.text).trim();
     if (!rapport) throw new Error("Réponse IA vide");
+
 
     return new Response(JSON.stringify({ ok: true, rapport, section_index: sectionIndex }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

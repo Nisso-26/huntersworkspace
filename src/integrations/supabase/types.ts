@@ -725,6 +725,10 @@ export type Database = {
           created_by: string | null
           date_emission: string
           dossier_id: string
+          email_destinataire: string | null
+          email_envoye_at: string | null
+          email_erreur: string | null
+          email_statut: string
           id: string
           montant_ht: number
           montant_ttc: number
@@ -741,6 +745,10 @@ export type Database = {
           created_by?: string | null
           date_emission?: string
           dossier_id: string
+          email_destinataire?: string | null
+          email_envoye_at?: string | null
+          email_erreur?: string | null
+          email_statut?: string
           id?: string
           montant_ht?: number
           montant_ttc?: number
@@ -757,6 +765,10 @@ export type Database = {
           created_by?: string | null
           date_emission?: string
           dossier_id?: string
+          email_destinataire?: string | null
+          email_envoye_at?: string | null
+          email_erreur?: string | null
+          email_statut?: string
           id?: string
           montant_ht?: number
           montant_ttc?: number

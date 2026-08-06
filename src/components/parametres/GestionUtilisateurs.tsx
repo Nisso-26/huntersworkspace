@@ -223,6 +223,8 @@ export default function GestionUtilisateurs() {
               {users.map(u => {
                 const isCurrentUser = u.id === currentUser?.id;
                 const isDisabled = u.status === 'suspendu' || u.status === 'inactif';
+                // Invitation non acceptée : jamais connecté (statut auth connu)
+                const isPending = u.auth_known && !u.last_sign_in_at && !isDisabled;
                 return (
                   <div
                     key={u.id}
@@ -243,6 +245,12 @@ export default function GestionUtilisateurs() {
                           {isDisabled && (
                             <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Désactivé</Badge>
                           )}
+                          {isPending && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1 border-border bg-muted text-muted-foreground">
+                              <Clock className="w-2.5 h-2.5" />
+                              En attente d'activation
+                            </Badge>
+                          )}
                           {isCurrentUser && (
                             <Badge variant="outline" className="text-[10px] px-1.5 py-0">Vous</Badge>
                           )}
@@ -259,7 +267,20 @@ export default function GestionUtilisateurs() {
                       </Badge>
                       {!isCurrentUser && (
                         <div className="flex gap-1">
+                          {isPending && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-1.5"
+                              disabled={actionLoading === u.id}
+                              onClick={() => handleUserAction(u.id, 'resend_invite')}
+                            >
+                              <Send className="w-3.5 h-3.5" />
+                              {actionLoading === u.id ? '...' : 'Renvoyer'}
+                            </Button>
+                          )}
                           {isDisabled ? (
+
                             <Button
                               variant="outline"
                               size="sm"

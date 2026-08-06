@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   shouldTriggerHonoraires,
-  commissionRateForLevel,
+  commissionRateForService,
   computeCommission,
   computeBonusParrainage,
   isValidPipelineStatus,
@@ -23,17 +23,17 @@ describe('shouldTriggerHonoraires', () => {
   });
 });
 
-describe('commissionRateForLevel', () => {
+describe('commissionRateForService', () => {
   it('renvoie 60 pour N2', () => {
-    expect(commissionRateForLevel('N2')).toBe(60);
-    expect(commissionRateForLevel('n2')).toBe(60);
+    expect(commissionRateForService(null, 'conseil', 'N2')).toBe(60);
+    expect(commissionRateForService(null, 'conseil', 'n2')).toBe(60);
   });
 
   it('renvoie 50 pour N1 ou inconnu (fallback)', () => {
-    expect(commissionRateForLevel('N1')).toBe(50);
-    expect(commissionRateForLevel(null)).toBe(50);
-    expect(commissionRateForLevel(undefined)).toBe(50);
-    expect(commissionRateForLevel('')).toBe(50);
+    expect(commissionRateForService(null, 'conseil', 'N1')).toBe(50);
+    expect(commissionRateForService(null, 'conseil', null)).toBe(50);
+    expect(commissionRateForService(null, 'conseil', undefined)).toBe(50);
+    expect(commissionRateForService(null, 'conseil', '')).toBe(50);
   });
 });
 

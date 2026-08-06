@@ -155,7 +155,7 @@ export default function SimulateurTab({ prixRevient, loyerMensuel, reference, ad
         y += 8;
       }
 
-      y = ensureSpace(doc, y, 12, ctx);
+      y = ensureSpace(doc, y, 6, ctx);
       doc.setFont(FONT.body, 'italic');
       doc.setFontSize(8);
       doc.setTextColor(...C.textMuted);

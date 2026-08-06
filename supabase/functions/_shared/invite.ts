@@ -95,6 +95,10 @@ export async function inviteUser(
       await adminClient.functions.invoke("send-notification", {
         body: {
           to: email,
+          // L'invité n'existe pas encore comme contact connu du système au moment
+          // de l'envoi : le garde-fou anti-phishing doit être explicitement levé.
+          allow_external: true,
+
           subject: "Bienvenue chez Hunters Immobilier — Activez votre compte",
           eyebrow: "Invitation",
           title: `Bienvenue ${composedName} !`,

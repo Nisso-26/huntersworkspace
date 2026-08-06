@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import {
   useSignaturesElectroniques,
   useEnvoyerEnSignature,
@@ -10,15 +12,25 @@ import {
   type TypeDocumentSignature,
   type SignatureElectronique,
 } from '@/hooks/use-signatures-electroniques';
+import { useCompanySettings } from '@/hooks/use-company-settings';
+import { useBaremesHunters } from '@/hooks/use-baremes-hunters';
+import { useZonesMandataires } from '@/hooks/use-zones-mandataires';
+import {
+  SIGNATURE_DOC_SPECS,
+  prefillSignatureDoc,
+  buildSignatureDocumentPdf,
+  type SignatureDocType,
+} from '@/lib/signature-documents';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import {
   ShieldCheck, Send, Loader2, Download, Clock, CheckCircle2, XCircle, AlertTriangle, Copy, Trash2, Plus,
-  MailCheck, MailX, MailWarning, ArrowLeft, RefreshCw,
+  MailCheck, MailX, MailWarning, ArrowLeft, RefreshCw, FileText, Eye, Paperclip,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -31,6 +43,7 @@ interface Props {
   typesDisponibles?: TypeDocumentSignature[];
   titre?: string;
 }
+
 
 const statutStyles: Record<string, string> = {
   en_attente: 'bg-accent/15 text-accent-foreground border-accent/30',

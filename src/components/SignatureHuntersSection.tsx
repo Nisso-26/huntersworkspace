@@ -413,8 +413,10 @@ export default function SignatureHuntersSection({
                     <span className="text-xs font-medium text-right break-all">{form.signataire_email.trim()}</span>
                   </div>
                   <div className="flex justify-between gap-3">
-                    <span className="text-xs text-muted-foreground">PDF joint</span>
-                    <span className="text-xs font-medium text-right">{file ? file.name : 'Aucun'}</span>
+                    <span className="text-xs text-muted-foreground">Document joint</span>
+                    <span className="text-xs font-medium text-right">
+                      {file ? file.name : 'Généré automatiquement à la charte HUNTERS'}
+                    </span>
                   </div>
                 </div>
                 <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
@@ -425,10 +427,11 @@ export default function SignatureHuntersSection({
                   <Button
                     type="button" variant="outline" className="gap-1.5"
                     disabled={envoyer.isPending}
-                    onClick={() => setStep('form')}
+                    onClick={() => setStep(autoDoc ? 'preview' : 'form')}
                   >
                     <ArrowLeft className="w-4 h-4" /> Modifier
                   </Button>
+
                   <Button onClick={handleSend} disabled={envoyer.isPending} className="flex-1 gap-2">
                     {envoyer.isPending
                       ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi en cours…</>

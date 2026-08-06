@@ -92,26 +92,36 @@ export async function inviteUser(
 
   if (invitationLink) {
     try {
-      await adminClient.functions.invoke("send-notification", {
-        body: {
-          to: email,
-          // L'invité n'existe pas encore comme contact connu du système au moment
-          // de l'envoi : le garde-fou anti-phishing doit être explicitement levé.
-          allow_external: true,
-
-          subject: "Bienvenue chez Hunters Immobilier — Activez votre compte",
-          eyebrow: "Invitation",
-          title: `Bienvenue ${composedName} !`,
-          cta: { label: "Activer mon compte", url: invitationLink },
-          body: `<p style="margin:0 0 12px;">Vous avez été invité(e) à rejoindre l'espace de travail Hunters Immobilier.</p>
+      const { data: notifData, error: notifError } = await adminClient.functions.invoke(
+        "send-notification",
+        {
+          body: {
+            to: email,
+            // L'invité n'existe pas encore comme contact connu du système au moment
+            // de l'envoi : le garde-fou anti-phishing doit être explicitement levé.
+            allow_external: true,
+            subject: "Bienvenue chez Hunters Immobilier — Activez votre compte",
+            eyebrow: "Invitation",
+            title: `Bienvenue ${composedName} !`,
+            cta: { label: "Activer mon compte", url: invitationLink },
+            body: `<p style="margin:0 0 12px;">Vous avez été invité(e) à rejoindre l'espace de travail Hunters Immobilier.</p>
             <p style="margin:0 0 12px;">Cliquez sur le bouton ci-dessous pour activer votre compte et définir votre mot de passe.</p>
             <p style="margin:0;font-size:11px;">Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br/><span style="word-break:break-all;">${invitationLink}</span></p>`,
+          },
         },
-      });
+      );
+      if (notifError) {
+        console.error("[invite] send-notification failed:", notifError.message ?? notifError);
+      } else if ((notifData as any)?.error) {
+        console.error("[invite] send-notification refused:", (notifData as any).error);
+      } else {
+        console.log(`[invite] email d'invitation envoyé à ${email}`, JSON.stringify(notifData));
+      }
     } catch (e) {
       console.error("[invite] send-notification error:", e);
     }
   }
+
 
   return { id: invitedUserId, email, invitation_link: invitationLink };
 }

@@ -1,4 +1,3 @@
-import huntersLogoAsset from '@/assets/hunters-symbol-dark.png.asset.json';
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,12 +19,6 @@ import {
 interface Props {
   dossier: Dossier;
 }
-
-const GREEN:   [number, number, number] = [26,  77,  46];
-const GOLD:    [number, number, number] = [245, 168,  0];
-const TEXT:    [number, number, number] = [30,  30,  30];
-const ROW_ALT: [number, number, number] = [248, 248, 248];
-const LIGHT_GOLD: [number, number, number] = [253, 245, 220];
 
 const SECTION_TITLES = [
   '1. PROFIL CLIENT',
@@ -79,50 +72,6 @@ function splitSections(markdown: string): string[] {
   return out;
 }
 
-async function loadLogoBase64(): Promise<string | null> {
-  try {
-    const res = await fetch(huntersLogoAsset.url);
-    if (!res.ok) return null;
-    const blob = await res.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return null;
-  }
-}
-
-function drawPageHeader(
-  doc: any,
-  logoBase64: string | null,
-  M: number,
-  W: number,
-  GOLD: [number, number, number],
-  GREEN: [number, number, number],
-  numeroDossier?: string | null,
-): number {
-  doc.setFillColor(...GREEN);
-  doc.rect(0, 0, W, 14, 'F');
-  if (logoBase64) {
-    try { doc.addImage(logoBase64, 'PNG', M, 2, 9, 10); } catch { /* ignore */ }
-  }
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7);
-  doc.setTextColor(...GOLD);
-  doc.text('HUNTERS IMMOBILIER', M + 13, 8);
-  if (numeroDossier) {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(255, 255, 255);
-    doc.text(`Réf. ${numeroDossier}`, W - M, 8, { align: 'right' });
-  }
-  doc.setFillColor(...GOLD);
-  doc.rect(0, 14, W, 0.6, 'F');
-  return 22;
-}
 
 export default function RapportConseilButton({ dossier }: Props) {
   const { user, role } = useAuth();

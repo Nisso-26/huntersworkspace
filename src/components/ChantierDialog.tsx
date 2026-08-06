@@ -105,6 +105,14 @@ export default function ChantierDialog({ chantier, trigger }: Props) {
   const isOverBudget = budgetConsomme > form.budget_alloue && form.budget_alloue > 0;
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
+  const envoiMut = useEnvoyerDocumentAdHoc();
+  const { data: envois = [] } = useEnvoisDocuments({
+    chantierId: chantier?.id,
+    contexte: 'rapport_chantier',
+  });
+  const dernierEnvoi = envois[0];
+
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

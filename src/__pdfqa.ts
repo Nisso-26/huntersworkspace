@@ -1,5 +1,10 @@
 // Harnais temporaire de QA visuelle des PDF (dev uniquement).
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 import { generateFacturePDF } from '@/hooks/use-factures';
+import SimulateurTab from '@/components/SimulateurTab';
+import RapportConseilButton from '@/components/RapportConseilButton';
+import { supabase } from '@/integrations/supabase/client';
 
 const settings = {
   raison_sociale: 'HUNTERS Immobilier',
@@ -40,3 +45,78 @@ const facture = {
 } as any;
 
 (window as any).__qaFacture = () => generateFacturePDF(facture, settings);
+
+const FAKE_RAPPORT = `
+1. PROFIL CLIENT
+Client primo-investisseur, 38 ans, cadre du secteur privé, résidant à Tours.
+- Revenus nets mensuels : 4 200 €
+- Apport disponible : 45 000 €
+- Objectif : constitution d'un patrimoine locatif à horizon 10 ans
+
+2. CAPACITÉ DE FINANCEMENT
+La capacité d'endettement résiduelle est estimée à 1 250 € par mois.
+
+| Poste | Montant |
+| --- | --- |
+| Revenus nets | 4 200 € |
+| Charges de crédit | 0 € |
+| Capacité d'emprunt | 260 000 € |
+
+3. MONTAGES ET SCÉNARIOS DE FINANCEMENT
+Trois montages ont été étudiés : crédit amortissable 20 ans, crédit 25 ans et in fine.
+
+4. STRATÉGIE D'INVESTISSEMENT
+Acquisition d'un immeuble de rapport à rénover, secteur Tours-Nord.
+
+5. SCÉNARIO COMPARATIF
+Comparaison des trois options retenues.
+
+6. RENTABILITÉ ET CASH-FLOW CIBLES
+Objectif de rendement brut supérieur à 7 %.
+
+7. RECOMMANDATIONS
+- Privilégier un bien avec travaux déductibles
+- Sécuriser le financement avant la recherche
+
+8. PLAN D'INVESTISSEMENT PROGRESSIF
+Déploiement en cinq phases sur 24 mois.
+
+9. ORIENTATION FISCALE
+Régime réel recommandé.
+
+10. CONCLUSION
+Le projet est cohérent avec la capacité financière du client.
+`;
+
+(supabase as any).functions.invoke = async () => ({ data: { ok: true, rapport: FAKE_RAPPORT }, error: null });
+
+const dossier = {
+  id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+  numero_dossier: 'D-2026-018',
+  client_name: 'Didier GBENOU',
+  email: 'didier@example.com',
+  ville: 'Tours',
+  budget: 300000,
+  honoraires: 12000,
+  status: 'recherche',
+  notes: '',
+  strategie: null,
+} as any;
+
+function App() {
+  return React.createElement(
+    'div',
+    { style: { padding: 24 } },
+    React.createElement(SimulateurTab, {
+      prixRevient: 300000,
+      loyerMensuel: 1450,
+      reference: 'BIEN-2026-07',
+      adresse: '12 rue Nationale, 37000 Tours',
+      dossierClient: 'Didier GBENOU',
+    }),
+    React.createElement(RapportConseilButton, { dossier }),
+  );
+}
+
+const el = document.getElementById('root')!;
+createRoot(el).render(React.createElement(App));

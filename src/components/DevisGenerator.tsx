@@ -10,9 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Download, Save, Send, FileText, Loader2, CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useBaremesHunters, type BaremeHunters, type BaremeService } from '@/hooks/use-baremes-hunters';
 import {
-  useDevis, useSaveDevis, useUpdateDevisStatut, useEnvoyerDevis,
+  useDevis, useSaveDevis, useUpdateDevisStatut, useEnvoyerDevis, useRenvoyerDevis,
   DEVIS_EMAIL_LABELS,
-  type DevisLigne, type DevisStatut, type DevisEmailStatut,
+  type Devis, type DevisLigne, type DevisStatut, type DevisEmailStatut,
 } from '@/hooks/use-devis';
 
 import { useCompanySettings } from '@/hooks/use-company-settings';
@@ -24,6 +24,15 @@ import {
   drawIvoryBox, ensureSpace, drawSignatureZone,
 } from '@/lib/pdf-design-system';
 
+
+function toBase64(buf: ArrayBuffer) {
+  const bytes = new Uint8Array(buf);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 8192) {
+    bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
+  }
+  return btoa(bin);
+}
 
 function pickTranche(rows: BaremeHunters[], service: BaremeService, base: number) {
   return rows.find(r =>
@@ -64,6 +73,52 @@ const STATUT_LABEL: Record<DevisStatut, string> = {
   refuse: 'Refusé',
 };
 
+function EmailStatutLigne({ devis, onRenvoyer, pending }: {
+  devis: Devis; onRenvoyer: () => void; pending: boolean;
+}) {
+  const st = (devis.email_statut || 'non_envoye') as DevisEmailStatut;
+  if (st === 'non_envoye') {
+    return <p className="text-[11px] text-muted-foreground">Non envoyé au client (brouillon enregistré).</p>;
+  }
+  if (st === 'envoi_en_cours') {
+    return (
+      <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+        <Loader2 className="w-3 h-3 animate-spin" /> {DEVIS_EMAIL_LABELS.envoi_en_cours}
+      </p>
+    );
+  }
+  if (st === 'echec') {
+    return (
+      <div className="flex items-center gap-2 flex-wrap">
+        <p className="text-[11px] text-destructive flex items-center gap-1.5">
+          <AlertTriangle className="w-3 h-3" />
+          {DEVIS_EMAIL_LABELS.echec}
+          {devis.email_erreur ? ` — ${devis.email_erreur}` : ''}
+        </p>
+        <Button size="sm" variant="outline" onClick={onRenvoyer} disabled={pending}>
+          {pending
+            ? <Loader2 className="w-3 h-3 animate-spin" />
+            : <><RefreshCw className="w-3 h-3 mr-1" /> Renvoyer</>}
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <p className="text-[11px] text-[#004621] flex items-center gap-1.5">
+        <CheckCircle2 className="w-3 h-3" />
+        Envoyé à {devis.email_destinataire}
+        {devis.email_envoye_at
+          ? ` le ${new Date(devis.email_envoye_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}`
+          : ''}
+      </p>
+      <Button size="sm" variant="ghost" onClick={onRenvoyer} disabled={pending}>
+        {pending ? <Loader2 className="w-3 h-3 animate-spin" /> : <><RefreshCw className="w-3 h-3 mr-1" /> Renvoyer</>}
+      </Button>
+    </div>
+  );
+}
+
 export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   const { data: baremes = [] } = useBaremesHunters();
   const { data: company } = useCompanySettings();
@@ -71,6 +126,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   const saveMut = useSaveDevis();
   const statutMut = useUpdateDevisStatut();
   const envoyerMut = useEnvoyerDevis();
+  const renvoyerMut = useRenvoyerDevis();
 
   const services = (dossier.services_souscrits as Record<string, boolean>) || {};
 
@@ -362,12 +418,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
 
   const handleSend = async () => {
     const { doc, fileName } = await buildPdf();
-    const bytes = new Uint8Array(doc.output('arraybuffer') as ArrayBuffer);
-    let bin = '';
-    for (let i = 0; i < bytes.length; i += 8192) {
-      bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
-    }
-    const pdfBase64 = btoa(bin);
+    const pdfBase64 = toBase64(doc.output('arraybuffer') as ArrayBuffer);
 
     envoyerMut.mutate({
       devis: {
@@ -383,6 +434,27 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
       client_name: dossier.client_name || 'Madame, Monsieur',
       numero_dossier: (dossier as any).numero_dossier || null,
       pdf_base64: pdfBase64,
+      pdf_filename: fileName,
+    });
+  };
+
+  const handleResend = async (d: Devis) => {
+    const snapLignes = (d.contenu?.lignes || []) as DevisLigne[];
+    const snapSousTotal = snapLignes.reduce((s, l) => s + Number(l.montant_ht), 0);
+    const { doc, fileName } = await buildPdf({
+      lignes: snapLignes,
+      sousTotal: snapSousTotal,
+      remisePack: Number(d.remise_pack) || 0,
+      totalHT: Number(d.montant_ht) || 0,
+      totalTTC: Number(d.montant_ttc) || 0,
+      packActif: !!d.pack_actif,
+    });
+    renvoyerMut.mutate({
+      devis: d,
+      destinataire: d.email_destinataire || emailClient,
+      client_name: dossier.client_name || 'Madame, Monsieur',
+      numero_dossier: (dossier as any).numero_dossier || null,
+      pdf_base64: toBase64(doc.output('arraybuffer') as ArrayBuffer),
       pdf_filename: fileName,
     });
   };

@@ -459,20 +459,80 @@ function StepBienvenue({ wizardRole, totalSteps }: { wizardRole: WizardRole; tot
   );
 }
 
+function StepStatutDeco({
+  form,
+  setField,
+}: {
+  form: FormData;
+  setField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
+}) {
+  const options: { value: FormData['statut_deco']; label: string; detail: string }[] = [
+    {
+      value: 'salariee',
+      label: 'Salariée',
+      detail: 'Vous êtes rémunérée en paie par HUNTERS Immobilier. Aucun SIRET ni IBAN professionnel à fournir ici.',
+    },
+    {
+      value: 'auto-entrepreneuse',
+      label: 'Auto-entrepreneuse',
+      detail: 'Vous facturez vos prestations déco. SIRET et IBAN nécessaires pour le reversement de vos honoraires.',
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <header>
+        <h2 className="text-2xl font-heading font-bold">Votre statut chez HUNTERS</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Ce choix détermine les informations à renseigner ensuite.
+        </p>
+      </header>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        {options.map((o) => {
+          const active = form.statut_deco === o.value;
+          return (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => setField('statut_deco', o.value)}
+              className={`text-left rounded-lg border-2 p-5 transition-colors ${
+                active ? 'border-accent bg-accent/10' : 'border-border bg-card hover:border-accent/50'
+              }`}
+            >
+              <p className="font-heading text-lg font-bold flex items-center gap-2">
+                {active && <CheckCircle2 className="w-5 h-5 text-accent" />}
+                {o.label}
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">{o.detail}</p>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function StepIdentite({
   form,
   setField,
   email,
+  wizardRole,
 }: {
   form: FormData;
   setField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
   email: string;
+  wizardRole: WizardRole;
 }) {
+  const decoAuto = wizardRole === 'decoratrice' && form.statut_deco === 'auto-entrepreneuse';
+  const ibanOk = !form.iban || isValidFrIban(form.iban);
+  const siretOk = !form.siret || isValidSiret(form.siret);
+
   return (
     <div className="space-y-6">
       <header>
         <h2 className="text-2xl font-heading font-bold">Informations personnelles</h2>
-        <p className="text-sm text-muted-foreground mt-1">Tous les champs sont obligatoires.</p>
+        <p className="text-sm text-muted-foreground mt-1">Tous les champs marqués * sont obligatoires.</p>
       </header>
 
       <div className="grid sm:grid-cols-2 gap-4">
@@ -501,16 +561,56 @@ function StepIdentite({
         <Field label="Ville *">
           <Input value={form.adresse_ville} onChange={(e) => setField('adresse_ville', e.target.value)} />
         </Field>
-        <Field label="Statut juridique *" className="sm:col-span-2">
-          <Select value={form.statut_juridique || undefined} onValueChange={(v) => setField('statut_juridique', v as FormData['statut_juridique'])}>
-            <SelectTrigger><SelectValue placeholder="Choisir un statut" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="auto-entrepreneur">Auto-entrepreneur</SelectItem>
-              <SelectItem value="eurl">EURL</SelectItem>
-              <SelectItem value="sasu">SASU</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
+
+        {wizardRole === 'mandataire' && (
+          <Field label="Statut juridique *" className="sm:col-span-2">
+            <Select value={form.statut_juridique || undefined} onValueChange={(v) => setField('statut_juridique', v as FormData['statut_juridique'])}>
+              <SelectTrigger><SelectValue placeholder="Choisir un statut" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto-entrepreneur">Auto-entrepreneur</SelectItem>
+                <SelectItem value="eurl">EURL</SelectItem>
+                <SelectItem value="sasu">SASU</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+        )}
+
+        {wizardRole === 'analyste' && (
+          <Field label="Statut professionnel *" className="sm:col-span-2">
+            <Select value={form.statut_pro || undefined} onValueChange={(v) => setField('statut_pro', v as FormData['statut_pro'])}>
+              <SelectTrigger><SelectValue placeholder="Choisir un statut" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="salarie">Salarié(e)</SelectItem>
+                <SelectItem value="independant">Indépendant(e)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-1">
+              L'analyse patrimoniale n'est pas une activité de transaction immobilière : aucune immatriculation RSAC n'est requise.
+            </p>
+          </Field>
+        )}
+
+        {decoAuto && (
+          <>
+            <Field label="SIRET *">
+              <Input value={form.siret} onChange={(e) => setField('siret', e.target.value)} placeholder="14 chiffres" maxLength={14} />
+              {!siretOk && <p className="text-xs text-destructive mt-1">Le SIRET doit contenir 14 chiffres.</p>}
+            </Field>
+            <Field label="IBAN (France) *">
+              <Input value={form.iban} onChange={(e) => setField('iban', e.target.value.toUpperCase())} placeholder="FR76 1234 5678 9012 3456 7890 123" />
+              {!ibanOk && <p className="text-xs text-destructive mt-1">Format IBAN français invalide (FR + 25 caractères).</p>}
+            </Field>
+            <p className="sm:col-span-2 text-xs text-muted-foreground">
+              Ces informations servent au reversement de vos honoraires de décoration. Aucune immatriculation RSAC n'est requise (activité hors loi Hoguet).
+            </p>
+          </>
+        )}
+
+        {wizardRole === 'decoratrice' && form.statut_deco === 'salariee' && (
+          <p className="sm:col-span-2 text-xs text-muted-foreground">
+            En tant que salariée, votre rémunération est traitée en paie : aucun SIRET, IBAN professionnel ou RSAC n'est demandé à cette étape.
+          </p>
+        )}
       </div>
     </div>
   );

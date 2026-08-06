@@ -52,6 +52,8 @@ export default function Facturation() {
   const { data: commissions = [] } = useCommissions();
   const { data: companySettings } = useCompanySettings();
   const updateMut = useUpdateFacture();
+  const envoyerMut = useEnvoyerFacture();
+
   const [search, setSearch] = useState('');
   const [statutFilter, setStatutFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -211,6 +213,20 @@ export default function Facturation() {
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-1">
                             <Button variant="ghost" size="sm" onClick={() => { generateFacturePDF(f, companySettings).catch(() => {}); }} title="Télécharger PDF">
+                              <Download className="w-4 h-4" />
+                            </Button>
+                            <EnvoyerDocumentButton
+                              documentLabel={`Facture ${f.numero_facture || f.reference || ''}`}
+                              statut={f.email_statut}
+                              destinataire={f.email_destinataire}
+                              envoyeAt={f.email_envoye_at}
+                              erreur={f.email_erreur}
+                              defaultEmail={f.dossier_email || f.client_name || null}
+                              onSend={(email) =>
+                                envoyerMut.mutateAsync({ facture: f, settings: companySettings, email })
+                              }
+                            />
+
                               <Download className="w-4 h-4" />
                             </Button>
                             {f.statut !== 'payee' && f.statut !== 'annulee' && (

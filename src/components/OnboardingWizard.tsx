@@ -198,18 +198,34 @@ export default function OnboardingWizard({ onComplete }: Props) {
         { onConflict: 'mandataire_id' }
       );
 
+      const isMandataire = wizardRole === 'mandataire';
+      const decoAuto = wizardRole === 'decoratrice' && form.statut_deco === 'auto-entrepreneuse';
       const profileFields: Record<string, unknown> = {
         full_name: [form.first_name, form.last_name].filter(Boolean).join(' ').trim() || null,
         phone: form.telephone || null,
-        statut_juridique: form.statut_juridique || null,
-        rsac_numero: form.rsac_numero || null,
-        rsac_greffe: form.rsac_greffe || null,
-        rsac_date: form.rsac_date || null,
-        rsac_justificatif: form.rsac_justificatif || null,
-        iban: form.iban || null,
-        siret: form.siret || null,
+        statut_juridique:
+          isMandataire
+            ? form.statut_juridique || null
+            : wizardRole === 'decoratrice'
+              ? form.statut_deco || null
+              : form.statut_pro || null,
         onboarding_step: step,
       };
+      if (isMandataire) {
+        Object.assign(profileFields, {
+          rsac_numero: form.rsac_numero || null,
+          rsac_greffe: form.rsac_greffe || null,
+          rsac_date: form.rsac_date || null,
+          rsac_justificatif: form.rsac_justificatif || null,
+          iban: form.iban || null,
+          siret: form.siret || null,
+        });
+      } else if (decoAuto) {
+        Object.assign(profileFields, {
+          iban: form.iban || null,
+          siret: form.siret || null,
+        });
+      }
       await supabase.from('profiles').update(profileFields as any).eq('id', user.id);
 
     } catch (e) {
@@ -221,31 +237,41 @@ export default function OnboardingWizard({ onComplete }: Props) {
   const setField = <K extends keyof FormData>(key: K, value: FormData[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
-  // ----- Validation par étape
+  // ----- Validation par étape (dépend du rôle)
   const canAdvance = useMemo(() => {
-    switch (step) {
-      case 1:
+    const identiteBase = Boolean(
+      form.first_name &&
+      form.last_name &&
+      form.date_naissance &&
+      form.adresse_rue &&
+      form.adresse_cp &&
+      form.adresse_ville &&
+      form.telephone
+    );
+
+    switch (currentKey) {
+      case 'bienvenue':
         return true;
-      case 2:
-        return Boolean(
-          form.first_name &&
-          form.last_name &&
-          form.date_naissance &&
-          form.adresse_rue &&
-          form.adresse_cp &&
-          form.adresse_ville &&
-          form.telephone &&
-          form.statut_juridique
-        );
-      case 3:
+      case 'statut_deco':
+        return form.statut_deco === 'salariee' || form.statut_deco === 'auto-entrepreneuse';
+      case 'identite': {
+        if (wizardRole === 'mandataire') return identiteBase && Boolean(form.statut_juridique);
+        if (wizardRole === 'analyste') return identiteBase && Boolean(form.statut_pro);
+        // Décoratrice
+        if (form.statut_deco === 'auto-entrepreneuse') {
+          return identiteBase && isValidSiret(form.siret) && isValidFrIban(form.iban);
+        }
+        return identiteBase;
+      }
+      case 'rsac':
         return Boolean(form.rsac_numero && form.rsac_greffe && form.rsac_date && form.rsac_justificatif);
-      case 4: {
+      case 'bancaire': {
         const ibanOk = isValidFrIban(form.iban);
         const siretRequired = form.statut_juridique === 'eurl' || form.statut_juridique === 'sasu';
         const siretOk = siretRequired ? isValidSiret(form.siret) : true;
         return ibanOk && siretOk && form.accept_pack;
       }
-      case 5:
+      case 'zone':
         return zones.length > 0 && form.accept_zone && form.accept_prescripteurs && form.accept_objectifs && form.accept_encaissement;
       default:
         return false;

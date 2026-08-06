@@ -147,7 +147,7 @@ export async function buildDocumentPdf(ctx: DocumentBuildContext): Promise<jsPDF
   if (needsCover) {
     await drawCoverPage(doc, {
       logo,
-      typeDocument: 'Document contractuel',
+      typeDocument: sanitizePdfText(ctx.typeDocument || 'Document contractuel'),
       titre: sanitizePdfText(ctx.titre),
       client: sanitizePdfText(ctx.client || ctx.variables?.nom_client || ''),
       conseiller: sanitizePdfText(ctx.conseiller || ''),

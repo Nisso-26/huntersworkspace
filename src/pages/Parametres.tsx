@@ -35,7 +35,7 @@ const SectionFallback = () => (
 );
 
 export default function Parametres() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
 
   return (
     <AppLayout>

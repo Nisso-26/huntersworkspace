@@ -65,6 +65,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   const { data: historique = [] } = useDevis(dossier.id);
   const saveMut = useSaveDevis();
   const statutMut = useUpdateDevisStatut();
+  const envoyerMut = useEnvoyerDevis();
 
   const services = (dossier.services_souscrits as Record<string, boolean>) || {};
 
@@ -72,9 +73,11 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   const [budgetTravaux, setBudgetTravaux] = useState<number>(0);
   const [budgetDeco, setBudgetDeco] = useState<number>(0);
   const [packActif, setPackActif] = useState<boolean>(dossier.type_accompagnement === 'cle_en_main');
+  const [emailClient, setEmailClient] = useState<string>(((dossier as any).email as string) || '');
 
   const tarifConseil = Number((dossier as any).tarif_conseil_ht) || 1500;
   const niveau = (dossier as any).niveau_qualification || 'Standard';
+
 
   const lignes: DevisLigne[] = useMemo(() => {
     const out: DevisLigne[] = [];

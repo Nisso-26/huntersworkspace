@@ -232,6 +232,17 @@ export default function Facturation() {
                               </Button>
                             )}
                           </div>
+                          {f.email_statut && f.email_statut !== 'non_envoye' && (
+                            <div className="mt-1.5">
+                              <EnvoiStatutBadge
+                                statut={f.email_statut}
+                                destinataire={f.email_destinataire}
+                                envoyeAt={f.email_envoye_at}
+                                erreur={f.email_erreur}
+                              />
+                            </div>
+                          )}
+
                         </td>
                       </tr>
                     ))

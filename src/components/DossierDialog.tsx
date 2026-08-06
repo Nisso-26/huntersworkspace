@@ -227,7 +227,14 @@ export default function DossierDialog({ dossier, trigger }: Props) {
                 <DocumentsSection dossierId={dossier.id} />
               </div>
               <div className="border-t pt-4">
-                <SignatureSection dossierId={dossier.id} clientName={form.client_name} clientEmail={form.email} />
+                <SignatureHuntersSection
+                  dossierId={dossier.id}
+                  clientName={form.client_name}
+                  clientEmail={form.email}
+                  numeroDossier={(dossier as any).numero_dossier ?? null}
+                  typesDisponibles={['mandat_recherche', 'convention_cadre', 'bon_commande', 'offre_achat']}
+                />
+
               </div>
               <div className="border-t pt-4">
                 <ClientPortalSection dossierId={dossier.id} clientName={form.client_name} />

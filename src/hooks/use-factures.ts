@@ -5,6 +5,11 @@ import { toast } from 'sonner';
 import { fetchAllPaginated } from '@/lib/supabase-pagination';
 import type { CompanySettings } from './use-company-settings';
 import { fmtPdfEur } from '@/lib/pdf-utils';
+import {
+  assertEmail, markEnvoiEnCours, pdfToBase64, safePdfFilename, sendDocumentEmail,
+  type DocEmailStatut,
+} from '@/lib/document-email';
+
 
 export interface FactureLigne {
   service_key?: string;
@@ -41,7 +46,14 @@ export interface Facture {
   mandataire_name?: string;
   mandataire_zone?: string;
   dossier_numero?: string | null;
+  dossier_email?: string | null;
+
+  email_statut?: DocEmailStatut | null;
+  email_destinataire?: string | null;
+  email_envoye_at?: string | null;
+  email_erreur?: string | null;
 }
+
 
 export function useFactures() {
   const { user } = useAuth();
@@ -68,12 +80,14 @@ export function useFactures() {
       }
 
       const dossierIds = [...new Set((data || []).map((f: any) => f.dossier_id).filter(Boolean))];
-      let dossierMap: Record<string, string | null> = {};
+      let dossierMap: Record<string, { numero: string | null; email: string | null }> = {};
       if (dossierIds.length > 0) {
         const { data: dossiers } = await (supabase.from('dossiers') as any)
-          .select('id, numero_dossier')
+          .select('id, numero_dossier, email')
           .in('id', dossierIds);
-        (dossiers || []).forEach((d: any) => { dossierMap[d.id] = d.numero_dossier; });
+        (dossiers || []).forEach((d: any) => {
+          dossierMap[d.id] = { numero: d.numero_dossier, email: d.email };
+        });
       }
 
       return (data || []).map((f: any) => ({
@@ -83,8 +97,10 @@ export function useFactures() {
         montant_ttc: Number(f.montant_ttc) || 0,
         mandataire_name: profilesMap[f.mandataire_id]?.full_name || 'N/A',
         mandataire_zone: profilesMap[f.mandataire_id]?.zone || '',
-        dossier_numero: f.dossier_id ? dossierMap[f.dossier_id] || null : null,
+        dossier_numero: f.dossier_id ? dossierMap[f.dossier_id]?.numero || null : null,
+        dossier_email: f.dossier_id ? dossierMap[f.dossier_id]?.email || null : null,
       })) as Facture[];
+
     },
     enabled: !!user,
   });
@@ -142,7 +158,12 @@ const typeLabels: Record<string, string> = {
 };
 
 
-export async function generateFacturePDF(facture: Facture, settings?: Partial<CompanySettings> | null) {
+export async function generateFacturePDF(
+  facture: Facture,
+  settings?: Partial<CompanySettings> | null,
+  opts?: { mode?: 'save' | 'base64' },
+): Promise<string | void> {
+
   // Lazy-load jsPDF (≈ 350 kB) uniquement à la demande pour alléger le bundle initial
   const { default: jsPDF } = await import('jspdf');
   const doc = new jsPDF();
@@ -403,6 +424,59 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
     drawFooter(doc, p, totalPages, `HUNTERS · Facture ${numero}`);
   }
 
-  doc.save(`${facture.numero_facture || facture.reference || 'facture'}.pdf`);
+  const filename = `${facture.numero_facture || facture.reference || 'facture'}.pdf`;
+  if (opts?.mode === 'base64') return pdfToBase64(doc as any);
+  doc.save(filename);
 }
+
+/** Envoi réel de la facture au client (PDF joint + statut persisté). */
+export function useEnvoyerFacture() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      facture,
+      settings,
+      email,
+    }: { facture: Facture; settings?: Partial<CompanySettings> | null; email: string }) => {
+      const to = assertEmail(email);
+      const tracking = { table: 'factures', id: facture.id };
+      const numero = facture.numero_facture || facture.reference || 'facture';
+
+      const base64 = (await generateFacturePDF(facture, settings, { mode: 'base64' })) as string;
+      await markEnvoiEnCours(tracking, to);
+      qc.invalidateQueries({ queryKey: ['factures'] });
+
+      const montant = fmtPdfEur(facture.montant_ttc || facture.montant);
+      const echeance = facture.date_echeance
+        ? new Date(facture.date_echeance).toLocaleDateString('fr-FR')
+        : null;
+
+      await sendDocumentEmail({
+        to,
+        tracking,
+        subject: `Votre facture ${numero} — HUNTERS Immobilier`,
+        eyebrow: 'Facturation',
+        title: `Facture ${numero}`,
+        numeroDossier: facture.dossier_numero || null,
+        pdf: { filename: safePdfFilename(numero), base64 },
+        bodyHtml: `
+          <p>Bonjour,</p>
+          <p>Vous trouverez ci-joint votre facture <strong>${numero}</strong>
+          d'un montant de <strong>${montant} TTC</strong>${echeance ? `, à régler avant le <strong>${echeance}</strong>` : ''}.</p>
+          <p>Nous restons à votre disposition pour toute question.</p>
+          <p>Bien à vous,<br/>L'équipe HUNTERS Immobilier</p>`,
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['factures'] });
+      toast.success('Facture envoyée au client');
+    },
+    onError: (e: any) => {
+      qc.invalidateQueries({ queryKey: ['factures'] });
+      toast.error(e?.message || "Échec de l'envoi de la facture");
+    },
+  });
+}
+
 

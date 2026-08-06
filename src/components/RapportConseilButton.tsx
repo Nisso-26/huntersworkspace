@@ -11,6 +11,9 @@ import { toast } from 'sonner';
 import { FileText, Loader2, Download, RefreshCw, X } from 'lucide-react';
 import { parseStrategie, type StrategieData } from '@/lib/strategie-parser';
 import { fmtPdfEur, fmtPdfEurInt } from '@/lib/pdf-utils';
+import { pdfToBase64, safePdfFilename, sendDocumentEmail } from '@/lib/document-email';
+import EnvoyerDocumentButton from '@/components/EnvoyerDocumentButton';
+
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid,
   LineChart, Line, ResponsiveContainer,
@@ -177,8 +180,9 @@ export default function RapportConseilButton({ dossier }: Props) {
     }
   };
 
-  const exportPdf = async () => {
+  const exportPdf = async (sendTo?: string | null) => {
     setExporting(true);
+
     try {
       const missingSections = sections
         .map((content, idx) => (content.trim() ? null : idx + 1))
@@ -429,30 +433,56 @@ export default function RapportConseilButton({ dossier }: Props) {
         drawFooter(doc, p - 1, total - 1, 'HUNTERS · Rapport de conseil');
       }
 
-      doc.save(`Rapport_Conseil_${dossier.client_name.replace(/\s+/g, '_')}_${new Date().getFullYear()}.pdf`);
-
+      const filename = `Rapport_Conseil_${dossier.client_name.replace(/\s+/g, '_')}_${new Date().getFullYear()}.pdf`;
+      const base64 = sendTo ? pdfToBase64(doc as any) : null;
+      if (!sendTo) doc.save(filename);
 
       // Archivage: trace l'export dans documents_generes
+      let archiveId: string | null = null;
       try {
         const { data: u } = await supabase.auth.getUser();
-        await (supabase.from('documents_generes') as any).insert({
+        const { data: arch } = await (supabase.from('documents_generes') as any).insert({
           dossier_id: dossier.id,
           type: 'rapport_conseil',
           numero_dossier: (dossier as any).numero_dossier || null,
           conseiller_id: u?.user?.id || null,
-        });
+          ...(sendTo ? { email_statut: 'envoi_en_cours', email_destinataire: sendTo } : {}),
+        }).select('id').single();
+        archiveId = (arch as any)?.id || null;
         window.dispatchEvent(new CustomEvent('rapport-genere', { detail: { dossierId: dossier.id } }));
       } catch (archErr) {
         console.warn('Archivage rapport échoué:', archErr);
       }
 
-      toast.success('PDF généré avec succès');
+      if (sendTo && base64) {
+        await sendDocumentEmail({
+          to: sendTo,
+          tracking: archiveId ? { table: 'documents_generes', id: archiveId } : null,
+          subject: `Votre rapport de conseil — HUNTERS Immobilier`,
+          eyebrow: 'Conseil en investissement',
+          title: 'Votre rapport de conseil',
+          numeroDossier: (dossier as any).numero_dossier || null,
+          pdf: { filename: safePdfFilename(filename), base64 },
+          bodyHtml: `
+            <p>Bonjour ${dossier.client_name},</p>
+            <p>Vous trouverez ci-joint votre <strong>rapport de conseil en investissement immobilier</strong>,
+            établi à partir des éléments de votre dossier.</p>
+            <p>Nous restons à votre disposition pour en échanger.</p>
+            <p>Bien à vous,<br/>L'équipe HUNTERS Immobilier</p>`,
+        });
+        window.dispatchEvent(new CustomEvent('rapport-genere', { detail: { dossierId: dossier.id } }));
+        toast.success(`Rapport envoyé à ${sendTo}`);
+      } else {
+        toast.success('PDF généré avec succès');
+      }
     } catch (e: any) {
-      toast.error(e.message || 'Erreur export PDF');
+      toast.error(e.message || (sendTo ? "Échec de l'envoi du rapport" : 'Erreur export PDF'));
+      if (sendTo) throw Object.assign(e instanceof Error ? e : new Error(String(e)), { __handled: true });
     } finally {
       setExporting(false);
     }
   };
+
 
   const updateSection = (idx: number, value: string) => {
     setSections(prev => prev.map((s, i) => (i === idx ? value : s)));
@@ -523,14 +553,24 @@ export default function RapportConseilButton({ dossier }: Props) {
               <X className="w-4 h-4" />
               Annuler
             </Button>
-            <Button
-              onClick={exportPdf}
-              disabled={loading || exporting || sections.some(s => !s.trim())}
-              className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
-            >
-              {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-              {exporting ? 'Export en cours…' : 'Exporter en PDF'}
-            </Button>
+            <div className="flex items-center gap-2">
+              <EnvoyerDocumentButton
+                documentLabel="Rapport de conseil"
+                defaultEmail={(dossier as any).email || null}
+                onSend={(email) => exportPdf(email)}
+                variant="outline"
+                size="default"
+              />
+              <Button
+                onClick={() => exportPdf()}
+                disabled={loading || exporting || sections.some(s => !s.trim())}
+                className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
+              >
+                {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {exporting ? 'Export en cours…' : 'Exporter en PDF'}
+              </Button>
+            </div>
+
           </DialogFooter>
         </DialogContent>
       </Dialog>

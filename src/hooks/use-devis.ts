@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { sendDocumentEmail } from '@/lib/document-email';
+
 
 export type DevisStatut = 'brouillon' | 'envoye' | 'accepte' | 'refuse';
 
@@ -97,52 +99,22 @@ async function sendDevisEmail(
   devis: Devis,
   opts: { email: string; client_name: string; numero_dossier?: string | null; pdf_base64: string; pdf_filename: string; rappel?: boolean },
 ) {
-  let erreur: string | null = null;
-  try {
-    const { data: res, error: fnErr } = await supabase.functions.invoke('send-notification', {
-      body: {
-        to: opts.email,
-        allow_external: true,
-        subject: `${opts.rappel ? 'Rappel — votre devis' : 'Votre devis'} HUNTERS Immobilier${devis.numero ? ` — ${devis.numero}` : ''}`,
-        numero_dossier: opts.numero_dossier ?? null,
-        eyebrow: 'Devis',
-        title: opts.rappel ? 'Rappel — votre devis' : 'Votre devis est disponible',
-        body: `<p style="margin:0 0 12px;">Bonjour ${opts.client_name},</p>
-          <p style="margin:0 0 12px;">Vous trouverez en pièce jointe votre devis
-          ${devis.numero ? `<strong style="color:#23291F;">${devis.numero}</strong>` : ''}
-          d'un montant de <strong style="color:#23291F;">${Number(devis.montant_ttc).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € TTC</strong>.</p>
-          <p style="margin:0;font-size:11px;">Ce devis est valable 30 jours. Nous restons à votre disposition pour toute question.</p>`,
-        attachments: [{ filename: opts.pdf_filename, content: opts.pdf_base64 }],
-      },
-    });
-    if (fnErr) {
-      const ctx = (fnErr as any)?.context;
-      let detail = fnErr.message;
-      try {
-        if (ctx && typeof ctx.text === 'function') {
-          const raw = await ctx.text();
-          detail = JSON.parse(raw)?.error || raw || detail;
-        }
-      } catch { /* garde le message générique */ }
-      erreur = detail;
-    } else if (res && (res as any).ok !== true && (res as any).error) {
-      erreur = String((res as any).error);
-    }
-  } catch (e: any) {
-    erreur = e?.message || "Erreur réseau lors de l'envoi";
-  }
-
-  await (supabase.from('devis' as any) as any)
-    .update({
-      email_statut: erreur ? 'echec' : 'envoye',
-      email_erreur: erreur,
-      email_envoye_at: erreur ? null : new Date().toISOString(),
-      email_destinataire: opts.email,
-    })
-    .eq('id', devis.id);
-
-  if (erreur) throw new Error(erreur);
+  await sendDocumentEmail({
+    to: opts.email,
+    tracking: { table: 'devis', id: devis.id },
+    subject: `${opts.rappel ? 'Rappel — votre devis' : 'Votre devis'} HUNTERS Immobilier${devis.numero ? ` — ${devis.numero}` : ''}`,
+    numeroDossier: opts.numero_dossier ?? null,
+    eyebrow: 'Devis',
+    title: opts.rappel ? 'Rappel — votre devis' : 'Votre devis est disponible',
+    bodyHtml: `<p style="margin:0 0 12px;">Bonjour ${opts.client_name},</p>
+      <p style="margin:0 0 12px;">Vous trouverez en pièce jointe votre devis
+      ${devis.numero ? `<strong style="color:#23291F;">${devis.numero}</strong>` : ''}
+      d'un montant de <strong style="color:#23291F;">${Number(devis.montant_ttc).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € TTC</strong>.</p>
+      <p style="margin:0;font-size:11px;">Ce devis est valable 30 jours. Nous restons à votre disposition pour toute question.</p>`,
+    pdf: { filename: opts.pdf_filename, base64: opts.pdf_base64 },
+  });
 }
+
 
 export function useEnvoyerDevis() {
   const qc = useQueryClient();

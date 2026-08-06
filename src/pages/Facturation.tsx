@@ -4,7 +4,9 @@ import StatCard from '@/components/StatCard';
 import SearchFilter from '@/components/SearchFilter';
 import ExportButton, { exportToCSV } from '@/components/ExportButton';
 import { cn } from '@/lib/utils';
-import { useFactures, useUpdateFacture, generateFacturePDF } from '@/hooks/use-factures';
+import { useFactures, useUpdateFacture, generateFacturePDF, useEnvoyerFacture } from '@/hooks/use-factures';
+import EnvoyerDocumentButton, { EnvoiStatutBadge } from '@/components/EnvoyerDocumentButton';
+
 import { useCommissions } from '@/hooks/use-commissions';
 import { useCompanySettings } from '@/hooks/use-company-settings';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -50,6 +52,8 @@ export default function Facturation() {
   const { data: commissions = [] } = useCommissions();
   const { data: companySettings } = useCompanySettings();
   const updateMut = useUpdateFacture();
+  const envoyerMut = useEnvoyerFacture();
+
   const [search, setSearch] = useState('');
   const [statutFilter, setStatutFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -211,12 +215,34 @@ export default function Facturation() {
                             <Button variant="ghost" size="sm" onClick={() => { generateFacturePDF(f, companySettings).catch(() => {}); }} title="Télécharger PDF">
                               <Download className="w-4 h-4" />
                             </Button>
+                            <EnvoyerDocumentButton
+                              documentLabel={`Facture ${f.numero_facture || f.reference || ''}`}
+                              statut={f.email_statut}
+                              destinataire={f.email_destinataire}
+                              envoyeAt={f.email_envoye_at}
+                              erreur={f.email_erreur}
+                              defaultEmail={f.dossier_email || f.client_name || null}
+                              onSend={(email) =>
+                                envoyerMut.mutateAsync({ facture: f, settings: companySettings, email })
+                              }
+                            />
                             {f.statut !== 'payee' && f.statut !== 'annulee' && (
                               <Button variant="outline" size="sm" onClick={() => markPaid(f.id)}>
                                 Payée
                               </Button>
                             )}
                           </div>
+                          {f.email_statut && f.email_statut !== 'non_envoye' && (
+                            <div className="mt-1.5">
+                              <EnvoiStatutBadge
+                                statut={f.email_statut}
+                                destinataire={f.email_destinataire}
+                                envoyeAt={f.email_envoye_at}
+                                erreur={f.email_erreur}
+                              />
+                            </div>
+                          )}
+
                         </td>
                       </tr>
                     ))

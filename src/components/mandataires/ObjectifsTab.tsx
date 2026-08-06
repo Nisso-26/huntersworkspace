@@ -1,3 +1,4 @@
+import HelpTip from '@/components/HelpTip';
 import { useMemo } from 'react';
 import { AlertTriangle, CheckCircle2, XCircle, Clock, Lock } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -5,7 +6,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-import HelpTip from '@/components/HelpTip';
   useObjectifTrimestre, useHistoriqueObjectifs, useConseilsMois,
   useUpsertConseilMois, currentTrimestre, type ObjectifTrimestriel,
 } from '@/hooks/use-objectifs';

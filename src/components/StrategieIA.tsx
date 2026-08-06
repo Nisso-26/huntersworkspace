@@ -1,3 +1,4 @@
+import HelpTip from '@/components/HelpTip';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dossier } from '@/hooks/use-dossiers';
@@ -14,7 +15,6 @@ import { cn } from '@/lib/utils';
 import { exportStrategiePdf } from '@/lib/export-strategie-pdf';
 import ReferentielFiscal from '@/components/ReferentielFiscal';
 import {
-import HelpTip from '@/components/HelpTip';
   parseStrategie,
   STRATEGIE_ERROR_MESSAGES,
   type StrategieData,

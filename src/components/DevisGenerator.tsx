@@ -1,3 +1,4 @@
+import HelpTip from '@/components/HelpTip';
 import { useMemo, useState } from 'react';
 import jsPDF from 'jspdf';
 import { Card } from '@/components/ui/card';
@@ -13,7 +14,6 @@ import { useCompanySettings } from '@/hooks/use-company-settings';
 import { fmtPdfEur } from '@/lib/pdf-utils';
 import type { Dossier } from '@/hooks/use-dossiers';
 import {
-import HelpTip from '@/components/HelpTip';
   C, T, LAYOUT,
   drawHeader, drawFooter, drawSectionTitle,
   drawIvoryBox, ensureSpace, drawSignatureZone,

@@ -82,9 +82,17 @@ interface CreatePayload {
   signataire_nom: string;
   signataire_email: string;
   document_nom?: string | null;
+  /** PDF fourni manuellement (cas secondaire). Prioritaire sur autoDoc. */
   file?: File | null;
+  /** Génération automatique du document contractuel depuis les données du dossier. */
+  autoDoc?: {
+    type: SignatureDocType;
+    fields: Record<string, string>;
+    company?: Partial<CompanySettings> | null;
+  } | null;
   numero_dossier?: string | null;
 }
+
 
 function buildLien(token: string) {
   return `${window.location.origin}/signer/${token}`;

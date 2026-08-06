@@ -91,6 +91,7 @@ Deno.serve(async (req) => {
     let userClient: ReturnType<typeof createClient> | null = null;
     if (!isService) {
       if (!authHeader.startsWith("Bearer ")) {
+        console.error("[send-notification] 401: header Authorization manquant");
         return new Response(JSON.stringify({ error: "Non autorisé" }), {
           status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -100,6 +101,7 @@ Deno.serve(async (req) => {
       });
       const { data: userData, error: aErr } = await userClient.auth.getUser(authHeader.replace("Bearer ", ""));
       if (aErr || !userData?.user) {
+        console.error("[send-notification] 401: JWT invalide:", aErr?.message || "aucun utilisateur");
         return new Response(JSON.stringify({ error: "Non autorisé" }), {
           status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -181,6 +183,7 @@ Deno.serve(async (req) => {
 
       const unknown = lowered.filter((e: string) => !knownSet.has(e));
       if (unknown.length > 0) {
+        console.error("[send-notification] 403: destinataire(s) inconnu(s):", unknown.join(", "), "allow_external:", allow_external === true);
         return new Response(JSON.stringify({
           error: allow_external === true
             ? "Destinataire non autorisé : cette adresse n'est rattachée à aucun dossier, signataire, partenaire ou prospect enregistré."

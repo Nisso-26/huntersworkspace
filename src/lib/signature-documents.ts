@@ -671,7 +671,8 @@ export function prefillSignatureDoc(
   const c = src.company || {};
   const today = new Date();
   const budget = Number(d.budget) || 0;
-  const { ht, ttc } = honorairesChasse(src.baremes || [], budget);
+  const tvaRate = tvaRateFromSettings(c);
+  const { ht, ttc } = honorairesChasse(src.baremes || [], budget, tvaRate);
   const services = (d.services_souscrits as Record<string, boolean>) || {};
   const missions = Object.keys(services)
     .filter((k) => services[k])
@@ -743,8 +744,8 @@ export function prefillSignatureDoc(
       delai: d.delai_concretisation || '',
       livrables: 'Rapport de conseil strategique, plan de financement, strategie fiscale',
       montant_ht: mHt ? fmtEur(mHt) : '',
-      montant_tva: mHt ? fmtEur(mHt * 0.2) : '',
-      montant_ttc: mHt ? fmtEur(mHt * 1.2) : '',
+      montant_tva: mHt ? fmtEur(mHt * tvaRate / 100) : '',
+      montant_ttc: mHt ? fmtEur(mHt * (1 + tvaRate / 100)) : '',
       echeancier: '50 % a la signature / 50 % a la remise du livrable',
       conditions: '',
     };

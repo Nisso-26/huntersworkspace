@@ -321,15 +321,20 @@ export default function OnboardingWizard({ onComplete }: Props) {
       // Notifier les super_admins
       const { data: admins } = await supabase.from('user_roles').select('user_id').eq('role', 'super_admin');
       const fullName = [form.first_name, form.last_name].filter(Boolean).join(' ').trim();
+      const roleLabel =
+        wizardRole === 'decoratrice' ? 'Décoratrice' : wizardRole === 'analyste' ? 'Analyste patrimoniale' : 'Mandataire';
       const zonesLabel = zones.map((z) => z.zone_label).join(', ') || '?';
-      const detail = `Nouveau mandataire activé : ${fullName} — Zone(s) : ${zonesLabel} — Onboarding complet — Vérification dossier requise`;
+      const detail =
+        wizardRole === 'mandataire'
+          ? `Nouveau mandataire activé : ${fullName} — Zone(s) : ${zonesLabel} — Onboarding complet — Vérification dossier requise`
+          : `${roleLabel} activée : ${fullName} — Onboarding complet — Vérification dossier requise`;
 
       if (admins?.length) {
         await supabase.from('alertes').insert(
           admins.map((a) => ({
             user_id: a.user_id,
             type: 'info',
-            title: 'Mandataire activé',
+            title: `${roleLabel} activé(e)`,
             detail,
           })) as any
         );

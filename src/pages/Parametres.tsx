@@ -41,6 +41,21 @@ export default function Parametres() {
 
         <ProfileSection />
 
+        {!isAdmin && user?.id && (
+          <Tabs defaultValue="zone" className="space-y-4">
+            <TabsList className="flex-wrap h-auto">
+              <TabsTrigger value="zone"><MapPin className="w-4 h-4 mr-1" />Ma zone</TabsTrigger>
+              <TabsTrigger value="conformite"><ShieldCheck className="w-4 h-4 mr-1" />Ma conformité</TabsTrigger>
+              <TabsTrigger value="objectifs"><Target className="w-4 h-4 mr-1" />Mes objectifs</TabsTrigger>
+            </TabsList>
+            <Suspense fallback={<SectionFallback />}>
+              <TabsContent value="zone"><ZonesTab mandataireId={user.id} /></TabsContent>
+              <TabsContent value="conformite"><ConformiteTab mandataireId={user.id} readonly /></TabsContent>
+              <TabsContent value="objectifs"><ObjectifsTab mandataireId={user.id} canEdit /></TabsContent>
+            </Suspense>
+          </Tabs>
+        )}
+
         {isAdmin && (
           <Tabs defaultValue="utilisateurs" className="space-y-4">
             <TabsList className="flex-wrap h-auto">

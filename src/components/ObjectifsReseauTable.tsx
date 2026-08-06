@@ -76,10 +76,12 @@ export default function ObjectifsReseauTable() {
       <div className="bg-card rounded-xl border border-border/60 shadow-card overflow-hidden">
         <div className="px-5 py-3 border-b border-border/50 flex items-center justify-between gap-2">
           <h2 className="font-heading font-semibold text-sm">Objectifs du trimestre — Réseau</h2>
-          <Button size="sm" variant="outline" onClick={handleCompute} disabled={computing}>
-            <RefreshCw className={cn('w-3.5 h-3.5 mr-1.5', computing && 'animate-spin')} />
-            Calculer maintenant
-          </Button>
+          {isAdmin && (
+            <Button size="sm" variant="outline" onClick={handleCompute} disabled={computing}>
+              <RefreshCw className={cn('w-3.5 h-3.5 mr-1.5', computing && 'animate-spin')} />
+              Calculer maintenant
+            </Button>
+          )}
         </div>
         <Table>
           <TableHeader>

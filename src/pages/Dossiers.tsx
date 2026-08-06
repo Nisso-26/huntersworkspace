@@ -115,11 +115,20 @@ export default function Dossiers() {
                         className="hover:bg-secondary/50 transition-colors"
                       >
                         <td className="px-5 py-3.5">
-                          <p className="text-sm font-medium text-foreground">{d.client_name}</p>
-                          {d.numero_dossier && (
-                            <p className="text-[11px] text-muted-foreground font-mono">{d.numero_dossier}</p>
-                          )}
-                          <p className="text-xs text-muted-foreground">{d.email}</p>
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/dossiers/${d.id}`)}
+                            className="text-left group/name"
+                            title="Ouvrir la fiche dossier"
+                          >
+                            <p className="text-sm font-medium text-foreground group-hover/name:text-primary group-hover/name:underline transition-colors">
+                              {d.client_name}
+                            </p>
+                            {d.numero_dossier && (
+                              <p className="text-[11px] text-muted-foreground font-mono">{d.numero_dossier}</p>
+                            )}
+                            <p className="text-xs text-muted-foreground">{d.email}</p>
+                          </button>
                         </td>
                         <td className="px-5 py-3.5 text-sm text-foreground hidden md:table-cell">{d.mandataire_name}</td>
                         <td className="px-5 py-3.5 text-sm text-foreground hidden sm:table-cell">{d.ville}</td>

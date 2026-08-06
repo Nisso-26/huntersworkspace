@@ -300,7 +300,7 @@ export default function Pipeline() {
         toast.error(err?.message || 'Erreur lors du déplacement');
       }
     },
-    [dossiers, updateMut, qc]
+    [dossiers, updateMut, qc, baremes, company]
   );
 
   return (

@@ -155,10 +155,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
+
 
     const payload = await req.json().catch(() => ({}));
     const action = String(payload.action || "get");
@@ -281,6 +280,9 @@ Deno.serve(async (req) => {
         .from("profiles").select("full_name, email").eq("id", row.mandataire_id).maybeSingle();
       if (profile?.email) {
         await supabase.functions.invoke("send-notification", {
+          // functions.invoke n'ajoute pas d'en-tête Authorization : on force la clé
+          // service_role pour que send-notification reconnaisse un appel interne.
+          headers: { Authorization: `Bearer ${serviceRoleKey}` },
           body: {
             to: profile.email,
             subject: `Document signé — ${row.signataire_nom}`,

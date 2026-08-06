@@ -91,6 +91,9 @@ Deno.serve(async (req) => {
       if (!profile?.email) return;
       try {
         await supabase.functions.invoke("send-notification", {
+          // functions.invoke n'ajoute pas d'en-tête Authorization : on force la clé
+          // service_role pour que send-notification reconnaisse un appel interne.
+          headers: { Authorization: `Bearer ${serviceRoleKey}` },
           body: { to: profile.email, subject, body, eyebrow: "Facturation pack mensuel", title: title ?? null },
         });
       } catch (e) { console.error("email impayé", e); }

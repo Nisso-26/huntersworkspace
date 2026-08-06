@@ -88,6 +88,9 @@ Deno.serve(async (req) => {
         <p style="margin:0;">Pensez à relancer votre client pour l'inviter à suivre l'avancement de son dossier.</p>`;
 
       const { error: invErr } = await supabase.functions.invoke("send-notification", {
+        // functions.invoke n'ajoute pas d'en-tête Authorization : on force la clé
+        // service_role pour que send-notification reconnaisse un appel interne.
+        headers: { Authorization: `Bearer ${serviceRoleKey}` },
         body: {
           to: profile.email,
           subject: `Relance portail client : ${dossier.client_name}${numero ? ` (${numero})` : ''}`,

@@ -362,7 +362,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                 <img src={huntersLogo} alt="HUNTERS" className="h-8 w-8 rounded" />
                 <div>
                   <p className="text-xs uppercase tracking-wider text-muted-foreground">Onboarding</p>
-                  <p className="text-sm font-semibold">Étape {step} / {TOTAL_STEPS} — {STEP_TITLES[step - 1]}</p>
+                  <p className="text-sm font-semibold">Étape {step} / {TOTAL_STEPS} — {STEP_LABELS[currentKey]}</p>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground hidden sm:block">Sauvegarde automatique activée</p>
@@ -378,11 +378,14 @@ export default function OnboardingWizard({ onComplete }: Props) {
             </div>
           ) : (
             <>
-              {step === 1 && <StepBienvenue />}
-              {step === 2 && <StepIdentite form={form} setField={setField} email={user.email || ''} />}
-              {step === 3 && <StepRsac form={form} setField={setField} />}
-              {step === 4 && <StepBancairePack form={form} setField={setField} />}
-              {step === 5 && (
+              {currentKey === 'bienvenue' && <StepBienvenue wizardRole={wizardRole} totalSteps={TOTAL_STEPS} />}
+              {currentKey === 'statut_deco' && <StepStatutDeco form={form} setField={setField} />}
+              {currentKey === 'identite' && (
+                <StepIdentite form={form} setField={setField} email={user.email || ''} wizardRole={wizardRole} />
+              )}
+              {currentKey === 'rsac' && <StepRsac form={form} setField={setField} />}
+              {currentKey === 'bancaire' && <StepBancairePack form={form} setField={setField} />}
+              {currentKey === 'zone' && (
                 <StepZoneActivation
                   form={form}
                   setField={setField}
@@ -404,7 +407,12 @@ export default function OnboardingWizard({ onComplete }: Props) {
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             ) : (
-              <Button onClick={activate} disabled={!canAdvance || saving} className="bg-hunters-success hover:bg-hunters-success/90">
+              <Button
+                onClick={activate}
+                disabled={!canAdvance || saving}
+                size="lg"
+                className="bg-hunters-or text-hunters-anthracite font-semibold shadow-lg ring-2 ring-hunters-or/40 hover:bg-hunters-or/90 hover:text-hunters-anthracite"
+              >
                 {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
                 Activer mon compte
               </Button>

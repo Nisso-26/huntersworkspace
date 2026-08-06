@@ -71,10 +71,16 @@ export function computeMontantBareme(t: BaremeHunters | undefined, base: number)
   return fixe + (base * (Number(t.valeur) || 0)) / 100;
 }
 
+/** Taux de TVA applicable (%) issu des paramètres société, repli légal 20%. */
+export function tvaRateFromSettings(company?: Partial<CompanySettings> | null): number {
+  const raw = Number(company?.tva_taux_defaut);
+  return Number.isFinite(raw) && raw >= 0 ? raw : 20;
+}
+
 /** Honoraires de chasse HT/TTC recalculés depuis les barèmes et le prix du bien. */
-export function honorairesChasse(baremes: BaremeHunters[], prix: number) {
+export function honorairesChasse(baremes: BaremeHunters[], prix: number, tvaRate = 20) {
   const ht = computeMontantBareme(pickTranche(baremes, 'chasse', prix), prix);
-  return { ht, ttc: ht * 1.2 };
+  return { ht, ttc: ht * (1 + tvaRate / 100) };
 }
 
 // ─── Spécifications par type de document ─────────────────────────────────────

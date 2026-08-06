@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateDossier, type Dossier } from '@/hooks/use-dossiers';
 import { parseStrategie } from '@/lib/strategie-parser';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import HelpTip from '@/components/HelpTip';
 
 type Statut = 'ok' | 'ko' | 'na' | null;
 
@@ -175,8 +177,18 @@ export default function GrilleControleAnalyste({ dossier }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h3 className="text-base font-heading font-bold text-[#004621]">
+          <h3 className="text-base font-heading font-bold text-[#004621] flex items-center gap-2">
             Grille de contrôle qualité — 25 points
+            <HelpTip
+              title="Grille de contrôle qualité"
+              intro="C'est la relecture de la stratégie avant qu'elle ne parte au conseiller et au client. Vous vérifiez que les chiffres et les conseils tiennent la route."
+              points={[
+                { label: 'Comment faire', text: 'pour chaque ligne, cliquez OK (c\'est juste), KO (c\'est faux ou incohérent) ou NA (ne concerne pas ce dossier).' },
+                { label: 'Lignes « Bloquant »', text: 'ce sont les points que l\'on ne peut pas laisser passer. Un seul KO dessus et la grille ne peut pas être validée.' },
+                { label: 'Pour terminer', text: 'aucun point laissé vide, aucun KO bloquant, puis vous inscrivez votre visa et vous enregistrez.' },
+              ]}
+              note="Tant que la grille n'est pas validée, le conseiller voit seulement « Validation en cours » de son côté."
+            />
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
             Validation analyste avant transmission au mandataire
@@ -219,9 +231,27 @@ export default function GrilleControleAnalyste({ dossier }: Props) {
                             {p.titre}
                           </span>
                           {p.bloquant && (
-                            <Badge variant="destructive" className="text-[10px] h-5">
-                              Bloquant
-                            </Badge>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge
+                                  variant="destructive"
+                                  className="text-[10px] h-5 cursor-help"
+                                >
+                                  Bloquant
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-[300px] text-xs leading-relaxed">
+                                <span className="font-semibold">Point bloquant.</span>{' '}
+                                Si vous le marquez « KO », le rapport ne peut pas être
+                                validé ni transmis au conseiller : le visa analyste
+                                reste indisponible.
+                                <br />
+                                <span className="font-semibold">Pour débloquer :</span>{' '}
+                                corrigez la donnée dans la fiche dossier (ou régénérez
+                                la stratégie), décrivez l'action corrective dans le
+                                champ qui apparaît, puis repassez le point en « OK ».
+                              </TooltipContent>
+                            </Tooltip>
                           )}
                         </div>
                         <p className="text-xs italic text-muted-foreground mt-1">
@@ -260,7 +290,7 @@ export default function GrilleControleAnalyste({ dossier }: Props) {
                     </div>
                     {statut === 'ko' && p.bloquant && (
                       <Textarea
-                        placeholder="Action corrective requise..."
+                        placeholder="Action corrective requise : qu'avez-vous corrigé, où, et pourquoi ?"
                         value={actions[p.ref] || ''}
                         onChange={e =>
                           setActions(a => ({ ...a, [p.ref]: e.target.value }))
@@ -392,15 +422,34 @@ export default function GrilleControleAnalyste({ dossier }: Props) {
       {/* Bandeau sticky */}
       <div className="sticky bottom-2 z-10 bg-card border-2 border-[#004621]/20 rounded-lg p-4 shadow-lg space-y-3">
         <div className="flex items-center gap-3 flex-wrap">
-          <Badge
-            variant={nbBloquantsKO > 0 ? 'destructive' : 'outline'}
-            className="font-mono"
-          >
-            {nbBloquantsKO} KO bloquant{nbBloquantsKO > 1 ? 's' : ''}
-          </Badge>
-          <Badge variant="outline" className="font-mono">
-            {nbNonRenseignes} non renseigné{nbNonRenseignes > 1 ? 's' : ''}
-          </Badge>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge
+                variant={nbBloquantsKO > 0 ? 'destructive' : 'outline'}
+                className="font-mono cursor-help"
+              >
+                {nbBloquantsKO} KO bloquant{nbBloquantsKO > 1 ? 's' : ''}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-[300px] text-xs leading-relaxed">
+              Nombre de points marqués « KO » alors qu'ils sont indispensables.
+              Tant qu'il n'est pas à 0, la validation du rapport est impossible.
+              Reprenez chaque ligne rouge marquée « KO », corrigez la donnée dans
+              le dossier, puis repassez-la en « OK ».
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="outline" className="font-mono cursor-help">
+                {nbNonRenseignes} non renseigné{nbNonRenseignes > 1 ? 's' : ''}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-[300px] text-xs leading-relaxed">
+              Points sur lesquels vous n'avez encore rien indiqué. Chaque point
+              doit recevoir « OK », « KO » ou « NA » (non applicable) avant de
+              pouvoir signer la grille.
+            </TooltipContent>
+          </Tooltip>
           {dossier.grille_validee_at && (
             <span className="text-xs text-muted-foreground">
               Validé le{' '}

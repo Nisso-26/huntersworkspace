@@ -9,6 +9,7 @@ import { GraduationCap, ShieldCheck, Upload, FileText, Calendar, AlertTriangle, 
 import { useConformite, useUpsertConformite, uploadJustificatif, getJustificatifUrl } from '@/hooks/use-conformite';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import HelpTip from '@/components/HelpTip';
 
 const formationBadge = (s: string) => {
   if (s === 'conforme') return <Badge className="bg-hunters-success/15 text-hunters-success hover:bg-hunters-success/15"><CheckCircle2 className="w-3 h-3 mr-1" />Conforme</Badge>;
@@ -123,7 +124,18 @@ export default function ConformiteTab({ mandataireId, readonly = false }: Props)
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <GraduationCap className="w-5 h-5 text-[#004621]" />
-            <h3 className="font-heading font-semibold">Formation ALUR — {annee}</h3>
+            <h3 className="font-heading font-semibold flex items-center gap-2">
+              Formation ALUR — {annee}
+              <HelpTip
+                title="Formation ALUR"
+                intro="La loi impose à chaque conseiller immobilier un minimum d'heures de formation par an. Sans elles, il ne peut plus exercer légalement."
+                points={[
+                  { label: 'Ce que vous suivez ici', text: "le nombre d'heures déjà validées dans l'année par rapport au minimum obligatoire." },
+                  { label: 'Que faire si le compte n\'est pas bon', text: "inscrivez-vous à une formation, puis ajoutez l'attestation reçue ici pour mettre le compteur à jour." },
+                  { label: 'Conséquence', text: "un conseiller non à jour ne peut plus recevoir de nouveaux dossiers tant que sa situation n'est pas régularisée." },
+                ]}
+              />
+            </h3>
           </div>
           {formationBadge(c?.statut_formation || 'non_conforme')}
         </div>
@@ -191,7 +203,17 @@ export default function ConformiteTab({ mandataireId, readonly = false }: Props)
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-[#004621]" />
-            <h3 className="font-heading font-semibold">Attestation d'habilitation</h3>
+            <h3 className="font-heading font-semibold flex items-center gap-2">
+              Attestation d'habilitation
+              <HelpTip
+                title="Attestation d'habilitation"
+                intro="C'est le document officiel qui autorise le conseiller à travailler au nom de Hunters. Il a une date de début et une date de fin."
+                points={[
+                  { label: 'À surveiller', text: "la date de fin. Une attestation expirée équivaut à ne plus être habilité." },
+                  { label: 'Que faire', text: "demandez le renouvellement environ un mois avant l'échéance, puis mettez les dates à jour ici." },
+                ]}
+              />
+            </h3>
           </div>
           {attestBadge(c?.statut_attestation || 'inactive', c?.attestation_fin || null)}
         </div>

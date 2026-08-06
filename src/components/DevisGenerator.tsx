@@ -1,3 +1,4 @@
+import HelpTip from '@/components/HelpTip';
 import { useMemo, useState } from 'react';
 import jsPDF from 'jspdf';
 import { Card } from '@/components/ui/card';
@@ -342,7 +343,19 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
       <Card className="p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-heading font-semibold">Générateur de devis</h3>
+            <h3 className="font-heading font-semibold flex items-center gap-2">
+              Générateur de devis
+              <HelpTip
+                title="Générateur de devis"
+                intro="Il calcule tout seul le prix de la prestation à partir de la grille tarifaire Hunters. Vous n'avez rien à calculer à la main."
+                points={[
+                  { label: 'Pack clé en main', text: "activez-le si le client confie tout à Hunters (recherche, travaux, mise en location). Le tarif groupé s'applique alors." },
+                  { label: 'Le conseil patrimonial', text: "il est toujours facturé au tarif plein : aucune remise ne s'y applique, même dans un pack." },
+                  { label: 'Ce que vous faites ensuite', text: "vous générez le PDF, vous l'envoyez au client, puis vous le faites signer depuis la section Signature." },
+                ]}
+                note="Un devis n'engage le client qu'une fois signé. Vous pouvez en générer plusieurs versions."
+              />
+            </h3>
             <p className="text-xs text-muted-foreground">Calcul automatique selon la grille tarifaire Hunters.</p>
           </div>
           <div className="flex items-center gap-2">

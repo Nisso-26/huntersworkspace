@@ -1,3 +1,4 @@
+import HelpTip from '@/components/HelpTip';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dossier } from '@/hooks/use-dossiers';
@@ -120,6 +121,17 @@ export default function StrategieIA({ dossier }: Props) {
         <h3 className="font-heading font-semibold text-foreground flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-accent" />
           Stratégie patrimoniale
+          <HelpTip
+            title="À quoi sert la stratégie patrimoniale ?"
+            intro="C'est le document qui explique au client ce qu'il peut acheter, comment le financer et ce que ça lui rapportera. Il sert de base à tous les échanges qui suivent."
+            points={[
+              { label: 'Quand la générer', text: "après le premier rendez-vous, dès que vous connaissez les revenus, les charges, l'épargne et le projet du client. Sans ces informations, le résultat sera faux." },
+              { label: 'Comment ça marche', text: "vous remplissez le formulaire avec les informations du client, l'outil rédige une proposition complète en quelques secondes." },
+              { label: 'Ce n\'est pas définitif', text: "vous pouvez régénérer autant de fois que nécessaire si une information change. La version affichée est toujours la dernière." },
+              { label: 'Avant de l\'envoyer', text: "un analyste relit la proposition (grille de contrôle). Attendez la mention « Stratégie validée » avant de la présenter au client." },
+            ]}
+            note="Ce document est une aide à la décision, jamais un conseil fiscal ou juridique engageant."
+          />
         </h3>
         <div className="flex gap-2 flex-wrap">
           {canAccessReferentiel && (
@@ -339,12 +351,36 @@ export default function StrategieIA({ dossier }: Props) {
         <div className="space-y-4">
           {/* Synthèse */}
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-            <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">Synthèse</p>
+            <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              Synthèse
+              <HelpTip
+                title="Synthèse"
+                intro="Le résumé en quelques lignes de la situation du client et de la direction conseillée."
+                points={[
+                  { label: 'À quoi ça sert', text: "c'est ce que vous lisez à voix haute en début de rendez-vous pour recadrer le projet." },
+                  { label: 'La phrase en italique', text: 'elle indique le profil de l\'investisseur (prudent, équilibré, dynamique) : elle donne le niveau de risque acceptable.' },
+                ]}
+              />
+            </p>
             <p className="text-sm text-foreground leading-relaxed">{strategie.synthese}</p>
             <p className="text-xs text-muted-foreground mt-2 italic">{strategie.profil_investisseur}</p>
           </div>
 
           {/* Indicateurs clés */}
+          <div className="flex items-center gap-1.5">
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Indicateurs clés</p>
+            <HelpTip
+              title="Indicateurs clés"
+              intro="Les cinq chiffres qui déterminent ce que le client peut réellement faire."
+              points={[
+                { label: 'Revenus nets/mois', text: "tout ce qui rentre chaque mois dans le foyer, après impôts et cotisations." },
+                { label: "Taux d'endettement", text: "part des revenus déjà absorbée par les crédits et le loyer. Au-delà de 35 %, les banques refusent en général." },
+                { label: "Capacité d'emprunt", text: "le montant maximum que la banque peut prêter au client aujourd'hui." },
+                { label: 'Mensualité max', text: "ce que le client peut ajouter comme nouvelle mensualité sans dépasser les 35 %." },
+                { label: 'Cash flow libre', text: "ce qui reste chaque mois une fois tout payé. S'il est négatif, le projet doit être revu à la baisse." },
+              ]}
+            />
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[
               { label: 'Revenus nets/mois', value: `${fmt(strategie.indicateurs_cles.revenus_nets_totaux_mensuels)} €` },
@@ -362,7 +398,18 @@ export default function StrategieIA({ dossier }: Props) {
 
           {/* Recommandations */}
           <div className="space-y-3">
-            <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Recommandations</p>
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+              Recommandations
+              <HelpTip
+                title="Recommandations"
+                intro="Les scénarios d'investissement proposés au client. Chaque bloc se déplie pour montrer le détail."
+                points={[
+                  { label: 'Le rendement affiché', text: "c'est ce que le bien rapporte par an rapporté à son prix. Exemple : 6 % sur 100 000 € = environ 6 000 € de loyers par an, avant charges et impôts." },
+                  { label: 'Rendement brut ou net', text: "le brut ne déduit rien, le net enlève les charges, la taxe foncière et l'assurance. C'est le net qui compte pour le client." },
+                  { label: 'Comment les utiliser', text: "présentez-en deux au client, comparez-les, et laissez-le choisir. Ce sont des pistes, pas des obligations." },
+                ]}
+              />
+            </p>
             {strategie.recommandations.map((rec, idx) => (
               <div key={idx} className="border rounded-lg overflow-hidden">
                 <button
@@ -434,7 +481,18 @@ export default function StrategieIA({ dossier }: Props) {
 
           {/* Plan d'action */}
           <div>
-            <p className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3">Plan d'action</p>
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              Plan d'action
+              <HelpTip
+                title="Plan d'action"
+                intro="La liste des étapes à suivre, dans l'ordre, avec un délai indicatif pour chacune."
+                points={[
+                  { label: 'À quoi ça sert', text: "c'est votre feuille de route commune avec le client : à la fin du rendez-vous, chacun sait quoi faire cette semaine." },
+                  { label: 'La première étape', text: "elle doit toujours être une action immédiate du client (réunir ses justificatifs, contacter sa banque…)." },
+                  { label: 'Les délais', text: "ce sont des ordres de grandeur du marché, pas des engagements contractuels." },
+                ]}
+              />
+            </p>
             <div className="space-y-2">
               {strategie.plan_action.map((step, idx) => (
                 <div key={idx} className="flex gap-3 items-start">
@@ -454,7 +512,16 @@ export default function StrategieIA({ dossier }: Props) {
           {/* Points d'attention */}
           {strategie.points_attention?.length > 0 && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p className="text-xs font-semibold text-amber-700 mb-2 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Points d'attention</p>
+              <p className="text-xs font-semibold text-amber-700 mb-2 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Points d'attention
+                <HelpTip
+                  title="Points d'attention"
+                  intro="Les risques et les fragilités repérés sur ce dossier précis."
+                  points={[
+                    { label: 'Pourquoi les lire', text: "les annoncer vous-même au client vous protège : il ne pourra pas dire qu'il n'était pas informé." },
+                    { label: 'Que faire', text: "reprenez-les un par un en rendez-vous et notez la réaction du client dans le journal du dossier." },
+                  ]}
+                />
+              </p>
               <ul className="space-y-1">
                 {strategie.points_attention.map((p, i) => <li key={i} className="text-xs text-amber-800">• {p}</li>)}
               </ul>

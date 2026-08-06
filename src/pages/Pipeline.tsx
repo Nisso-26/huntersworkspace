@@ -326,6 +326,17 @@ export default function Pipeline() {
               <Skeleton key={i} className="w-[260px] sm:w-[240px] h-64 rounded-xl flex-shrink-0" />
             ))}
           </div>
+        ) : dossiers.length === 0 ? (
+          <div className="bg-card rounded-xl border border-border/60 shadow-card py-16 text-center">
+            <Hash className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
+            <p className="text-sm font-medium text-foreground">
+              {isAdmin ? 'Aucun dossier dans le réseau' : "Vous n'avez encore aucun dossier"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+              Créez un premier dossier client pour le suivre étape par étape dans le pipeline.
+            </p>
+            <div className="mt-4 inline-flex"><DossierDialog /></div>
+          </div>
         ) : (
           <DndContext
             sensors={sensors}

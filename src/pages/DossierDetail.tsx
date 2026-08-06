@@ -356,9 +356,7 @@ export default function DossierDetail() {
                 typesDisponibles={['mandat_recherche', 'convention_cadre', 'bon_commande', 'offre_achat']}
               />
             </div>
-            <div className="bg-card border rounded-xl p-6">
-              <SignatureSection dossierId={dossier.id} clientName={form.client_name} clientEmail={form.email} numeroDossier={dossier.numero_dossier} />
-            </div>
+
           </TabsContent>
 
           {/* Portail client */}

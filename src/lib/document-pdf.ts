@@ -100,21 +100,26 @@ function renderText(
   ctx: DocumentBuildContext,
 ): number {
   const { marginL, textW } = LAYOUT;
-  const clean = sanitizePdfText(text || '');
-  const lines = doc.splitTextToSize(clean, textW);
 
   doc.setFont(FONT.body, 'normal');
   doc.setFontSize(11);
   doc.setTextColor(...C.ink);
 
-  for (const line of lines) {
-    y = ensureSpace(doc, y, 6.5,
-      { refDossier: ctx.numeroDossier, titrePage: ctx.titre });
-    doc.text(line, marginL, y);
-    y += 5.8;
+  // Les retours a la ligne du modele sont conserves (paragraphes, listes, blocs parties)
+  for (const paragraph of (text || '').split('\n')) {
+    const clean = sanitizePdfText(paragraph);
+    if (clean === '') { y += 3; continue; }
+    const lines = doc.splitTextToSize(clean, textW) as string[];
+    for (const line of lines) {
+      y = ensureSpace(doc, y, 6.5,
+        { refDossier: ctx.numeroDossier, titrePage: ctx.titre });
+      doc.text(line, marginL, y);
+      y += 5.8;
+    }
   }
   return y + 3.5;
 }
+
 
 
 // ─── EXPORT PRINCIPAL ─────────────────────────────────────────────────────────

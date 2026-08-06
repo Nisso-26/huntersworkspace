@@ -74,11 +74,19 @@ export const LAYOUT = {
 export function sanitizePdfText(s: string): string {
   return (s || '')
     .replace(/[\u202F\u00A0]/g, ' ')
+    // Ponctuation typographique -> equivalents Latin-1 rendus par jsPDF
+    .replace(/[\u2013\u2014]/g, '-')
+    .replace(/[\u2018\u2019\u2032]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\u2026/g, '...')
+    .replace(/[\u2192\u21D2]/g, '->')
+    .replace(/[\u2022\u25CF]/g, '\xB7')
     .replace(/[^\x20-\x7E\xA0-\xFF]/g, '')
     .replace(/!'/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
+
 
 // Tracking (letter-spacing) — em → mm à une taille donnée
 function tracking(doc: jsPDF, sizePt: number, em: number): void {

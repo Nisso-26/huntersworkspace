@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Users, FolderKanban, FileText, CreditCard, Bell,
   Settings, LogOut, ChevronLeft, ChevronRight, Home, HardHat,
-  CalendarDays, UserPlus, Briefcase, MessageSquare, FileSpreadsheet, ShieldCheck, BookOpen, BarChart3,
+  CalendarDays, UserPlus, Briefcase, MessageSquare, FileSpreadsheet, ShieldCheck, BookOpen, BarChart3, Compass,
 } from 'lucide-react';
 import { useState } from 'react';
 import GlobalSearch from '@/components/GlobalSearch';
@@ -27,6 +27,7 @@ const allNavItems = [
   { label: 'Facturation', icon: CreditCard, href: '/facturation', roles: ['super_admin'], group: 'finance' },
   { label: 'Reporting', icon: BarChart3, href: '/reporting', roles: ['super_admin'], group: 'finance' },
   { label: 'Export comptable', icon: FileSpreadsheet, href: '/export-comptable', roles: ['super_admin'], group: 'finance' },
+  { label: 'Guide de démarrage', icon: Compass, href: '/guide', roles: ['super_admin', 'mandataire', 'decoratrice', 'analyste'], group: 'outils' },
   { label: 'Ressources', icon: BookOpen, href: '/ressources', roles: ['super_admin', 'mandataire', 'decoratrice'], group: 'outils' },
   { label: 'Messagerie', icon: MessageSquare, href: '/messagerie', roles: ['super_admin', 'mandataire'], group: 'outils' },
   { label: 'Agenda', icon: CalendarDays, href: '/agenda', roles: ['super_admin', 'mandataire', 'decoratrice'], group: 'outils' },

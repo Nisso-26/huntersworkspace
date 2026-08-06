@@ -4,7 +4,9 @@ import StatCard from '@/components/StatCard';
 import SearchFilter from '@/components/SearchFilter';
 import ExportButton, { exportToCSV } from '@/components/ExportButton';
 import { cn } from '@/lib/utils';
-import { useFactures, useUpdateFacture, generateFacturePDF } from '@/hooks/use-factures';
+import { useFactures, useUpdateFacture, generateFacturePDF, useEnvoyerFacture } from '@/hooks/use-factures';
+import EnvoyerDocumentButton, { EnvoiStatutBadge } from '@/components/EnvoyerDocumentButton';
+
 import { useCommissions } from '@/hooks/use-commissions';
 import { useCompanySettings } from '@/hooks/use-company-settings';
 import { Skeleton } from '@/components/ui/skeleton';

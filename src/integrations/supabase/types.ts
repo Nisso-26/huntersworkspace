@@ -2066,6 +2066,9 @@ export type Database = {
           document_signe_url: string | null
           document_url: string | null
           dossier_id: string | null
+          email_envoye_at: string | null
+          email_erreur: string | null
+          email_statut: string
           expires_at: string
           id: string
           ip_address: string | null
@@ -2089,6 +2092,9 @@ export type Database = {
           document_signe_url?: string | null
           document_url?: string | null
           dossier_id?: string | null
+          email_envoye_at?: string | null
+          email_erreur?: string | null
+          email_statut?: string
           expires_at?: string
           id?: string
           ip_address?: string | null
@@ -2112,6 +2118,9 @@ export type Database = {
           document_signe_url?: string | null
           document_url?: string | null
           dossier_id?: string | null
+          email_envoye_at?: string | null
+          email_erreur?: string | null
+          email_statut?: string
           expires_at?: string
           id?: string
           ip_address?: string | null

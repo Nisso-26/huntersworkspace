@@ -10,7 +10,6 @@ import RapportConseilButton from '@/components/RapportConseilButton';
 import RapportsGeneresList from '@/components/RapportsGeneresList';
 import NouveauDocumentButton from '@/components/NouveauDocumentButton';
 import DocumentsContractuelsList from '@/components/DocumentsContractuelsList';
-import SignatureSection from '@/components/SignatureSection';
 import SignatureHuntersSection from '@/components/SignatureHuntersSection';
 import ClientPortalSection, { ClientComments } from '@/components/ClientPortalSection';
 import StrategieIA from '@/components/StrategieIA';
@@ -356,9 +355,7 @@ export default function DossierDetail() {
                 typesDisponibles={['mandat_recherche', 'convention_cadre', 'bon_commande', 'offre_achat']}
               />
             </div>
-            <div className="bg-card border rounded-xl p-6">
-              <SignatureSection dossierId={dossier.id} clientName={form.client_name} clientEmail={form.email} numeroDossier={dossier.numero_dossier} />
-            </div>
+
           </TabsContent>
 
           {/* Portail client */}

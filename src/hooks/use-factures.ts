@@ -275,9 +275,9 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
       }];
 
   const xDes = marginL + 3;
-  const xTarif = marginL + 108;
-  const xRemise = marginL + 133;
-  const xTva = marginL + 148;
+  const xTarif = marginL + 104;
+  const xRemise = marginL + 126;
+  const xTva = marginL + 144;
   const xNet = pageW - marginR - 3;
 
   y = ensureSpace(doc, y, 22, ctx);
@@ -291,26 +291,33 @@ export async function generateFacturePDF(facture: Facture, settings?: Partial<Co
 
   lignes.forEach((l, idx) => {
     const isCleEnMain = l.service_key === 'cle_en_main' || /clé en main/i.test(l.label || '');
-    const h = isCleEnMain ? 12 : 7.5;
-    y = ensureSpace(doc, y, h, ctx);
+    y = ensureSpace(doc, y, isCleEnMain ? 14 : 7.5, ctx);
     y = drawTableRow(doc, y, [
       { value: l.label, x: xDes },
       { value: fmtPdfEur(l.tarif_base), x: xTarif, align: 'right' },
-      { value: l.remise_pct > 0 ? `-${l.remise_pct}% (-${fmtPdfEur(l.remise_montant)})` : '—', x: xRemise, align: 'right' },
-      { value: `${l.tva_taux}%`, x: xTva, align: 'right' },
+      { value: l.remise_pct > 0 ? `-${l.remise_pct} %` : '-', x: xRemise, align: 'right' },
+      { value: `${l.tva_taux} %`, x: xTva, align: 'right' },
       { value: fmtPdfEur(l.montant_ht), x: xNet, align: 'right', bold: true },
-    ], idx, h);
+    ], idx, 7.5);
     if (isCleEnMain) {
+      // Ligne de détail des prestations incluses, sur sa propre ligne
+      doc.setFillColor(...(idx % 2 === 0 ? C.white : C.creamLight));
+      doc.rect(marginL, y, contentW, 6, 'F');
       doc.setFont(FONT.body, 'italic');
       doc.setFontSize(7.5);
       doc.setTextColor(...C.textMuted);
       doc.text(
         sanitizePdfText('Inclus : Conseil en investissement · Chasse immobilière · AMO · Décoration / Ameublement'),
         xDes,
-        y - 3.2,
+        y + 4,
       );
+      doc.setDrawColor(...C.border);
+      doc.setLineWidth(0.18);
+      doc.line(marginL, y + 6, marginL + contentW, y + 6);
+      y += 6;
     }
   });
+
 
   const totalHTReel = lignes.reduce((acc, l) => acc + l.montant_ht, 0);
   const totalTVAReel = lignes.reduce((acc, l) => acc + l.montant_ht * (l.tva_taux / 100), 0);

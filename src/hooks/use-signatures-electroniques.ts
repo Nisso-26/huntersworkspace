@@ -218,7 +218,7 @@ export function useEnvoyerEnSignature() {
           type_document: payload.type_document,
           signataire_nom: payload.signataire_nom,
           signataire_email: payload.signataire_email,
-          document_nom: payload.document_nom || null,
+          document_nom: documentNom,
           document_url: documentPath,
           email_statut: 'envoi_en_cours',
         } as any)

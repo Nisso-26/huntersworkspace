@@ -136,7 +136,14 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   const [packActif, setPackActif] = useState<boolean>(dossier.type_accompagnement === 'cle_en_main');
   const [emailClient, setEmailClient] = useState<string>(((dossier as any).email as string) || '');
 
-  const tarifConseil = Number((dossier as any).tarif_conseil_ht) || 1500;
+  // Tarif du conseil : valeur figée sur le dossier, sinon barème HUNTERS « conseil »
+  // indexé sur le score de qualification. Aucune valeur codée en dur.
+  const scoreClient = Number((dossier as any).score_qualification) || 0;
+  const tarifConseil = Number((dossier as any).tarif_conseil_ht)
+    || computeMontant(pickTranche(baremes, 'conseil', scoreClient), scoreClient).montant;
+  // Taux de TVA réel (paramètres société), en pourcentage
+  const tvaTaux = Number(company?.tva_taux_defaut);
+  const tvaRate = Number.isFinite(tvaTaux) && tvaTaux >= 0 ? tvaTaux : 20;
   const niveau = (dossier as any).niveau_qualification || 'Standard';
 
 

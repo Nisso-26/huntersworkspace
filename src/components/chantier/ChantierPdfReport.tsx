@@ -2,6 +2,8 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Chantier } from '@/hooks/use-chantiers';
 import { format } from 'date-fns';
+import { pdfToBase64 } from '@/lib/document-email';
+
 import { fr } from 'date-fns/locale';
 import { fmtPdfEur, fmtPdfNum } from '@/lib/pdf-utils';
 import {
@@ -25,7 +27,11 @@ async function loadImageAsBase64(url: string): Promise<string | null> {
   } catch { return null; }
 }
 
-export async function generateChantierPdf(chantier: Chantier) {
+export async function generateChantierPdf(
+  chantier: Chantier,
+  opts?: { mode?: 'save' | 'base64' },
+): Promise<string | void> {
+
   const { default: jsPDF } = await import('jspdf');
   await loadLogo(); // chargé pour parité, non utilisé sur en-tête sobre
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -303,5 +309,8 @@ export async function generateChantierPdf(chantier: Chantier) {
     drawFooter(doc, i, total, `HUNTERS · Rapport chantier ${chantier.reference}`);
   }
 
-  doc.save(`rapport-chantier-${chantier.reference}-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+  const filename = `rapport-chantier-${chantier.reference}-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+  if (opts?.mode === 'base64') return pdfToBase64(doc as any);
+  doc.save(filename);
+
 }

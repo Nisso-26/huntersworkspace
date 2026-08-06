@@ -120,8 +120,17 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   const tva = totalHT * 0.2;
   const totalTTC = totalHT + tva;
 
-  const buildPdf = async () => {
+  const buildPdf = async (override?: {
+    lignes: DevisLigne[]; sousTotal: number; remisePack: number;
+    totalHT: number; totalTTC: number; packActif: boolean;
+  }) => {
+    const snap = override ?? { lignes, sousTotal, remisePack, totalHT, totalTTC, packActif };
+    const {
+      lignes: pdfLignes, sousTotal: pdfSousTotal, remisePack: pdfRemise,
+      totalHT: pdfTotalHT, totalTTC: pdfTotalTTC, packActif: pdfPack,
+    } = snap;
     const { default: jsPDF } = await import('jspdf');
+
     const {
       C, FONT, LAYOUT,
       loadLogo, drawHeader, drawFooter,

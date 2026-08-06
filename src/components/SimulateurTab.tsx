@@ -58,72 +58,118 @@ export default function SimulateurTab({ prixRevient, loyerMensuel, reference, ad
   const handleExportPDF = async () => {
     try {
       const { default: jsPDF } = await import('jspdf');
-      const doc = new jsPDF();
+      const {
+        C, FONT, LAYOUT, drawHeader, drawFooter, drawSectionTitle,
+        drawIvoryBox, drawTableHeader, drawTableRow, ensureSpace, sanitizePdfText,
+      } = await import('@/lib/pdf-design-system');
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+      const { marginL, marginR, pageW, contentW } = LAYOUT;
+      const ctx = { refDossier: reference, titrePage: 'Simulation financière' };
 
-      // Header
-      doc.setFillColor(26, 77, 46);
-      doc.rect(0, 0, 210, 35, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
-      doc.text('HUNTERS', 15, 18);
-      doc.setFontSize(10);
-      doc.text('Rapport de simulation', 15, 28);
+      drawHeader(doc, reference, ctx.titrePage);
+      let y = LAYOUT.headerH + 8;
+      y = drawSectionTitle(doc, 'Simulation financière', y);
 
-      // Gold line
-      doc.setDrawColor(245, 168, 0);
-      doc.setLineWidth(1.5);
-      doc.line(0, 35, 210, 35);
+      // Encadré contexte
+      const infoLines = [
+        `Bien : ${reference}`,
+        dossierClient ? `Client : ${dossierClient}` : '',
+        adresse ? `Adresse : ${adresse}` : '',
+      ].filter(Boolean) as string[];
+      const boxH = infoLines.length * 5.5 + 8;
+      drawIvoryBox(doc, y, boxH);
+      doc.setFont(FONT.body, 'normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(...C.ink);
+      infoLines.forEach((l, i) => {
+        doc.text(sanitizePdfText(l), marginL + 5.6, y + 7 + i * 5.5, { maxWidth: contentW - 10 });
+      });
+      y += boxH + 10;
 
-      let y = 50;
-      doc.setTextColor(26, 77, 46);
-      doc.setFontSize(14);
-      doc.text(`Bien : ${reference}`, 15, y); y += 8;
-      doc.setFontSize(10);
-      doc.setTextColor(50, 50, 50);
-      if (dossierClient) { doc.text(`Client : ${dossierClient}`, 15, y); y += 6; }
-      doc.text(`Adresse : ${adresse}`, 15, y); y += 10;
-
-      const lines = [
-        ['Prix de revient', fmtPdfEurInt(prixRevient)],
-        ['Apport personnel', fmtPdfEurInt(apport)],
-        ['Montant emprunté', fmtPdfEurInt(montantEmprunte)],
-        ['Taux / Durée', `${taux}% / ${duree} ans`],
-        ['Mensualité crédit', fmtPdfEur(mensualite)],
-        ['Taux d\'endettement', `${tauxEndettement.toFixed(1)}%`],
-        ['', ''],
-        ['Loyer mensuel HC', fmtPdfEurInt(loyerMensuel)],
-        ['Charges mensuelles', `${charges} €`],
-        ['Vacance locative', `${vacance}%`],
-        ['Fiscalité mensuelle', `${fiscalite} €`],
-        ['', ''],
-        ['Cash flow mensuel', fmtPdfEur(cashFlowMensuel)],
-        ['Cash flow annuel', fmtPdfEur(cashFlowAnnuel)],
-        ['Rentabilité brute', `${rentaBrute.toFixed(2)}%`],
-        ['Rentabilité nette', `${rentaNette.toFixed(2)}%`],
-        ['TRI estimé (10 ans)', `${tri.toFixed(2)}%`],
-        ['Effort d\'épargne', effortEpargne > 0 ? `${fmtPdfEur(effortEpargne)}/mois` : 'Aucun'],
+      const groups: Array<{ titre: string; rows: [string, string][] }> = [
+        {
+          titre: 'Financement',
+          rows: [
+            ['Prix de revient', fmtPdfEurInt(prixRevient)],
+            ['Apport personnel', fmtPdfEurInt(apport)],
+            ['Montant emprunté', fmtPdfEurInt(montantEmprunte)],
+            ['Taux / Durée', `${taux}% / ${duree} ans`],
+            ['Mensualité crédit', fmtPdfEur(mensualite)],
+            ["Taux d'endettement", `${tauxEndettement.toFixed(1)}%`],
+          ],
+        },
+        {
+          titre: 'Exploitation locative',
+          rows: [
+            ['Loyer mensuel HC', fmtPdfEurInt(loyerMensuel)],
+            ['Charges mensuelles', `${charges} €`],
+            ['Vacance locative', `${vacance}%`],
+            ['Fiscalité mensuelle', `${fiscalite} €`],
+          ],
+        },
+        {
+          titre: 'Rendement',
+          rows: [
+            ['Cash flow mensuel', fmtPdfEur(cashFlowMensuel)],
+            ['Cash flow annuel', fmtPdfEur(cashFlowAnnuel)],
+            ['Rentabilité brute', `${rentaBrute.toFixed(2)}%`],
+            ['Rentabilité nette', `${rentaNette.toFixed(2)}%`],
+            ['TRI estimé (10 ans)', `${tri.toFixed(2)}%`],
+            ["Effort d'épargne", effortEpargne > 0 ? `${fmtPdfEur(effortEpargne)}/mois` : 'Aucun'],
+          ],
+        },
       ];
 
       if (prixRevente > 0) {
-        lines.push(['', ''], ['Prix de revente', fmtPdfEurInt(prixRevente)]);
-        lines.push(['Plus-value brute', fmtPdfEurInt(pvBrute)]);
-        lines.push(['Plus-value nette estimée', fmtPdfEur(pvNette)]);
+        groups.push({
+          titre: 'Revente',
+          rows: [
+            ['Prix de revente', fmtPdfEurInt(prixRevente)],
+            ['Plus-value brute', fmtPdfEurInt(pvBrute)],
+            ['Plus-value nette estimée', fmtPdfEur(pvNette)],
+          ],
+        });
       }
 
-      for (const [label, val] of lines) {
-        if (!label) { y += 4; continue; }
-        doc.setTextColor(80, 80, 80);
-        doc.text(label, 15, y);
-        doc.setTextColor(26, 77, 46);
-        doc.text(val, 120, y);
-        y += 7;
-        if (y > 270) { doc.addPage(); y = 20; }
+      const xLabel = marginL + 3;
+      const xValue = pageW - marginR - 3;
+
+      for (const g of groups) {
+        y = ensureSpace(doc, y, 26, ctx);
+        doc.setFont(FONT.body, 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(...C.green);
+        doc.text(sanitizePdfText(g.titre), marginL, y);
+        y += 5;
+        y = drawTableHeader(doc, y, [
+          { label: 'Poste', x: xLabel },
+          { label: 'Valeur', x: xValue, align: 'right' },
+        ]);
+        g.rows.forEach(([label, val], i) => {
+          y = ensureSpace(doc, y, 7.5, ctx);
+          y = drawTableRow(doc, y, [
+            { value: label, x: xLabel },
+            { value: val, x: xValue, align: 'right', bold: true },
+          ], i);
+        });
+        y += 8;
       }
 
-      // Footer
+      y = ensureSpace(doc, y, 12, ctx);
+      doc.setFont(FONT.body, 'italic');
       doc.setFontSize(8);
-      doc.setTextColor(150, 150, 150);
-      doc.text('Document non contractuel - HUNTERS © ' + new Date().getFullYear(), 15, 285);
+      doc.setTextColor(...C.textMuted);
+      doc.text(
+        sanitizePdfText('Document non contractuel — simulation indicative fondée sur les hypothèses saisies.'),
+        marginL,
+        y + 4,
+      );
+
+      const total = doc.getNumberOfPages();
+      for (let p = 1; p <= total; p++) {
+        doc.setPage(p);
+        drawFooter(doc, p, total, `HUNTERS · Simulation ${reference}`);
+      }
 
       doc.save(`simulation_${reference}.pdf`);
       toast.success('Rapport PDF généré');
@@ -131,6 +177,7 @@ export default function SimulateurTab({ prixRevient, loyerMensuel, reference, ad
       toast.error('Erreur lors de la génération du PDF');
     }
   };
+
 
   const setNum = (setter: (v: number) => void) => (e: React.ChangeEvent<HTMLInputElement>) => setter(parseFloat(e.target.value) || 0);
 

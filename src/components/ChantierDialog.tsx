@@ -17,6 +17,9 @@ import DecoTab from '@/components/chantier/DecoTab';
 import VisitesTab from '@/components/chantier/VisitesTab';
 import PhotosTab from '@/components/chantier/PhotosTab';
 import { generateChantierPdf } from '@/components/chantier/ChantierPdfReport';
+import EnvoyerDocumentButton from '@/components/EnvoyerDocumentButton';
+import { useEnvoisDocuments, useEnvoyerDocumentAdHoc } from '@/hooks/use-envois-documents';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
@@ -117,15 +120,42 @@ export default function ChantierDialog({ chantier, trigger }: Props) {
           <DialogTitle className="text-primary flex items-center gap-2">
             {chantier ? `Chantier ${chantier.reference}` : 'Nouveau chantier'}
             {chantier && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="ml-auto"
-                onClick={() => generateChantierPdf(chantier)}
-              >
-                <FileDown className="w-3.5 h-3.5 mr-1" /> PDF
-              </Button>
+              <div className="ml-auto flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => generateChantierPdf(chantier)}
+                >
+                  <FileDown className="w-3.5 h-3.5 mr-1" /> PDF
+                </Button>
+                <EnvoyerDocumentButton
+                  documentLabel={`Rapport chantier ${chantier.reference}`}
+                  statut={dernierEnvoi?.email_statut}
+                  destinataire={dernierEnvoi?.destinataire}
+                  envoyeAt={dernierEnvoi?.email_envoye_at}
+                  erreur={dernierEnvoi?.email_erreur}
+                  onSend={async (email) => {
+                    const base64 = (await generateChantierPdf(chantier, { mode: 'base64' })) as string;
+                    await envoiMut.mutateAsync({
+                      contexte: 'rapport_chantier',
+                      documentNom: `Rapport chantier ${chantier.reference}`,
+                      chantierId: chantier.id,
+                      email,
+                      subject: `Rapport de suivi de chantier ${chantier.reference} — HUNTERS Immobilier`,
+                      eyebrow: 'Suivi de chantier',
+                      title: `Rapport de chantier ${chantier.reference}`,
+                      bodyHtml: `
+                        <p>Bonjour,</p>
+                        <p>Vous trouverez ci-joint le rapport de suivi du chantier
+                        <strong>${chantier.reference}</strong> (travaux, lots, visites et photos).</p>
+                        <p>Bien à vous,<br/>L'équipe HUNTERS Immobilier</p>`,
+                      pdfBase64: base64,
+                    });
+                  }}
+                />
+              </div>
             )}
+
           </DialogTitle>
           <DialogDescription>Gérez les travaux, lots, déco et visites du chantier.</DialogDescription>
         </DialogHeader>

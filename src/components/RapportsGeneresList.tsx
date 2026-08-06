@@ -4,6 +4,8 @@ import { FileText } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import RapportConseilButton from '@/components/RapportConseilButton';
 import type { Dossier } from '@/hooks/use-dossiers';
+import { EnvoiStatutBadge } from '@/components/EnvoyerDocumentButton';
+import type { DocEmailStatut } from '@/lib/document-email';
 
 interface RapportRow {
   id: string;
@@ -12,7 +14,12 @@ interface RapportRow {
   date_generation: string;
   conseiller_id: string | null;
   conseiller_name?: string;
+  email_statut?: DocEmailStatut | null;
+  email_destinataire?: string | null;
+  email_envoye_at?: string | null;
+  email_erreur?: string | null;
 }
+
 
 export default function RapportsGeneresList({ dossier }: { dossier: Dossier }) {
   const [items, setItems] = useState<RapportRow[]>([]);
@@ -63,28 +70,39 @@ export default function RapportsGeneresList({ dossier }: { dossier: Dossier }) {
       ) : (
         <ul className="space-y-1.5">
           {items.map(r => (
-            <li key={r.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-secondary/50">
-              <FileText className="w-4 h-4 text-primary" />
-              <span className="text-xs font-medium text-foreground flex-1">
-                Rapport de conseil
-                {r.numero_dossier && (
-                  <span className="ml-2 font-mono text-[10px] text-muted-foreground">
-                    {r.numero_dossier}
-                  </span>
+            <li key={r.id} className="px-2.5 py-1.5 rounded-md bg-secondary/50 space-y-1">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-primary" />
+                <span className="text-xs font-medium text-foreground flex-1">
+                  Rapport de conseil
+                  {r.numero_dossier && (
+                    <span className="ml-2 font-mono text-[10px] text-muted-foreground">
+                      {r.numero_dossier}
+                    </span>
+                  )}
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  {new Date(r.date_generation).toLocaleString('fr-FR', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit',
+                  })}
+                </span>
+                {r.conseiller_name && (
+                  <span className="text-[11px] text-muted-foreground hidden sm:inline">· {r.conseiller_name}</span>
                 )}
-              </span>
-              <span className="text-[11px] text-muted-foreground">
-                {new Date(r.date_generation).toLocaleString('fr-FR', {
-                  day: '2-digit', month: '2-digit', year: 'numeric',
-                  hour: '2-digit', minute: '2-digit',
-                })}
-              </span>
-              {r.conseiller_name && (
-                <span className="text-[11px] text-muted-foreground hidden sm:inline">· {r.conseiller_name}</span>
+              </div>
+              {r.email_statut && r.email_statut !== 'non_envoye' && (
+                <EnvoiStatutBadge
+                  statut={r.email_statut}
+                  destinataire={r.email_destinataire}
+                  envoyeAt={r.email_envoye_at}
+                  erreur={r.email_erreur}
+                />
               )}
             </li>
           ))}
         </ul>
+
       )}
     </div>
   );

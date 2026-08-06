@@ -373,7 +373,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
     }
 
     addRecapLine('Total HT', fmtPdfEur(pdfTotalHT), true);
-    addRecapLine(`TVA ${company?.tva_taux_defaut ?? 20}%`, fmtPdfEur(pdfTotalHT * (company?.tva_taux_defaut ?? 20) / 100));
+    addRecapLine(`TVA ${tvaRate}%`, fmtPdfEur(pdfTotalHT * tvaRate / 100));
     addRecapLine('TOTAL TTC', fmtPdfEur(pdfTotalTTC), false, true); // fond vert highlight
 
     y += 8;
@@ -382,7 +382,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
     doc.setFont(FONT.body, 'italic');
     doc.setFontSize(8);
     doc.setTextColor(...C.textMuted);
-    doc.text('Devis valable 30 jours — TVA 20% — Honoraires HT', marginL, y);
+    doc.text(`Devis valable 30 jours — TVA ${tvaRate}% — Honoraires HT`, marginL, y);
     y += 8;
 
     // ── Zone de signature double ───────────────────────────────────────────────
@@ -417,7 +417,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
       dossier_id: dossier.id,
       montant_ht: totalHT,
       remise_pack: remisePack,
-      tva_taux: 20,
+      tva_taux: tvaRate,
       montant_ttc: totalTTC,
       statut,
       pack_actif: packActif,
@@ -434,7 +434,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
         dossier_id: dossier.id,
         montant_ht: totalHT,
         remise_pack: remisePack,
-        tva_taux: 20,
+        tva_taux: tvaRate,
         montant_ttc: totalTTC,
         pack_actif: packActif,
         contenu: { lignes } as any,
@@ -529,7 +529,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
             <div className="flex justify-between text-[#004621]"><span>Remise pack -10%</span><span>- {fmtPdfEur(remisePack)}</span></div>
           )}
           <div className="flex justify-between"><span>Total HT</span><span>{fmtPdfEur(totalHT)}</span></div>
-          <div className="flex justify-between text-muted-foreground"><span>TVA 20%</span><span>{fmtPdfEur(tva)}</span></div>
+          <div className="flex justify-between text-muted-foreground"><span>TVA {tvaRate}%</span><span>{fmtPdfEur(tva)}</span></div>
           <div className="flex justify-between font-bold text-base border-t pt-1"><span>Total TTC</span><span className="text-[#004621]">{fmtPdfEur(totalTTC)}</span></div>
         </div>
 

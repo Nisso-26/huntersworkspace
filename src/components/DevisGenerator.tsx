@@ -7,9 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Download, Save, Send, FileText } from 'lucide-react';
+import { Download, Save, Send, FileText, Loader2, CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useBaremesHunters, type BaremeHunters, type BaremeService } from '@/hooks/use-baremes-hunters';
-import { useDevis, useSaveDevis, useUpdateDevisStatut, type DevisLigne, type DevisStatut } from '@/hooks/use-devis';
+import {
+  useDevis, useSaveDevis, useUpdateDevisStatut, useEnvoyerDevis,
+  DEVIS_EMAIL_LABELS,
+  type DevisLigne, type DevisStatut, type DevisEmailStatut,
+} from '@/hooks/use-devis';
+
 import { useCompanySettings } from '@/hooks/use-company-settings';
 import { fmtPdfEur } from '@/lib/pdf-utils';
 import type { Dossier } from '@/hooks/use-dossiers';

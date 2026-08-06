@@ -31,8 +31,23 @@ interface Props {
   onComplete: () => void;
 }
 
-const STEP_TITLES = ['Bienvenue', 'Identité', 'RSAC', 'Bancaire & Pack', 'Zone & Activation'];
-const TOTAL_STEPS = 5;
+type StepKey = 'bienvenue' | 'statut_deco' | 'identite' | 'rsac' | 'bancaire' | 'zone';
+type WizardRole = 'mandataire' | 'analyste' | 'decoratrice';
+
+const STEP_LABELS: Record<StepKey, string> = {
+  bienvenue: 'Bienvenue',
+  statut_deco: 'Votre statut',
+  identite: 'Identité',
+  rsac: 'RSAC',
+  bancaire: 'Bancaire & Pack',
+  zone: 'Zone & Activation',
+};
+
+const STEPS_BY_ROLE: Record<WizardRole, StepKey[]> = {
+  mandataire: ['bienvenue', 'identite', 'rsac', 'bancaire', 'zone'],
+  analyste: ['bienvenue', 'identite'],
+  decoratrice: ['bienvenue', 'statut_deco', 'identite'],
+};
 
 interface ZoneAffectee {
   zone_label: string;
@@ -55,6 +70,10 @@ type FormData = {
   adresse_ville: string;
   telephone: string;
   statut_juridique: '' | 'auto-entrepreneur' | 'eurl' | 'sasu';
+  // Décoratrice
+  statut_deco: '' | 'salariee' | 'auto-entrepreneuse';
+  // Analyste patrimoniale
+  statut_pro: '' | 'salarie' | 'independant';
   // Étape 3
   rsac_numero: string;
   rsac_greffe: string;
@@ -80,6 +99,8 @@ const EMPTY_FORM: FormData = {
   adresse_ville: '',
   telephone: '',
   statut_juridique: '',
+  statut_deco: '',
+  statut_pro: '',
   rsac_numero: '',
   rsac_greffe: '',
   rsac_date: '',
@@ -94,8 +115,13 @@ const EMPTY_FORM: FormData = {
 };
 
 export default function OnboardingWizard({ onComplete }: Props) {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
+  const wizardRole: WizardRole =
+    role === 'decoratrice' ? 'decoratrice' : role === 'analyste' ? 'analyste' : 'mandataire';
+  const steps = STEPS_BY_ROLE[wizardRole];
+  const TOTAL_STEPS = steps.length;
   const [step, setStep] = useState(1);
+  const currentKey: StepKey = steps[Math.min(step, TOTAL_STEPS) - 1];
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [zones, setZones] = useState<ZoneAffectee[]>([]);
@@ -172,18 +198,34 @@ export default function OnboardingWizard({ onComplete }: Props) {
         { onConflict: 'mandataire_id' }
       );
 
+      const isMandataire = wizardRole === 'mandataire';
+      const decoAuto = wizardRole === 'decoratrice' && form.statut_deco === 'auto-entrepreneuse';
       const profileFields: Record<string, unknown> = {
         full_name: [form.first_name, form.last_name].filter(Boolean).join(' ').trim() || null,
         phone: form.telephone || null,
-        statut_juridique: form.statut_juridique || null,
-        rsac_numero: form.rsac_numero || null,
-        rsac_greffe: form.rsac_greffe || null,
-        rsac_date: form.rsac_date || null,
-        rsac_justificatif: form.rsac_justificatif || null,
-        iban: form.iban || null,
-        siret: form.siret || null,
+        statut_juridique:
+          isMandataire
+            ? form.statut_juridique || null
+            : wizardRole === 'decoratrice'
+              ? form.statut_deco || null
+              : form.statut_pro || null,
         onboarding_step: step,
       };
+      if (isMandataire) {
+        Object.assign(profileFields, {
+          rsac_numero: form.rsac_numero || null,
+          rsac_greffe: form.rsac_greffe || null,
+          rsac_date: form.rsac_date || null,
+          rsac_justificatif: form.rsac_justificatif || null,
+          iban: form.iban || null,
+          siret: form.siret || null,
+        });
+      } else if (decoAuto) {
+        Object.assign(profileFields, {
+          iban: form.iban || null,
+          siret: form.siret || null,
+        });
+      }
       await supabase.from('profiles').update(profileFields as any).eq('id', user.id);
 
     } catch (e) {
@@ -195,31 +237,41 @@ export default function OnboardingWizard({ onComplete }: Props) {
   const setField = <K extends keyof FormData>(key: K, value: FormData[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
-  // ----- Validation par étape
+  // ----- Validation par étape (dépend du rôle)
   const canAdvance = useMemo(() => {
-    switch (step) {
-      case 1:
+    const identiteBase = Boolean(
+      form.first_name &&
+      form.last_name &&
+      form.date_naissance &&
+      form.adresse_rue &&
+      form.adresse_cp &&
+      form.adresse_ville &&
+      form.telephone
+    );
+
+    switch (currentKey) {
+      case 'bienvenue':
         return true;
-      case 2:
-        return Boolean(
-          form.first_name &&
-          form.last_name &&
-          form.date_naissance &&
-          form.adresse_rue &&
-          form.adresse_cp &&
-          form.adresse_ville &&
-          form.telephone &&
-          form.statut_juridique
-        );
-      case 3:
+      case 'statut_deco':
+        return form.statut_deco === 'salariee' || form.statut_deco === 'auto-entrepreneuse';
+      case 'identite': {
+        if (wizardRole === 'mandataire') return identiteBase && Boolean(form.statut_juridique);
+        if (wizardRole === 'analyste') return identiteBase && Boolean(form.statut_pro);
+        // Décoratrice
+        if (form.statut_deco === 'auto-entrepreneuse') {
+          return identiteBase && isValidSiret(form.siret) && isValidFrIban(form.iban);
+        }
+        return identiteBase;
+      }
+      case 'rsac':
         return Boolean(form.rsac_numero && form.rsac_greffe && form.rsac_date && form.rsac_justificatif);
-      case 4: {
+      case 'bancaire': {
         const ibanOk = isValidFrIban(form.iban);
         const siretRequired = form.statut_juridique === 'eurl' || form.statut_juridique === 'sasu';
         const siretOk = siretRequired ? isValidSiret(form.siret) : true;
         return ibanOk && siretOk && form.accept_pack;
       }
-      case 5:
+      case 'zone':
         return zones.length > 0 && form.accept_zone && form.accept_prescripteurs && form.accept_objectifs && form.accept_encaissement;
       default:
         return false;
@@ -269,15 +321,20 @@ export default function OnboardingWizard({ onComplete }: Props) {
       // Notifier les super_admins
       const { data: admins } = await supabase.from('user_roles').select('user_id').eq('role', 'super_admin');
       const fullName = [form.first_name, form.last_name].filter(Boolean).join(' ').trim();
+      const roleLabel =
+        wizardRole === 'decoratrice' ? 'Décoratrice' : wizardRole === 'analyste' ? 'Analyste patrimoniale' : 'Mandataire';
       const zonesLabel = zones.map((z) => z.zone_label).join(', ') || '?';
-      const detail = `Nouveau mandataire activé : ${fullName} — Zone(s) : ${zonesLabel} — Onboarding complet — Vérification dossier requise`;
+      const detail =
+        wizardRole === 'mandataire'
+          ? `Nouveau mandataire activé : ${fullName} — Zone(s) : ${zonesLabel} — Onboarding complet — Vérification dossier requise`
+          : `${roleLabel} activée : ${fullName} — Onboarding complet — Vérification dossier requise`;
 
       if (admins?.length) {
         await supabase.from('alertes').insert(
           admins.map((a) => ({
             user_id: a.user_id,
             type: 'info',
-            title: 'Mandataire activé',
+            title: `${roleLabel} activé(e)`,
             detail,
           })) as any
         );
@@ -305,7 +362,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                 <img src={huntersLogo} alt="HUNTERS" className="h-8 w-8 rounded" />
                 <div>
                   <p className="text-xs uppercase tracking-wider text-muted-foreground">Onboarding</p>
-                  <p className="text-sm font-semibold">Étape {step} / {TOTAL_STEPS} — {STEP_TITLES[step - 1]}</p>
+                  <p className="text-sm font-semibold">Étape {step} / {TOTAL_STEPS} — {STEP_LABELS[currentKey]}</p>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground hidden sm:block">Sauvegarde automatique activée</p>
@@ -321,11 +378,14 @@ export default function OnboardingWizard({ onComplete }: Props) {
             </div>
           ) : (
             <>
-              {step === 1 && <StepBienvenue />}
-              {step === 2 && <StepIdentite form={form} setField={setField} email={user.email || ''} />}
-              {step === 3 && <StepRsac form={form} setField={setField} />}
-              {step === 4 && <StepBancairePack form={form} setField={setField} />}
-              {step === 5 && (
+              {currentKey === 'bienvenue' && <StepBienvenue wizardRole={wizardRole} totalSteps={TOTAL_STEPS} />}
+              {currentKey === 'statut_deco' && <StepStatutDeco form={form} setField={setField} />}
+              {currentKey === 'identite' && (
+                <StepIdentite form={form} setField={setField} email={user.email || ''} wizardRole={wizardRole} />
+              )}
+              {currentKey === 'rsac' && <StepRsac form={form} setField={setField} />}
+              {currentKey === 'bancaire' && <StepBancairePack form={form} setField={setField} />}
+              {currentKey === 'zone' && (
                 <StepZoneActivation
                   form={form}
                   setField={setField}
@@ -347,7 +407,12 @@ export default function OnboardingWizard({ onComplete }: Props) {
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             ) : (
-              <Button onClick={activate} disabled={!canAdvance || saving} className="bg-hunters-success hover:bg-hunters-success/90">
+              <Button
+                onClick={activate}
+                disabled={!canAdvance || saving}
+                size="lg"
+                className="bg-hunters-or text-hunters-anthracite font-semibold shadow-lg ring-2 ring-hunters-or/40 hover:bg-hunters-or/90 hover:text-hunters-anthracite"
+              >
                 {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
                 Activer mon compte
               </Button>
@@ -361,14 +426,20 @@ export default function OnboardingWizard({ onComplete }: Props) {
 
 // ============ ÉTAPES ============
 
-function StepBienvenue() {
+function StepBienvenue({ wizardRole, totalSteps }: { wizardRole: WizardRole; totalSteps: number }) {
+  const intro =
+    wizardRole === 'mandataire'
+      ? 'Votre espace mandataire est prêt.'
+      : wizardRole === 'analyste'
+        ? 'Votre espace analyste patrimoniale est prêt.'
+        : 'Votre espace décoration est prêt.';
   return (
     <div className="text-center space-y-6 py-8">
       <img src={huntersLogo} alt="HUNTERS" className="w-20 h-20 rounded-lg mx-auto" />
       <div>
         <h1 className="text-3xl font-heading font-bold">Bienvenue dans le réseau HUNTERS Immobilier</h1>
         <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-          Votre espace mandataire est prêt. Complétez votre dossier en 5 étapes pour activer votre accès complet à Hunters Workspace.
+          {intro} Complétez votre dossier en {totalSteps} étapes pour activer votre accès complet à Hunters Workspace.
         </p>
       </div>
       <div className="grid sm:grid-cols-3 gap-4 mt-8">
@@ -388,20 +459,80 @@ function StepBienvenue() {
   );
 }
 
+function StepStatutDeco({
+  form,
+  setField,
+}: {
+  form: FormData;
+  setField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
+}) {
+  const options: { value: FormData['statut_deco']; label: string; detail: string }[] = [
+    {
+      value: 'salariee',
+      label: 'Salariée',
+      detail: 'Vous êtes rémunérée en paie par HUNTERS Immobilier. Aucun SIRET ni IBAN professionnel à fournir ici.',
+    },
+    {
+      value: 'auto-entrepreneuse',
+      label: 'Auto-entrepreneuse',
+      detail: 'Vous facturez vos prestations déco. SIRET et IBAN nécessaires pour le reversement de vos honoraires.',
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <header>
+        <h2 className="text-2xl font-heading font-bold">Votre statut chez HUNTERS</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Ce choix détermine les informations à renseigner ensuite.
+        </p>
+      </header>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        {options.map((o) => {
+          const active = form.statut_deco === o.value;
+          return (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => setField('statut_deco', o.value)}
+              className={`text-left rounded-lg border-2 p-5 transition-colors ${
+                active ? 'border-accent bg-accent/10' : 'border-border bg-card hover:border-accent/50'
+              }`}
+            >
+              <p className="font-heading text-lg font-bold flex items-center gap-2">
+                {active && <CheckCircle2 className="w-5 h-5 text-accent" />}
+                {o.label}
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">{o.detail}</p>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function StepIdentite({
   form,
   setField,
   email,
+  wizardRole,
 }: {
   form: FormData;
   setField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
   email: string;
+  wizardRole: WizardRole;
 }) {
+  const decoAuto = wizardRole === 'decoratrice' && form.statut_deco === 'auto-entrepreneuse';
+  const ibanOk = !form.iban || isValidFrIban(form.iban);
+  const siretOk = !form.siret || isValidSiret(form.siret);
+
   return (
     <div className="space-y-6">
       <header>
         <h2 className="text-2xl font-heading font-bold">Informations personnelles</h2>
-        <p className="text-sm text-muted-foreground mt-1">Tous les champs sont obligatoires.</p>
+        <p className="text-sm text-muted-foreground mt-1">Tous les champs marqués * sont obligatoires.</p>
       </header>
 
       <div className="grid sm:grid-cols-2 gap-4">
@@ -430,16 +561,56 @@ function StepIdentite({
         <Field label="Ville *">
           <Input value={form.adresse_ville} onChange={(e) => setField('adresse_ville', e.target.value)} />
         </Field>
-        <Field label="Statut juridique *" className="sm:col-span-2">
-          <Select value={form.statut_juridique || undefined} onValueChange={(v) => setField('statut_juridique', v as FormData['statut_juridique'])}>
-            <SelectTrigger><SelectValue placeholder="Choisir un statut" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="auto-entrepreneur">Auto-entrepreneur</SelectItem>
-              <SelectItem value="eurl">EURL</SelectItem>
-              <SelectItem value="sasu">SASU</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
+
+        {wizardRole === 'mandataire' && (
+          <Field label="Statut juridique *" className="sm:col-span-2">
+            <Select value={form.statut_juridique || undefined} onValueChange={(v) => setField('statut_juridique', v as FormData['statut_juridique'])}>
+              <SelectTrigger><SelectValue placeholder="Choisir un statut" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto-entrepreneur">Auto-entrepreneur</SelectItem>
+                <SelectItem value="eurl">EURL</SelectItem>
+                <SelectItem value="sasu">SASU</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+        )}
+
+        {wizardRole === 'analyste' && (
+          <Field label="Statut professionnel *" className="sm:col-span-2">
+            <Select value={form.statut_pro || undefined} onValueChange={(v) => setField('statut_pro', v as FormData['statut_pro'])}>
+              <SelectTrigger><SelectValue placeholder="Choisir un statut" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="salarie">Salarié(e)</SelectItem>
+                <SelectItem value="independant">Indépendant(e)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-1">
+              L'analyse patrimoniale n'est pas une activité de transaction immobilière : aucune immatriculation RSAC n'est requise.
+            </p>
+          </Field>
+        )}
+
+        {decoAuto && (
+          <>
+            <Field label="SIRET *">
+              <Input value={form.siret} onChange={(e) => setField('siret', e.target.value)} placeholder="14 chiffres" maxLength={14} />
+              {!siretOk && <p className="text-xs text-destructive mt-1">Le SIRET doit contenir 14 chiffres.</p>}
+            </Field>
+            <Field label="IBAN (France) *">
+              <Input value={form.iban} onChange={(e) => setField('iban', e.target.value.toUpperCase())} placeholder="FR76 1234 5678 9012 3456 7890 123" />
+              {!ibanOk && <p className="text-xs text-destructive mt-1">Format IBAN français invalide (FR + 25 caractères).</p>}
+            </Field>
+            <p className="sm:col-span-2 text-xs text-muted-foreground">
+              Ces informations servent au reversement de vos honoraires de décoration. Aucune immatriculation RSAC n'est requise (activité hors loi Hoguet).
+            </p>
+          </>
+        )}
+
+        {wizardRole === 'decoratrice' && form.statut_deco === 'salariee' && (
+          <p className="sm:col-span-2 text-xs text-muted-foreground">
+            En tant que salariée, votre rémunération est traitée en paie : aucun SIRET, IBAN professionnel ou RSAC n'est demandé à cette étape.
+          </p>
+        )}
       </div>
     </div>
   );

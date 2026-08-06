@@ -178,9 +178,11 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   }, [baremes, services, packActif, tarifConseil, niveau, prixBien, budgetTravaux, budgetDeco]);
 
   const sousTotal = lignes.reduce((s, l) => s + l.montant_ht, 0);
-  const remisePack = packActif ? sousTotal * 0.1 : 0;
+  // Le conseil patrimonial n'est jamais remisé : la remise pack ne porte que sur chasse/AMO/déco
+  const baseRemisable = lignes.filter(l => l.service !== 'conseil').reduce((s, l) => s + l.montant_ht, 0);
+  const remisePack = packActif ? baseRemisable * 0.1 : 0;
   const totalHT = sousTotal - remisePack;
-  const tva = totalHT * 0.2;
+  const tva = totalHT * (tvaRate / 100);
   const totalTTC = totalHT + tva;
 
   const buildPdf = async (override?: {

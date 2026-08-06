@@ -13,7 +13,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { UserPlus, Trash2, Copy, CheckCircle2 } from 'lucide-react';
+import { UserPlus, Trash2, Copy, CheckCircle2, Clock, Send } from 'lucide-react';
 
 export default function GestionUtilisateurs() {
   const { user: currentUser } = useAuth();
@@ -34,13 +34,32 @@ export default function GestionUtilisateurs() {
     setLoadingUsers(true);
     const { data: profiles } = await supabase.from('profiles').select('id, full_name, email, status, created_at');
     const { data: roles } = await supabase.from('user_roles').select('user_id, role');
+    // Statut d'activation réel (last_sign_in_at) : accessible uniquement via l'edge function admin
+    let authMap: Record<string, { last_sign_in_at: string | null }> = {};
+    try {
+      const res = await supabase.functions.invoke('manage-user', { body: { action: 'list_status' } });
+      if (!res.error && !res.data?.error) {
+        authMap = (res.data?.users || []).reduce((acc: any, u: any) => {
+          acc[u.id] = { last_sign_in_at: u.last_sign_in_at };
+          return acc;
+        }, {});
+      }
+    } catch {
+      // Statut d'activation indisponible : la liste reste affichée sans badge d'attente
+    }
     const roleMap = (roles || []).reduce((acc: Record<string, string>, r: any) => {
       acc[r.user_id] = r.role;
       return acc;
     }, {});
-    setUsers((profiles || []).map(p => ({ ...p, role: roleMap[p.id] || 'mandataire' })));
+    setUsers((profiles || []).map(p => ({
+      ...p,
+      role: roleMap[p.id] || 'mandataire',
+      last_sign_in_at: authMap[p.id]?.last_sign_in_at ?? null,
+      auth_known: Object.prototype.hasOwnProperty.call(authMap, p.id),
+    })));
     setLoadingUsers(false);
   };
+
 
   const handleCreate = async () => {
     if (!email || !fullName) {
@@ -204,6 +223,8 @@ export default function GestionUtilisateurs() {
               {users.map(u => {
                 const isCurrentUser = u.id === currentUser?.id;
                 const isDisabled = u.status === 'suspendu' || u.status === 'inactif';
+                // Invitation non acceptée : jamais connecté (statut auth connu)
+                const isPending = u.auth_known && !u.last_sign_in_at && !isDisabled;
                 return (
                   <div
                     key={u.id}
@@ -224,6 +245,12 @@ export default function GestionUtilisateurs() {
                           {isDisabled && (
                             <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Désactivé</Badge>
                           )}
+                          {isPending && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1 border-border bg-muted text-muted-foreground">
+                              <Clock className="w-2.5 h-2.5" />
+                              En attente d'activation
+                            </Badge>
+                          )}
                           {isCurrentUser && (
                             <Badge variant="outline" className="text-[10px] px-1.5 py-0">Vous</Badge>
                           )}
@@ -240,7 +267,20 @@ export default function GestionUtilisateurs() {
                       </Badge>
                       {!isCurrentUser && (
                         <div className="flex gap-1">
+                          {isPending && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-1.5"
+                              disabled={actionLoading === u.id}
+                              onClick={() => handleUserAction(u.id, 'resend_invite')}
+                            >
+                              <Send className="w-3.5 h-3.5" />
+                              {actionLoading === u.id ? '...' : 'Renvoyer'}
+                            </Button>
+                          )}
                           {isDisabled ? (
+
                             <Button
                               variant="outline"
                               size="sm"

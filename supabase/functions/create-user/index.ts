@@ -1,4 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { inviteUser } from "../_shared/invite.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,98 +31,25 @@ Deno.serve(async (req) => {
     const { mode, email, password, full_name, first_name, last_name, role, app_url } = body;
     const adminClient = createClient(supabaseUrl, serviceKey);
 
-    // URL de redirection forcée vers le domaine de production.
+    // URL de redirection forcée vers le domaine de production (voir _shared/invite.ts).
     // app_url est ignoré pour garantir que les liens d'invitation pointent
     // toujours vers https://workspace.huntersimmobilier.fr/reset-password.
-    const APP_URL = "https://workspace.huntersimmobilier.fr";
     void app_url;
 
     // ---- Invite mode : génère un lien d'activation, pas de mot de passe ----
     if (mode === "invite") {
-      if (!email) throw new Error("Email requis");
-      const composedName = full_name || [first_name, last_name].filter(Boolean).join(" ").trim();
-      if (!composedName) throw new Error("Prénom et nom requis");
-
-      const redirectTo = `${APP_URL}/reset-password`;
-
-      // Vérifie si l'email existe déjà. Si l'utilisateur est désactivé (banned)
-      // ou orphelin (pas de profil), on le supprime pour permettre la réinvitation.
-      const { data: existingList } = await adminClient.auth.admin.listUsers();
-      const existing = existingList?.users?.find((u) => u.email?.toLowerCase() === email.toLowerCase());
-      if (existing) {
-        const { data: profile } = await adminClient
-          .from("profiles")
-          .select("id, status")
-          .eq("id", existing.id)
-          .maybeSingle();
-        const isBanned = !!(existing as any).banned_until;
-        const isOrphan = !profile;
-        const isInactive = profile?.status === "inactif";
-        if (isBanned || isOrphan || isInactive) {
-          console.log(`[create-user] Suppression utilisateur existant (banned=${isBanned}, orphan=${isOrphan}, inactif=${isInactive}) pour réinvitation: ${email}`);
-          const { error: delError } = await adminClient.auth.admin.deleteUser(existing.id);
-          if (delError) {
-            console.error("[create-user] deleteUser error:", delError);
-            throw new Error(`Impossible de réinitialiser le compte existant: ${delError.message}`);
-          }
-        } else {
-          throw new Error(`Un utilisateur actif avec l'email ${email} existe déjà`);
-        }
-      }
-
-      const { data, error } = await adminClient.auth.admin.generateLink({
-        type: "invite",
+      const result = await inviteUser(adminClient, {
         email,
-        options: {
-          data: { full_name: composedName, first_name, last_name },
-          redirectTo,
-        },
+        full_name,
+        first_name,
+        last_name,
+        role,
       });
-      if (error) {
-        console.error("[create-user] generateLink error:", error);
-        throw new Error(`Erreur invitation: ${error.message}`);
-      }
-
-      const invitedUserId = data.user?.id;
-      if (role && invitedUserId && role !== "mandataire") {
-        const { error: roleError } = await adminClient
-          .from("user_roles")
-          .upsert({ user_id: invitedUserId, role }, { onConflict: "user_id" });
-        if (roleError) console.error("[create-user] role upsert error:", roleError);
-      }
-
-      const invitationLink = data.properties?.action_link ?? null;
-
-      // Notification email d'invitation
-      if (invitationLink) {
-        try {
-          await adminClient.functions.invoke("send-notification", {
-            body: {
-              to: email,
-              subject: "Bienvenue chez Hunters Immobilier — Activez votre compte",
-              eyebrow: "Invitation",
-              title: `Bienvenue ${composedName} !`,
-              cta: { label: "Activer mon compte", url: invitationLink },
-              body: `<p style="margin:0 0 12px;">Vous avez été invité(e) à rejoindre l'espace de travail Hunters Immobilier.</p>
-                <p style="margin:0 0 12px;">Cliquez sur le bouton ci-dessous pour activer votre compte et définir votre mot de passe.</p>
-                <p style="margin:0;font-size:11px;">Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br/><span style="word-break:break-all;">${invitationLink}</span></p>`,
-
-            },
-          });
-        } catch (e) {
-          console.error("[create-user] send-notification error:", e);
-        }
-      }
-
-      return new Response(
-        JSON.stringify({
-          id: invitedUserId,
-          email,
-          invitation_link: invitationLink,
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
+
 
     // ---- Création directe avec mot de passe (legacy) ----
     if (!email || !password || !full_name) throw new Error("Email, mot de passe et nom requis");

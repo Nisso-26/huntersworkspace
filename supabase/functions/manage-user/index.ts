@@ -1,4 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { inviteUser } from "../_shared/invite.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,10 +28,73 @@ Deno.serve(async (req) => {
     if (!isAdmin) throw new Error("Accès réservé au Super Admin");
 
     const { action, user_id } = await req.json();
-    if (!user_id || !action) throw new Error("action et user_id requis");
-    if (user_id === caller.id) throw new Error("Vous ne pouvez pas modifier votre propre compte");
+    if (!action) throw new Error("action requis");
 
     const adminClient = createClient(supabaseUrl, serviceKey);
+
+    // ---- Statut d'activation de tous les comptes (last_sign_in_at) ----
+    if (action === "list_status") {
+      const { data: list, error } = await adminClient.auth.admin.listUsers({ perPage: 1000 });
+      if (error) throw error;
+      const users = (list?.users || []).map((u: any) => ({
+        id: u.id,
+        email: u.email ?? null,
+        last_sign_in_at: u.last_sign_in_at ?? null,
+        banned_until: u.banned_until ?? null,
+        created_at: u.created_at ?? null,
+      }));
+      return new Response(JSON.stringify({ users }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!user_id) throw new Error("user_id requis");
+    if (user_id === caller.id) throw new Error("Vous ne pouvez pas modifier votre propre compte");
+
+    // ---- Renvoi d'invitation pour un compte jamais activé ----
+    if (action === "resend_invite") {
+      const { data: target, error: targetErr } = await adminClient.auth.admin.getUserById(user_id);
+      if (targetErr || !target?.user) throw new Error("Utilisateur introuvable");
+      if (target.user.last_sign_in_at) {
+        throw new Error("Ce compte est déjà activé : le renvoi d'invitation est inutile");
+      }
+
+      const { data: profile } = await adminClient
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user_id)
+        .maybeSingle();
+      const { data: roleRow } = await adminClient
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user_id)
+        .maybeSingle();
+
+      const meta = (target.user.user_metadata || {}) as Record<string, unknown>;
+      const fullName =
+        (profile?.full_name as string | undefined) ||
+        (meta.full_name as string | undefined) ||
+        (target.user.email ?? "");
+
+      const result = await inviteUser(adminClient, {
+        email: target.user.email!,
+        full_name: fullName,
+        first_name: (meta.first_name as string | undefined) ?? null,
+        last_name: (meta.last_name as string | undefined) ?? null,
+        role: (roleRow?.role as string | undefined) ?? null,
+        allowResetNeverSignedIn: true,
+      });
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: `Invitation renvoyée à ${target.user.email}`,
+          ...result,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
 
     if (action === "disable") {
       // Ban the user (soft disable)

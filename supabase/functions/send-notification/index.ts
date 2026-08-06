@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get("RESEND_API_KEY");
     if (!apiKey) throw new Error("RESEND_API_KEY non configurée");
 
-    const { to, subject, body, numero_dossier, eyebrow, title, cta } = await req.json();
+    const { to, subject, body, numero_dossier, eyebrow, title, cta, allow_external } = await req.json();
     if (!to || !subject || !body) throw new Error("Paramètres requis: to, subject, body");
 
     // Basic input validation
@@ -122,24 +122,54 @@ Deno.serve(async (req) => {
     if (typeof subject !== "string" || subject.length > 300) throw new Error("Sujet invalide");
     if (typeof body !== "string" || body.length > 100000) throw new Error("Corps invalide");
 
-    // Restrict recipients: non-service callers can only target internal users (existing profiles)
-    // to prevent abuse of the company domain for phishing arbitrary external addresses.
+    // Anti-phishing guard (intentionnel) : un appelant authentifié ne peut pas viser
+    // une adresse arbitraire depuis le domaine du cabinet.
+    // - par défaut : uniquement les utilisateurs internes (profiles)
+    // - avec allow_external: true : autorise aussi les contacts externes déjà connus
+    //   de l'application (client d'un dossier, signataire, contact portail, partenaire,
+    //   prospect). Une adresse totalement inconnue reste refusée dans tous les cas.
     if (!isService) {
       const adminClient = createClient(supabaseUrl, serviceRoleKey);
       const lowered = recipients.map((e: string) => e.toLowerCase());
+
+      const knownSet = new Set<string>();
+      const collect = (rows: any[] | null, field: string) => {
+        for (const r of rows || []) {
+          const v = (r?.[field] || "").toLowerCase();
+          if (v) knownSet.add(v);
+        }
+      };
+
       const { data: knownProfiles, error: pErr } = await adminClient
-        .from("profiles")
-        .select("email")
-        .in("email", lowered);
+        .from("profiles").select("email").in("email", lowered);
       if (pErr) throw new Error("Vérification destinataires impossible");
-      const knownSet = new Set((knownProfiles || []).map((p: any) => (p.email || "").toLowerCase()));
+      collect(knownProfiles, "email");
+
+      if (allow_external === true) {
+        const [dossiers, signatures, tokens, partenaires, prospects] = await Promise.all([
+          adminClient.from("dossiers").select("email").in("email", lowered),
+          adminClient.from("signatures_electroniques").select("signataire_email").in("signataire_email", lowered),
+          adminClient.from("client_tokens").select("client_email").in("client_email", lowered),
+          adminClient.from("partenaires").select("email").in("email", lowered),
+          adminClient.from("prospects").select("email").in("email", lowered),
+        ]);
+        collect(dossiers.data, "email");
+        collect(signatures.data, "signataire_email");
+        collect(tokens.data, "client_email");
+        collect(partenaires.data, "email");
+        collect(prospects.data, "email");
+      }
+
       const unknown = lowered.filter((e: string) => !knownSet.has(e));
       if (unknown.length > 0) {
         return new Response(JSON.stringify({
-          error: "Destinataire non autorisé : seuls les utilisateurs internes peuvent être contactés via cette fonction.",
+          error: allow_external === true
+            ? "Destinataire non autorisé : cette adresse n'est rattachée à aucun dossier, signataire, partenaire ou prospect enregistré."
+            : "Destinataire non autorisé : seuls les utilisateurs internes peuvent être contactés via cette fonction.",
         }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
     }
+
 
 
     const html = wrap(subject, body, {

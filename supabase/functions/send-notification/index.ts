@@ -206,7 +206,11 @@ Deno.serve(async (req) => {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ from: FROM, to: recipients, subject, html }),
+      body: JSON.stringify({
+        from: FROM, to: recipients, subject, html,
+        ...(safeAttachments && safeAttachments.length > 0 ? { attachments: safeAttachments } : {}),
+      }),
+
     });
 
     const data = await res.json();

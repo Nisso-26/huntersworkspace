@@ -183,6 +183,8 @@ export function useEnvoyerEnSignature() {
       if (!user) throw new Error('Non authentifié');
 
       let documentPath: string | null = null;
+      let documentNom = payload.document_nom || null;
+
       if (payload.file) {
         if (payload.file.type !== 'application/pdf') throw new Error('Le document doit être un PDF');
         documentPath = `sources/${crypto.randomUUID()}.pdf`;
@@ -190,7 +192,23 @@ export function useEnvoyerEnSignature() {
           .from(SIGNATURES_BUCKET)
           .upload(documentPath, payload.file, { contentType: 'application/pdf', upsert: false });
         if (upErr) throw upErr;
+      } else if (payload.autoDoc) {
+        // Génération automatique du PDF à la charte depuis les champs (éventuellement corrigés)
+        const doc = await buildSignatureDocumentPdf(
+          payload.autoDoc.type,
+          payload.autoDoc.fields,
+          { company: payload.autoDoc.company ?? null },
+        );
+        const blob = doc.output('blob') as Blob;
+        const nomFichier = signatureDocFileName(payload.autoDoc.type, payload.autoDoc.fields);
+        documentPath = `sources/${crypto.randomUUID()}.pdf`;
+        const { error: upErr } = await supabase.storage
+          .from(SIGNATURES_BUCKET)
+          .upload(documentPath, blob, { contentType: 'application/pdf', upsert: false });
+        if (upErr) throw upErr;
+        if (!documentNom) documentNom = nomFichier.replace(/\.pdf$/, '');
       }
+
 
       const { data, error } = await supabase
         .from('signatures_electroniques')

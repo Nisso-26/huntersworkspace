@@ -112,7 +112,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   const tva = totalHT * 0.2;
   const totalTTC = totalHT + tva;
 
-  const generatePdf = async () => {
+  const buildPdf = async () => {
     const { default: jsPDF } = await import('jspdf');
     const {
       C, FONT, LAYOUT,

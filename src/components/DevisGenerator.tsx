@@ -494,23 +494,31 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
         ) : (
           <div className="border rounded-md divide-y">
             {historique.map(d => (
-              <div key={d.id} className="p-3 flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex flex-col">
-                  <span className="font-medium text-sm">{d.numero}</span>
-                  <span className="text-xs text-muted-foreground">{new Date(d.date_emission).toLocaleDateString('fr-FR')}</span>
+              <div key={d.id} className="p-3 space-y-1.5">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex flex-col">
+                    <span className="font-medium text-sm">{d.numero}</span>
+                    <span className="text-xs text-muted-foreground">{new Date(d.date_emission).toLocaleDateString('fr-FR')}</span>
+                  </div>
+                  <div className="text-sm font-semibold">{fmtPdfEur(Number(d.montant_ttc))} TTC</div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={STATUT_VARIANT[d.statut]}>{STATUT_LABEL[d.statut]}</Badge>
+                    {d.statut === 'envoye' && (
+                      <>
+                        <Button size="sm" variant="outline" onClick={() => statutMut.mutate({ id: d.id, dossier_id: d.dossier_id, statut: 'accepte' })}>Accepté</Button>
+                        <Button size="sm" variant="outline" onClick={() => statutMut.mutate({ id: d.id, dossier_id: d.dossier_id, statut: 'refuse' })}>Refusé</Button>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div className="text-sm font-semibold">{fmtPdfEur(Number(d.montant_ttc))} TTC</div>
-                <div className="flex items-center gap-2">
-                  <Badge variant={STATUT_VARIANT[d.statut]}>{STATUT_LABEL[d.statut]}</Badge>
-                  {d.statut === 'envoye' && (
-                    <>
-                      <Button size="sm" variant="outline" onClick={() => statutMut.mutate({ id: d.id, dossier_id: d.dossier_id, statut: 'accepte' })}>Accepté</Button>
-                      <Button size="sm" variant="outline" onClick={() => statutMut.mutate({ id: d.id, dossier_id: d.dossier_id, statut: 'refuse' })}>Refusé</Button>
-                    </>
-                  )}
-                </div>
+                <EmailStatutLigne
+                  devis={d}
+                  onRenvoyer={() => handleResend(d)}
+                  pending={renvoyerMut.isPending}
+                />
               </div>
             ))}
+
           </div>
         )}
       </Card>

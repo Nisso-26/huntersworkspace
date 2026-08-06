@@ -86,6 +86,76 @@ interface CreatePayload {
   numero_dossier?: string | null;
 }
 
+function buildLien(token: string) {
+  return `${window.location.origin}/signer/${token}`;
+}
+
+function labelDoc(type: string) {
+  return TYPES_DOCUMENT_SIGNATURE.find(t => t.value === type)?.label ?? type;
+}
+
+/** Envoie l'email au signataire et met à jour l'état d'envoi persisté. */
+async function envoyerEmailSignature(
+  row: SignatureElectronique,
+  opts: { numeroDossier?: string | null; rappel?: boolean },
+) {
+  const label = labelDoc(row.type_document);
+  const lien = buildLien(row.token);
+  const echeance = new Date(row.expires_at).toLocaleDateString('fr-FR');
+
+  const body = opts.rappel
+    ? `<p style="margin:0 0 12px;">Bonjour ${row.signataire_nom},</p>
+       <p style="margin:0 0 12px;">Le document <strong style="color:#23291F;">${label}</strong> attend toujours votre signature.</p>
+       <p style="margin:0;font-size:11px;">Valable jusqu'au ${echeance}.</p>`
+    : `<p style="margin:0 0 12px;">Bonjour ${row.signataire_nom},</p>
+       <p style="margin:0 0 12px;">Un document vous est adressé pour signature électronique :
+       <strong style="color:#23291F;">${label}</strong>${row.document_nom ? ` — ${row.document_nom}` : ''}.</p>
+       <p style="margin:0;font-size:11px;">Ce lien personnel est valable jusqu'au <strong>${echeance}</strong>. Ne le transmettez à personne.</p>`;
+
+  let erreur: string | null = null;
+  try {
+    const { data, error } = await supabase.functions.invoke('send-notification', {
+      body: {
+        to: row.signataire_email,
+        subject: opts.rappel ? `Rappel — document à signer : ${label}` : `Document à signer — ${label}`,
+        numero_dossier: opts.numeroDossier ?? null,
+        eyebrow: 'Signature électronique',
+        title: opts.rappel ? 'Rappel de signature' : 'Document à signer',
+        cta: { label: 'Signer le document', url: lien },
+        body,
+      },
+    });
+    if (error) {
+      // Remonte le message réel renvoyé par la fonction (email invalide, refus Resend…)
+      const ctx = (error as any)?.context;
+      let detail = error.message;
+      try {
+        if (ctx && typeof ctx.text === 'function') {
+          const raw = await ctx.text();
+          detail = JSON.parse(raw)?.error || raw || detail;
+        }
+      } catch { /* garde le message générique */ }
+      erreur = detail;
+    } else if (data && (data as any).ok !== true && (data as any).error) {
+      erreur = String((data as any).error);
+    }
+  } catch (e: any) {
+    erreur = e?.message || "Erreur réseau lors de l'envoi";
+  }
+
+  await supabase
+    .from('signatures_electroniques')
+    .update({
+      email_statut: erreur ? 'echec' : 'envoye',
+      email_erreur: erreur,
+      email_envoye_at: erreur ? null : new Date().toISOString(),
+      ...(opts.rappel && !erreur ? { relance_envoyee_at: new Date().toISOString() } : {}),
+    } as any)
+    .eq('id', row.id);
+
+  if (erreur) throw new Error(erreur);
+}
+
 export function useEnvoyerEnSignature() {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -114,42 +184,26 @@ export function useEnvoyerEnSignature() {
           signataire_email: payload.signataire_email,
           document_nom: payload.document_nom || null,
           document_url: documentPath,
+          email_statut: 'envoi_en_cours',
         } as any)
         .select()
         .single();
       if (error) throw error;
 
       const row = data as unknown as SignatureElectronique;
-      const label =
-        TYPES_DOCUMENT_SIGNATURE.find(t => t.value === payload.type_document)?.label ??
-        payload.type_document;
-      const lien = `${window.location.origin}/signer/${row.token}`;
-      const echeance = new Date(row.expires_at).toLocaleDateString('fr-FR');
-
-      const { error: mailErr } = await supabase.functions.invoke('send-notification', {
-        body: {
-          to: payload.signataire_email,
-          subject: `Document à signer — ${label}`,
-          numero_dossier: payload.numero_dossier ?? null,
-          eyebrow: 'Signature électronique',
-          title: 'Document à signer',
-          cta: { label: 'Signer le document', url: lien },
-          body: `<p style="margin:0 0 12px;">Bonjour ${payload.signataire_nom},</p>
-            <p style="margin:0 0 12px;">Un document vous est adressé pour signature électronique :
-            <strong style="color:#23291F;">${label}</strong>${payload.document_nom ? ` — ${payload.document_nom}` : ''}.</p>
-            <p style="margin:0;font-size:11px;">Ce lien personnel est valable jusqu'au <strong>${echeance}</strong>. Ne le transmettez à personne.</p>`,
-
-        },
-      });
-      if (mailErr) throw new Error("Demande créée mais l'email n'a pas pu être envoyé");
-
+      // Rend la ligne visible immédiatement en « Envoi en cours… »
+      qc.invalidateQueries({ queryKey: ['signatures-electroniques'] });
+      await envoyerEmailSignature(row, { numeroDossier: payload.numero_dossier });
       return row;
     },
     onSuccess: (row) => {
       qc.invalidateQueries({ queryKey: ['signatures-electroniques'] });
-      toast.success(`Demande de signature envoyée à ${row.signataire_email}`);
+      toast.success(`Email envoyé à ${row.signataire_email}`);
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => {
+      qc.invalidateQueries({ queryKey: ['signatures-electroniques'] });
+      toast.error(`Échec de l'envoi de l'email : ${e.message}`, { duration: 10000 });
+    },
   });
 }
 
@@ -157,33 +211,22 @@ export function useRelancerSignature() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (row: SignatureElectronique) => {
-      const label =
-        TYPES_DOCUMENT_SIGNATURE.find(t => t.value === row.type_document)?.label ?? row.type_document;
-      const lien = `${window.location.origin}/signer/${row.token}`;
-      const { error } = await supabase.functions.invoke('send-notification', {
-        body: {
-          to: row.signataire_email,
-          subject: `Rappel — document à signer : ${label}`,
-          eyebrow: 'Signature électronique',
-          title: 'Rappel de signature',
-          cta: { label: 'Signer le document', url: lien },
-          body: `<p style="margin:0 0 12px;">Bonjour ${row.signataire_nom},</p>
-            <p style="margin:0 0 12px;">Le document <strong style="color:#23291F;">${label}</strong> attend toujours votre signature.</p>
-            <p style="margin:0;font-size:11px;">Valable jusqu'au ${new Date(row.expires_at).toLocaleDateString('fr-FR')}.</p>`,
-
-        },
-      });
-      if (error) throw error;
       await supabase
         .from('signatures_electroniques')
-        .update({ relance_envoyee_at: new Date().toISOString() } as any)
+        .update({ email_statut: 'envoi_en_cours', email_erreur: null } as any)
         .eq('id', row.id);
-    },
-    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['signatures-electroniques'] });
-      toast.success('Relance envoyée');
+      await envoyerEmailSignature(row, { rappel: true });
+      return row;
     },
-    onError: (e: any) => toast.error(e.message),
+    onSuccess: (row) => {
+      qc.invalidateQueries({ queryKey: ['signatures-electroniques'] });
+      toast.success(`Email renvoyé à ${row.signataire_email}`);
+    },
+    onError: (e: any) => {
+      qc.invalidateQueries({ queryKey: ['signatures-electroniques'] });
+      toast.error(`Échec du renvoi : ${e.message}`, { duration: 10000 });
+    },
   });
 }
 

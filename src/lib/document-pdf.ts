@@ -23,6 +23,8 @@ export interface DocumentBuildContext {
   company?: Partial<CompanySettings> | null;
   client?: string | null;
   avecCouverture?: boolean; // true pour mandat, convention, lettre de mission, pack
+  typeDocument?: string; // eyebrow de la page de couverture
+
 }
 
 // ─── TABLEAU FINANCIER ────────────────────────────────────────────────────────
@@ -145,7 +147,7 @@ export async function buildDocumentPdf(ctx: DocumentBuildContext): Promise<jsPDF
   if (needsCover) {
     await drawCoverPage(doc, {
       logo,
-      typeDocument: 'Document contractuel',
+      typeDocument: sanitizePdfText(ctx.typeDocument || 'Document contractuel'),
       titre: sanitizePdfText(ctx.titre),
       client: sanitizePdfText(ctx.client || ctx.variables?.nom_client || ''),
       conseiller: sanitizePdfText(ctx.conseiller || ''),

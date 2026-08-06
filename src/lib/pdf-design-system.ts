@@ -222,7 +222,7 @@ export function drawSectionTitle(
   doc.setLineWidth(0.53);
   doc.line(marginL, y + 10, marginL + 28, y + 10);
 
-  return y + 10 + 3.2; // 9pt d'air avant le corps
+  return y + 10 + 6.2; // air avant le corps (evite le chevauchement avec le filet)
 }
 
 // ─── ENCADRÉ CITATION ────────────────────────────────────────────────────────

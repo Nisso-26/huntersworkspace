@@ -679,8 +679,11 @@ export function prefillSignatureDoc(
     date_naissance: d.date_naissance
       ? new Date(d.date_naissance).toLocaleDateString('fr-FR')
       : '',
-    adresse_client: d.residence_principale || '',
+    // `residence_principale` est un statut (proprietaire/locataire), pas une adresse postale :
+    // l'adresse reste a completer manuellement dans l'apercu.
+    adresse_client: '',
     cp_ville_client: d.ville || '',
+
     telephone_client: d.phone || '',
     email_client: src.signataireEmail || d.email || '',
     situation_pro: [d.statut_professionnel, d.profession].filter(Boolean).join(' — '),
@@ -789,6 +792,8 @@ export async function buildSignatureDocumentPdf(
     client: fields.nom_client || null,
     company: opts.company ?? null,
     avecCouverture: true,
+    typeDocument: spec.typeDocument,
+
   });
 }
 

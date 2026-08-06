@@ -2,6 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import type { CompanySettings } from '@/hooks/use-company-settings';
+import {
+  buildSignatureDocumentPdf,
+  signatureDocFileName,
+  type SignatureDocType,
+} from '@/lib/signature-documents';
+
 
 export const SIGNATURES_BUCKET = 'signatures';
 
@@ -82,9 +89,17 @@ interface CreatePayload {
   signataire_nom: string;
   signataire_email: string;
   document_nom?: string | null;
+  /** PDF fourni manuellement (cas secondaire). Prioritaire sur autoDoc. */
   file?: File | null;
+  /** Génération automatique du document contractuel depuis les données du dossier. */
+  autoDoc?: {
+    type: SignatureDocType;
+    fields: Record<string, string>;
+    company?: Partial<CompanySettings> | null;
+  } | null;
   numero_dossier?: string | null;
 }
+
 
 function buildLien(token: string) {
   return `${window.location.origin}/signer/${token}`;
@@ -168,6 +183,8 @@ export function useEnvoyerEnSignature() {
       if (!user) throw new Error('Non authentifié');
 
       let documentPath: string | null = null;
+      let documentNom = payload.document_nom || null;
+
       if (payload.file) {
         if (payload.file.type !== 'application/pdf') throw new Error('Le document doit être un PDF');
         documentPath = `sources/${crypto.randomUUID()}.pdf`;
@@ -175,7 +192,23 @@ export function useEnvoyerEnSignature() {
           .from(SIGNATURES_BUCKET)
           .upload(documentPath, payload.file, { contentType: 'application/pdf', upsert: false });
         if (upErr) throw upErr;
+      } else if (payload.autoDoc) {
+        // Génération automatique du PDF à la charte depuis les champs (éventuellement corrigés)
+        const doc = await buildSignatureDocumentPdf(
+          payload.autoDoc.type,
+          payload.autoDoc.fields,
+          { company: payload.autoDoc.company ?? null },
+        );
+        const blob = doc.output('blob') as Blob;
+        const nomFichier = signatureDocFileName(payload.autoDoc.type, payload.autoDoc.fields);
+        documentPath = `sources/${crypto.randomUUID()}.pdf`;
+        const { error: upErr } = await supabase.storage
+          .from(SIGNATURES_BUCKET)
+          .upload(documentPath, blob, { contentType: 'application/pdf', upsert: false });
+        if (upErr) throw upErr;
+        if (!documentNom) documentNom = nomFichier.replace(/\.pdf$/, '');
       }
+
 
       const { data, error } = await supabase
         .from('signatures_electroniques')
@@ -185,7 +218,7 @@ export function useEnvoyerEnSignature() {
           type_document: payload.type_document,
           signataire_nom: payload.signataire_nom,
           signataire_email: payload.signataire_email,
-          document_nom: payload.document_nom || null,
+          document_nom: documentNom,
           document_url: documentPath,
           email_statut: 'envoi_en_cours',
         } as any)

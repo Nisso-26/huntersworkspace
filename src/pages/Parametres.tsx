@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Bell, Building2, Receipt, Network, FileText, History, UserPlus, Tag,
+  MapPin, ShieldCheck, Target,
 } from 'lucide-react';
 
 // Section profil chargée en eager (visible pour tous les rôles)
@@ -19,6 +20,11 @@ const ModelesDocuments = lazy(() => import('@/components/parametres/ModelesDocum
 const NotificationsSection = lazy(() => import('@/components/parametres/NotificationsSection'));
 const JournalAudit = lazy(() => import('@/components/parametres/JournalAudit'));
 const TarifsServices = lazy(() => import('@/components/parametres/TarifsServices'));
+
+// Sections mandataire (lecture de ses propres données)
+const ZonesTab = lazy(() => import('@/components/mandataires/ZonesTab'));
+const ConformiteTab = lazy(() => import('@/components/mandataires/ConformiteTab'));
+const ObjectifsTab = lazy(() => import('@/components/mandataires/ObjectifsTab'));
 
 const SectionFallback = () => (
   <div className="space-y-3">

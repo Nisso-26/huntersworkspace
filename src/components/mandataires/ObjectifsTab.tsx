@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
+import HelpTip from '@/components/HelpTip';
   useObjectifTrimestre, useHistoriqueObjectifs, useConseilsMois,
   useUpsertConseilMois, currentTrimestre, type ObjectifTrimestriel,
 } from '@/hooks/use-objectifs';
@@ -78,7 +79,19 @@ export default function ObjectifsTab({ mandataireId, canEdit = false }: { mandat
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs text-muted-foreground">Trimestre en cours</p>
-            <h3 className="font-heading font-semibold">T{obj.trimestre} {obj.annee}</h3>
+            <h3 className="font-heading font-semibold flex items-center gap-2">
+              T{obj.trimestre} {obj.annee}
+              <HelpTip
+                title="Objectifs du trimestre"
+                intro="Chaque conseiller a trois objectifs sur trois mois : un chiffre d'affaires, un nombre de mandats signés et un nombre de conseils lancés."
+                points={[
+                  { label: 'Les barres', text: "elles montrent où vous en êtes par rapport à l'objectif. Elles se remplissent automatiquement avec vos dossiers." },
+                  { label: 'Trimestre raté', text: "cela arrive et ne pose pas de problème en soi. C'est la répétition qui compte." },
+                  { label: 'Leads bloqués', text: "après plusieurs trimestres ratés d'affilée, l'envoi de nouveaux contacts est suspendu. Il reprend dès qu'un trimestre est atteint." },
+                ]}
+                note="Les objectifs se clôturent automatiquement à la fin du trimestre : rien à faire de votre côté."
+              />
+            </h3>
           </div>
           <StatutBadge s={obj.statut} />
         </div>

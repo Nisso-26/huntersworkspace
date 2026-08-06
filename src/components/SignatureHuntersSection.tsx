@@ -33,6 +33,7 @@ import {
   MailCheck, MailX, MailWarning, ArrowLeft, RefreshCw, FileText, Eye, Paperclip,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import HelpTip from '@/components/HelpTip';
 
 interface Props {
   dossierId?: string | null;
@@ -243,6 +244,16 @@ export default function SignatureHuntersSection({
         <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
           <ShieldCheck className="w-4 h-4 text-accent" />
           {titre}
+          <HelpTip
+            title="Signature électronique Hunters"
+            intro="Permet de faire signer un document au client à distance, sans impression ni scan. Le document signé revient automatiquement dans le dossier."
+            points={[
+              { label: 'Comment ça se passe', text: "vous choisissez le type de document, vérifiez l'aperçu pré-rempli, puis envoyez. Le client reçoit un e-mail avec un lien sécurisé." },
+              { label: 'Le client ne reçoit rien ?', text: "vérifiez l'adresse e-mail, regardez ses spams, puis utilisez « Relancer ». Un lien de secours peut aussi être copié et transmis." },
+              { label: 'Validité', text: "le lien expire au bout de quelques jours. Passé ce délai, relancez pour en générer un nouveau." },
+            ]}
+            note="La signature électronique a la même valeur qu'une signature manuscrite."
+          />
         </h4>
         <Dialog open={open} onOpenChange={resetDialog}>
           <DialogTrigger asChild>

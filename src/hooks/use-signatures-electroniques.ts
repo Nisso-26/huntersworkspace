@@ -27,6 +27,12 @@ export const STATUT_SIGNATURE_LABELS: Record<string, string> = {
   refuse: 'Refusé',
 };
 
+export const EMAIL_STATUT_LABELS: Record<string, string> = {
+  envoi_en_cours: 'Envoi en cours…',
+  envoye: 'Email envoyé',
+  echec: "Échec de l'envoi",
+};
+
 export interface SignatureElectronique {
   id: string;
   dossier_id: string | null;
@@ -45,6 +51,10 @@ export interface SignatureElectronique {
   expires_at: string;
   signed_at: string | null;
   document_signe_url: string | null;
+  email_statut: string;
+  email_envoye_at: string | null;
+  email_erreur: string | null;
+  relance_envoyee_at: string | null;
 }
 
 export function useSignaturesElectroniques(dossierId?: string | null, mandataireId?: string | null) {

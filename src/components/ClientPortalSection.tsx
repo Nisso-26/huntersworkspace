@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Link2, Copy, XCircle, Loader2 } from 'lucide-react';
+import { Link2, Copy, XCircle, Loader2, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Props {
@@ -23,16 +23,66 @@ export default function ClientPortalSection({ dossierId, clientName }: Props) {
 
   const activeTokens = tokens.filter(t => t.is_active && new Date(t.expires_at) > new Date());
 
-  const handleGenerate = () => {
+  const [sending, setSending] = useState(false);
+
+  const envoyerLien = async (token: string, dest: string) => {
+    setSending(true);
+    try {
+      const url = `${window.location.origin}/client/${token}`;
+      const { data, error } = await supabase.functions.invoke('send-notification', {
+        body: {
+          to: dest,
+          allow_external: true,
+          subject: 'Votre espace client HUNTERS Immobilier',
+          eyebrow: 'Espace client',
+          title: 'Accédez au suivi de votre projet',
+          cta: { label: 'Ouvrir mon espace client', url },
+          body: `<p style="margin:0 0 12px;">Bonjour ${clientName},</p>
+            <p style="margin:0 0 12px;">Votre espace client personnel est disponible : suivi de votre dossier, documents et avancement des travaux.</p>
+            <p style="margin:0;font-size:11px;">Ce lien personnel est strictement confidentiel. Ne le transmettez à personne.</p>`,
+        },
+      });
+      let erreur: string | null = null;
+      if (error) {
+        const ctx = (error as any)?.context;
+        let detail = error.message;
+        try {
+          if (ctx && typeof ctx.text === 'function') {
+            const raw = await ctx.text();
+            detail = JSON.parse(raw)?.error || raw || detail;
+          }
+        } catch { /* message générique */ }
+        erreur = detail;
+      } else if (data && (data as any).ok !== true && (data as any).error) {
+        erreur = String((data as any).error);
+      }
+      if (erreur) {
+        toast.error(`Lien créé, mais l'email n'a pas pu être envoyé : ${erreur}`, { duration: 10000 });
+      } else {
+        toast.success(`Lien envoyé par email à ${dest}`);
+      }
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleGenerate = async () => {
     if (!user) return;
-    createMut.mutate({
+    const dest = email.trim();
+    if (dest && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dest)) {
+      toast.error('Adresse email invalide');
+      return;
+    }
+    const token = await createMut.mutateAsync({
       dossier_id: dossierId,
       client_name: clientName,
-      client_email: email || undefined,
+      client_email: dest || undefined,
       created_by: user.id,
-    });
+    }).catch(() => null);
     setEmail('');
+    if (token && dest) await envoyerLien(token.token, dest);
   };
+
 
   const copyLink = (token: string) => {
     const url = `${window.location.origin}/client/${token}`;
@@ -62,6 +112,19 @@ export default function ClientPortalSection({ dossierId, clientName }: Props) {
               <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyLink(t.token)}>
                 <Copy className="w-3 h-3" />
               </Button>
+              {t.client_email && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  title={`Renvoyer le lien à ${t.client_email}`}
+                  disabled={sending}
+                  onClick={() => envoyerLien(t.token, t.client_email!)}
+                >
+                  {sending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="ghost"
@@ -91,11 +154,11 @@ export default function ClientPortalSection({ dossierId, clientName }: Props) {
           type="button"
           size="sm"
           onClick={handleGenerate}
-          disabled={createMut.isPending}
+          disabled={createMut.isPending || sending}
           className="gap-1.5"
         >
-          {createMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
-          Générer lien
+          {createMut.isPending || sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
+          {email.trim() ? 'Générer et envoyer' : 'Générer lien'}
         </Button>
       </div>
     </div>

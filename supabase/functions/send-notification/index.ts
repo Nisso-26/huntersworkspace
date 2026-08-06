@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get("RESEND_API_KEY");
     if (!apiKey) throw new Error("RESEND_API_KEY non configurée");
 
-    const { to, subject, body, numero_dossier, eyebrow, title, cta, allow_external } = await req.json();
+    const { to, subject, body, numero_dossier, eyebrow, title, cta, allow_external, attachments } = await req.json();
     if (!to || !subject || !body) throw new Error("Paramètres requis: to, subject, body");
 
     // Basic input validation
@@ -121,6 +121,25 @@ Deno.serve(async (req) => {
     }
     if (typeof subject !== "string" || subject.length > 300) throw new Error("Sujet invalide");
     if (typeof body !== "string" || body.length > 100000) throw new Error("Corps invalide");
+
+    // Pièces jointes (optionnel) : [{ filename, content (base64) }]
+    let safeAttachments: { filename: string; content: string }[] | undefined;
+    if (attachments !== undefined && attachments !== null) {
+      if (!Array.isArray(attachments) || attachments.length > 3) {
+        throw new Error("Pièces jointes invalides");
+      }
+      safeAttachments = attachments.map((a: any) => {
+        if (!a || typeof a.filename !== "string" || typeof a.content !== "string") {
+          throw new Error("Pièce jointe invalide");
+        }
+        if (!/^[\w .()\-]{1,120}$/.test(a.filename)) throw new Error("Nom de fichier invalide");
+        // ~6 Mo max en base64
+        if (a.content.length > 8_000_000) throw new Error("Pièce jointe trop volumineuse");
+        if (!/^[A-Za-z0-9+/=\s]+$/.test(a.content)) throw new Error("Pièce jointe non encodée en base64");
+        return { filename: a.filename, content: a.content.replace(/\s+/g, "") };
+      });
+    }
+
 
     // Anti-phishing guard (intentionnel) : un appelant authentifié ne peut pas viser
     // une adresse arbitraire depuis le domaine du cabinet.
@@ -187,7 +206,11 @@ Deno.serve(async (req) => {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ from: FROM, to: recipients, subject, html }),
+      body: JSON.stringify({
+        from: FROM, to: recipients, subject, html,
+        ...(safeAttachments && safeAttachments.length > 0 ? { attachments: safeAttachments } : {}),
+      }),
+
     });
 
     const data = await res.json();

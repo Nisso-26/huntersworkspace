@@ -7,9 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Download, Save, Send, FileText } from 'lucide-react';
+import { Download, Save, Send, FileText, Loader2, CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useBaremesHunters, type BaremeHunters, type BaremeService } from '@/hooks/use-baremes-hunters';
-import { useDevis, useSaveDevis, useUpdateDevisStatut, type DevisLigne, type DevisStatut } from '@/hooks/use-devis';
+import {
+  useDevis, useSaveDevis, useUpdateDevisStatut, useEnvoyerDevis, useRenvoyerDevis,
+  DEVIS_EMAIL_LABELS,
+  type Devis, type DevisLigne, type DevisStatut, type DevisEmailStatut,
+} from '@/hooks/use-devis';
+
 import { useCompanySettings } from '@/hooks/use-company-settings';
 import { fmtPdfEur } from '@/lib/pdf-utils';
 import type { Dossier } from '@/hooks/use-dossiers';
@@ -19,6 +24,15 @@ import {
   drawIvoryBox, ensureSpace, drawSignatureZone,
 } from '@/lib/pdf-design-system';
 
+
+function toBase64(buf: ArrayBuffer) {
+  const bytes = new Uint8Array(buf);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 8192) {
+    bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
+  }
+  return btoa(bin);
+}
 
 function pickTranche(rows: BaremeHunters[], service: BaremeService, base: number) {
   return rows.find(r =>
@@ -59,12 +73,60 @@ const STATUT_LABEL: Record<DevisStatut, string> = {
   refuse: 'Refusé',
 };
 
+function EmailStatutLigne({ devis, onRenvoyer, pending }: {
+  devis: Devis; onRenvoyer: () => void; pending: boolean;
+}) {
+  const st = (devis.email_statut || 'non_envoye') as DevisEmailStatut;
+  if (st === 'non_envoye') {
+    return <p className="text-[11px] text-muted-foreground">Non envoyé au client (brouillon enregistré).</p>;
+  }
+  if (st === 'envoi_en_cours') {
+    return (
+      <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+        <Loader2 className="w-3 h-3 animate-spin" /> {DEVIS_EMAIL_LABELS.envoi_en_cours}
+      </p>
+    );
+  }
+  if (st === 'echec') {
+    return (
+      <div className="flex items-center gap-2 flex-wrap">
+        <p className="text-[11px] text-destructive flex items-center gap-1.5">
+          <AlertTriangle className="w-3 h-3" />
+          {DEVIS_EMAIL_LABELS.echec}
+          {devis.email_erreur ? ` — ${devis.email_erreur}` : ''}
+        </p>
+        <Button size="sm" variant="outline" onClick={onRenvoyer} disabled={pending}>
+          {pending
+            ? <Loader2 className="w-3 h-3 animate-spin" />
+            : <><RefreshCw className="w-3 h-3 mr-1" /> Renvoyer</>}
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <p className="text-[11px] text-[#004621] flex items-center gap-1.5">
+        <CheckCircle2 className="w-3 h-3" />
+        Envoyé à {devis.email_destinataire}
+        {devis.email_envoye_at
+          ? ` le ${new Date(devis.email_envoye_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}`
+          : ''}
+      </p>
+      <Button size="sm" variant="ghost" onClick={onRenvoyer} disabled={pending}>
+        {pending ? <Loader2 className="w-3 h-3 animate-spin" /> : <><RefreshCw className="w-3 h-3 mr-1" /> Renvoyer</>}
+      </Button>
+    </div>
+  );
+}
+
 export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   const { data: baremes = [] } = useBaremesHunters();
   const { data: company } = useCompanySettings();
   const { data: historique = [] } = useDevis(dossier.id);
   const saveMut = useSaveDevis();
   const statutMut = useUpdateDevisStatut();
+  const envoyerMut = useEnvoyerDevis();
+  const renvoyerMut = useRenvoyerDevis();
 
   const services = (dossier.services_souscrits as Record<string, boolean>) || {};
 
@@ -72,9 +134,11 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   const [budgetTravaux, setBudgetTravaux] = useState<number>(0);
   const [budgetDeco, setBudgetDeco] = useState<number>(0);
   const [packActif, setPackActif] = useState<boolean>(dossier.type_accompagnement === 'cle_en_main');
+  const [emailClient, setEmailClient] = useState<string>(((dossier as any).email as string) || '');
 
   const tarifConseil = Number((dossier as any).tarif_conseil_ht) || 1500;
   const niveau = (dossier as any).niveau_qualification || 'Standard';
+
 
   const lignes: DevisLigne[] = useMemo(() => {
     const out: DevisLigne[] = [];
@@ -112,8 +176,17 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
   const tva = totalHT * 0.2;
   const totalTTC = totalHT + tva;
 
-  const generatePdf = async () => {
+  const buildPdf = async (override?: {
+    lignes: DevisLigne[]; sousTotal: number; remisePack: number;
+    totalHT: number; totalTTC: number; packActif: boolean;
+  }) => {
+    const snap = override ?? { lignes, sousTotal, remisePack, totalHT, totalTTC, packActif };
+    const {
+      lignes: pdfLignes, sousTotal: pdfSousTotal, remisePack: pdfRemise,
+      totalHT: pdfTotalHT, totalTTC: pdfTotalTTC, packActif: pdfPack,
+    } = snap;
     const { default: jsPDF } = await import('jspdf');
+
     const {
       C, FONT, LAYOUT,
       loadLogo, drawHeader, drawFooter,
@@ -208,7 +281,7 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
     y += rowH;
 
     // Lignes prestations
-    lignes.forEach((ligne, i) => {
+    pdfLignes.forEach((ligne, i) => {
       doc.setFillColor(...(i % 2 === 0 ? C.cream : C.white));
       doc.rect(marginL, y, contentW, rowH, 'F');
 
@@ -281,18 +354,18 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
       }
     };
 
-    addRecapLine('Sous-total HT', fmtPdfEur(sousTotal));
+    addRecapLine('Sous-total HT', fmtPdfEur(pdfSousTotal));
 
-    if (packActif && remisePack > 0) {
+    if (pdfPack && pdfRemise > 0) {
       addRecapLine(
         `Remise pack 10% (chasse + AMO + deco)`,
-        `- ${fmtPdfEur(remisePack)}`,
+        `- ${fmtPdfEur(pdfRemise)}`,
       );
     }
 
-    addRecapLine('Total HT', fmtPdfEur(totalHT), true);
-    addRecapLine(`TVA ${company?.tva_taux_defaut ?? 20}%`, fmtPdfEur(totalHT * (company?.tva_taux_defaut ?? 20) / 100));
-    addRecapLine('TOTAL TTC', fmtPdfEur(totalTTC), false, true); // fond vert highlight
+    addRecapLine('Total HT', fmtPdfEur(pdfTotalHT), true);
+    addRecapLine(`TVA ${company?.tva_taux_defaut ?? 20}%`, fmtPdfEur(pdfTotalHT * (company?.tva_taux_defaut ?? 20) / 100));
+    addRecapLine('TOTAL TTC', fmtPdfEur(pdfTotalTTC), false, true); // fond vert highlight
 
     y += 8;
 
@@ -321,6 +394,11 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
     drawFooter(doc, 1, 1);
 
     const fileName = `Devis_${sanitizePdfText(dossier.client_name || 'client').replace(/\s+/g, '_')}_${ref || 'HUNTERS'}.pdf`;
+    return { doc, fileName };
+  };
+
+  const generatePdf = async () => {
+    const { doc, fileName } = await buildPdf();
     doc.save(fileName);
   };
 
@@ -337,6 +415,50 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
       contenu: { lignes } as any,
     });
   };
+
+  const handleSend = async () => {
+    const { doc, fileName } = await buildPdf();
+    const pdfBase64 = toBase64(doc.output('arraybuffer') as ArrayBuffer);
+
+    envoyerMut.mutate({
+      devis: {
+        dossier_id: dossier.id,
+        montant_ht: totalHT,
+        remise_pack: remisePack,
+        tva_taux: 20,
+        montant_ttc: totalTTC,
+        pack_actif: packActif,
+        contenu: { lignes } as any,
+      },
+      destinataire: emailClient,
+      client_name: dossier.client_name || 'Madame, Monsieur',
+      numero_dossier: (dossier as any).numero_dossier || null,
+      pdf_base64: pdfBase64,
+      pdf_filename: fileName,
+    });
+  };
+
+  const handleResend = async (d: Devis) => {
+    const snapLignes = (d.contenu?.lignes || []) as DevisLigne[];
+    const snapSousTotal = snapLignes.reduce((s, l) => s + Number(l.montant_ht), 0);
+    const { doc, fileName } = await buildPdf({
+      lignes: snapLignes,
+      sousTotal: snapSousTotal,
+      remisePack: Number(d.remise_pack) || 0,
+      totalHT: Number(d.montant_ht) || 0,
+      totalTTC: Number(d.montant_ttc) || 0,
+      packActif: !!d.pack_actif,
+    });
+    renvoyerMut.mutate({
+      devis: d,
+      destinataire: d.email_destinataire || emailClient,
+      client_name: dossier.client_name || 'Madame, Monsieur',
+      numero_dossier: (dossier as any).numero_dossier || null,
+      pdf_base64: toBase64(doc.output('arraybuffer') as ArrayBuffer),
+      pdf_filename: fileName,
+    });
+  };
+
 
   return (
     <div className="space-y-4">
@@ -402,15 +524,36 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
           <div className="flex justify-between font-bold text-base border-t pt-1"><span>Total TTC</span><span className="text-[#004621]">{fmtPdfEur(totalTTC)}</span></div>
         </div>
 
-        <div className="flex flex-wrap gap-2 justify-end pt-2">
-          <Button variant="outline" onClick={generatePdf}><Download className="w-4 h-4 mr-2" />Générer PDF</Button>
-          <Button variant="outline" onClick={() => handleSave('brouillon')} disabled={saveMut.isPending}>
-            <Save className="w-4 h-4 mr-2" />Enregistrer
-          </Button>
-          <Button onClick={() => handleSave('envoye')} disabled={saveMut.isPending} className="bg-[#004621] hover:bg-[#004621]/90">
-            <Send className="w-4 h-4 mr-2" />Envoyer au client
-          </Button>
+        <div className="space-y-2 pt-2 border-t">
+          <Label className="text-xs">Email du client (destinataire du devis)</Label>
+          <div className="flex flex-wrap gap-2">
+            <Input
+              type="email"
+              value={emailClient}
+              onChange={e => setEmailClient(e.target.value)}
+              placeholder="client@email.com"
+              className="flex-1 min-w-[220px]"
+            />
+            <Button variant="outline" onClick={generatePdf}><Download className="w-4 h-4 mr-2" />Générer PDF</Button>
+            <Button variant="outline" onClick={() => handleSave('brouillon')} disabled={saveMut.isPending}>
+              <Save className="w-4 h-4 mr-2" />Enregistrer
+            </Button>
+            <Button
+              onClick={handleSend}
+              disabled={envoyerMut.isPending || lignes.length === 0 || !emailClient.trim()}
+              className="bg-[#004621] hover:bg-[#004621]/90"
+            >
+              {envoyerMut.isPending
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Envoi en cours…</>
+                : <><Send className="w-4 h-4 mr-2" />Envoyer au client</>}
+            </Button>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Le client reçoit un e-mail avec le PDF du devis en pièce jointe. Le statut réel de l'envoi
+            s'affiche dans l'historique ci-dessous.
+          </p>
         </div>
+
       </Card>
 
       <Card className="p-6 space-y-3">
@@ -423,23 +566,31 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
         ) : (
           <div className="border rounded-md divide-y">
             {historique.map(d => (
-              <div key={d.id} className="p-3 flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex flex-col">
-                  <span className="font-medium text-sm">{d.numero}</span>
-                  <span className="text-xs text-muted-foreground">{new Date(d.date_emission).toLocaleDateString('fr-FR')}</span>
+              <div key={d.id} className="p-3 space-y-1.5">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex flex-col">
+                    <span className="font-medium text-sm">{d.numero}</span>
+                    <span className="text-xs text-muted-foreground">{new Date(d.date_emission).toLocaleDateString('fr-FR')}</span>
+                  </div>
+                  <div className="text-sm font-semibold">{fmtPdfEur(Number(d.montant_ttc))} TTC</div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={STATUT_VARIANT[d.statut]}>{STATUT_LABEL[d.statut]}</Badge>
+                    {d.statut === 'envoye' && (
+                      <>
+                        <Button size="sm" variant="outline" onClick={() => statutMut.mutate({ id: d.id, dossier_id: d.dossier_id, statut: 'accepte' })}>Accepté</Button>
+                        <Button size="sm" variant="outline" onClick={() => statutMut.mutate({ id: d.id, dossier_id: d.dossier_id, statut: 'refuse' })}>Refusé</Button>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div className="text-sm font-semibold">{fmtPdfEur(Number(d.montant_ttc))} TTC</div>
-                <div className="flex items-center gap-2">
-                  <Badge variant={STATUT_VARIANT[d.statut]}>{STATUT_LABEL[d.statut]}</Badge>
-                  {d.statut === 'envoye' && (
-                    <>
-                      <Button size="sm" variant="outline" onClick={() => statutMut.mutate({ id: d.id, dossier_id: d.dossier_id, statut: 'accepte' })}>Accepté</Button>
-                      <Button size="sm" variant="outline" onClick={() => statutMut.mutate({ id: d.id, dossier_id: d.dossier_id, statut: 'refuse' })}>Refusé</Button>
-                    </>
-                  )}
-                </div>
+                <EmailStatutLigne
+                  devis={d}
+                  onRenvoyer={() => handleResend(d)}
+                  pending={renvoyerMut.isPending}
+                />
               </div>
             ))}
+
           </div>
         )}
       </Card>

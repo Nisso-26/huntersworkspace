@@ -13,7 +13,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { UserPlus, Trash2, Copy, CheckCircle2 } from 'lucide-react';
+import { UserPlus, Trash2, Copy, CheckCircle2, Clock, Send } from 'lucide-react';
 
 export default function GestionUtilisateurs() {
   const { user: currentUser } = useAuth();

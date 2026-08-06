@@ -57,16 +57,17 @@ function splitSections(markdown: string): string[] {
   };
   for (const raw of lines) {
     const stripped = raw.replace(/^#+\s*/, '').replace(/\*\*/g, '').trim();
-    const m = stripped.match(/^(\d{1,2})\.\s+(.+)/);
-    if (m) {
-      const idx = parseInt(m[1], 10) - 1;
-      if (idx >= 0 && idx < SECTION_TITLES.length) {
-        flush();
-        current = idx;
-        continue;
-      }
+    // Match only an expected top-level heading. A generic `1. ...` matcher also
+    // catches ordered lists inside sections and silently moves/overwrites content.
+    const idx = SECTION_TITLES.findIndex(title =>
+      stripped.localeCompare(title, 'fr', { sensitivity: 'accent' }) === 0,
+    );
+    if (idx >= 0) {
+      flush();
+      current = idx;
+      continue;
     }
-    buf.push(raw);
+    if (current >= 0) buf.push(raw);
   }
   flush();
   return out;
@@ -126,7 +127,14 @@ export default function RapportConseilButton({ dossier }: Props) {
       });
       if (res.error) throw new Error(res.error.message);
       if (!res.data?.ok) throw new Error(res.data?.error || 'Erreur de génération');
-      setSections(splitSections(res.data.rapport));
+      const generatedSections = splitSections(res.data.rapport);
+      const missingSections = generatedSections
+        .map((content, idx) => (content.trim() ? null : idx + 1))
+        .filter((idx): idx is number => idx !== null);
+      if (missingSections.length > 0) {
+        throw new Error(`Rapport incomplet : section${missingSections.length > 1 ? 's' : ''} ${missingSections.join(', ')} manquante${missingSections.length > 1 ? 's' : ''}`);
+      }
+      setSections(generatedSections);
       toast.success("Rapport généré — vous pouvez maintenant l'éditer");
     } catch (e: any) {
       toast.error(e.message || 'Erreur lors de la génération');
@@ -172,6 +180,13 @@ export default function RapportConseilButton({ dossier }: Props) {
   const exportPdf = async () => {
     setExporting(true);
     try {
+      const missingSections = sections
+        .map((content, idx) => (content.trim() ? null : idx + 1))
+        .filter((idx): idx is number => idx !== null);
+      if (missingSections.length > 0) {
+        throw new Error(`Export impossible : section${missingSections.length > 1 ? 's' : ''} ${missingSections.join(', ')} vide${missingSections.length > 1 ? 's' : ''}`);
+      }
+
       const [{ default: jsPDF }, html2canvasMod, ds] = await Promise.all([
         import('jspdf'),
         import('html2canvas'),
@@ -510,7 +525,7 @@ export default function RapportConseilButton({ dossier }: Props) {
             </Button>
             <Button
               onClick={exportPdf}
-              disabled={loading || exporting || sections.every(s => !s.trim())}
+              disabled={loading || exporting || sections.some(s => !s.trim())}
               className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
             >
               {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}

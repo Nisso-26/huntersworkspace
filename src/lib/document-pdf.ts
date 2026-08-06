@@ -23,6 +23,8 @@ export interface DocumentBuildContext {
   company?: Partial<CompanySettings> | null;
   client?: string | null;
   avecCouverture?: boolean; // true pour mandat, convention, lettre de mission, pack
+  typeDocument?: string; // eyebrow de la page de couverture
+
 }
 
 // ─── TABLEAU FINANCIER ────────────────────────────────────────────────────────

@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Plus, Pencil } from 'lucide-react';
 import DocumentsSection from '@/components/DocumentsSection';
 import ClientPortalSection from '@/components/ClientPortalSection';
-import SignatureSection from '@/components/SignatureSection';
+import SignatureHuntersSection from '@/components/SignatureHuntersSection';
 import StrategieIA from '@/components/StrategieIA';
 import { ClientComments } from '@/components/ClientPortalSection';
 import AccompagnementSection from '@/components/AccompagnementSection';

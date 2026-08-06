@@ -10,7 +10,6 @@ import RapportConseilButton from '@/components/RapportConseilButton';
 import RapportsGeneresList from '@/components/RapportsGeneresList';
 import NouveauDocumentButton from '@/components/NouveauDocumentButton';
 import DocumentsContractuelsList from '@/components/DocumentsContractuelsList';
-import SignatureSection from '@/components/SignatureSection';
 import SignatureHuntersSection from '@/components/SignatureHuntersSection';
 import ClientPortalSection, { ClientComments } from '@/components/ClientPortalSection';
 import StrategieIA from '@/components/StrategieIA';

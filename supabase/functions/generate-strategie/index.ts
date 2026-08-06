@@ -1,4 +1,5 @@
-import Anthropic from "npm:@anthropic-ai/sdk";
+import { streamText } from "npm:ai";
+import { createLovableAiGatewayProvider, AI_MODEL } from "../_shared/ai-gateway.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -134,21 +135,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    const apiKey = Deno.env.get("ANTHROPIC_API_KEY") || Deno.env.get("CLÉ_API_ANTHROPIC");
-    if (!apiKey) throw new Error("Clé API Anthropic non configurée");
+    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!apiKey) throw new Error("Clé API IA non configurée");
 
     const body = await req.json();
     if (!body.client_name) throw new Error("client_name requis");
 
-    const anthropic = new Anthropic({ apiKey });
-
-    const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4096,
-      messages: [{ role: "user", content: buildPrompt(body) }],
+    const gateway = createLovableAiGatewayProvider(apiKey);
+    const result = streamText({
+      model: gateway(AI_MODEL),
+      maxOutputTokens: 4096,
+      prompt: buildPrompt(body),
     });
 
-    const raw = message.content[0].type === "text" ? message.content[0].text.trim() : "";
+    const raw = (await result.text).trim();
+
 
     let strategie;
     try {

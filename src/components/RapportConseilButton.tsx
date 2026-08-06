@@ -1,4 +1,3 @@
-import huntersLogoAsset from '@/assets/hunters-symbol-dark.png.asset.json';
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,12 +19,6 @@ import {
 interface Props {
   dossier: Dossier;
 }
-
-const GREEN:   [number, number, number] = [26,  77,  46];
-const GOLD:    [number, number, number] = [245, 168,  0];
-const TEXT:    [number, number, number] = [30,  30,  30];
-const ROW_ALT: [number, number, number] = [248, 248, 248];
-const LIGHT_GOLD: [number, number, number] = [253, 245, 220];
 
 const SECTION_TITLES = [
   '1. PROFIL CLIENT',
@@ -79,50 +72,6 @@ function splitSections(markdown: string): string[] {
   return out;
 }
 
-async function loadLogoBase64(): Promise<string | null> {
-  try {
-    const res = await fetch(huntersLogoAsset.url);
-    if (!res.ok) return null;
-    const blob = await res.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return null;
-  }
-}
-
-function drawPageHeader(
-  doc: any,
-  logoBase64: string | null,
-  M: number,
-  W: number,
-  GOLD: [number, number, number],
-  GREEN: [number, number, number],
-  numeroDossier?: string | null,
-): number {
-  doc.setFillColor(...GREEN);
-  doc.rect(0, 0, W, 14, 'F');
-  if (logoBase64) {
-    try { doc.addImage(logoBase64, 'PNG', M, 2, 9, 10); } catch { /* ignore */ }
-  }
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7);
-  doc.setTextColor(...GOLD);
-  doc.text('HUNTERS IMMOBILIER', M + 13, 8);
-  if (numeroDossier) {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(255, 255, 255);
-    doc.text(`Réf. ${numeroDossier}`, W - M, 8, { align: 'right' });
-  }
-  doc.setFillColor(...GOLD);
-  doc.rect(0, 14, W, 0.6, 'F');
-  return 22;
-}
 
 export default function RapportConseilButton({ dossier }: Props) {
   const { user, role } = useAuth();
@@ -223,12 +172,18 @@ export default function RapportConseilButton({ dossier }: Props) {
   const exportPdf = async () => {
     setExporting(true);
     try {
-      const [{ default: jsPDF }, html2canvasMod, logoBase64] = await Promise.all([
+      const [{ default: jsPDF }, html2canvasMod, ds] = await Promise.all([
         import('jspdf'),
         import('html2canvas'),
-        loadLogoBase64(),
+        import('@/lib/pdf-design-system'),
       ]);
       const html2canvas = html2canvasMod.default;
+      const {
+        C, FONT, LAYOUT, drawHeader, drawFooter, drawSectionTitle,
+        drawIvoryBox, drawTableHeader, drawTableRow, ensureSpace,
+        sanitizePdfText, loadLogo, drawCoverPage,
+      } = ds;
+      const logoBase64 = await loadLogo();
 
       const captureChart = async (id: string): Promise<string | null> => {
         const node = document.getElementById(id);
@@ -242,228 +197,97 @@ export default function RapportConseilButton({ dossier }: Props) {
       const projImg    = bestCf !== 0            ? await captureChart('rapport-chart-projection') : null;
 
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const W  = 210;
-      const H  = 297;
-      const M  = 18;
-      const CW = W - M * 2;
+      const { marginL, marginR, pageW, contentW } = LAYOUT;
+      const M = marginL;
+      const CW = contentW;
+      const refDossier = dossier.numero_dossier || dossier.id?.slice(0, 8).toUpperCase() || null;
+      const ctx = { refDossier, titrePage: 'Rapport de conseil' };
 
       const dateStr = new Date().toLocaleDateString('fr-FR', {
         day: '2-digit', month: 'long', year: 'numeric',
       });
 
-      // ══ PAGE DE GARDE ══
-      doc.setFillColor(...GREEN);
-      doc.rect(0, 0, W, H, 'F');
-      doc.setFillColor(...GOLD);
-      doc.rect(0, 0, W, 2, 'F');
-      doc.rect(0, H - 2, W, 2, 'F');
+      // ══ PAGE DE COUVERTURE — 60/40 charte V2.0 ══
+      await drawCoverPage(doc, {
+        logo: logoBase64,
+        typeDocument: 'Rapport de conseil',
+        titre: 'Investissement immobilier',
+        sousTitre: 'Analyse patrimoniale et scenarios de financement',
+        client: dossier.client_name,
+        conseiller: `${conseillerNom} — ${conseillerTitre}`,
+        refDossier,
+        date: dateStr,
+        confidentiel: true,
+      });
 
-      // Bloc blanc central
-      doc.setFillColor(255, 255, 255);
-      doc.rect(M, 55, CW, 175, 'F');
-      doc.setFillColor(...GOLD);
-      doc.rect(M, 55, CW, 1, 'F');
-      doc.rect(M, 230, CW, 1, 'F');
-
-      // Logo dans le bandeau vert
-      if (logoBase64) {
-        try { doc.addImage(logoBase64, 'PNG', M, 10, 25, 28); } catch { /* ignore */ }
-      }
-
-      // Nom cabinet dans le bandeau
-      doc.setTextColor(...GOLD);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
-      doc.text('HUNTERS IMMOBILIER', M + 32, 20);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.5);
-      doc.setTextColor(200, 200, 200);
-      doc.text('Cabinet de conseil en investissement immobilier · Tours', M + 32, 27);
-
-      // Surtitre
-      doc.setTextColor(...GREEN);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8.5);
-      doc.text('RAPPORT DE CONSEIL', W / 2, 75, { align: 'center' });
-
-      // Filet or
-      doc.setDrawColor(...GOLD);
-      doc.setLineWidth(0.5);
-      doc.line(W / 2 - 30, 79, W / 2 + 30, 79);
-
-      // Titre principal
-      doc.setTextColor(...GREEN);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(22);
-      doc.text('Investissement', W / 2, 92, { align: 'center' });
-      doc.text('Immobilier', W / 2, 103, { align: 'center' });
-
-      // Séparateur
-      doc.setFillColor(...GOLD);
-      doc.rect(W / 2 - 20, 110, 40, 0.8, 'F');
-
-      // Préparé pour
-      doc.setTextColor(130, 130, 130);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.text('PRÉPARÉ POUR', W / 2, 124, { align: 'center' });
-
-      doc.setTextColor(...GREEN);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(18);
-      doc.text(dossier.client_name, W / 2, 136, { align: 'center' });
-
-      doc.setDrawColor(220, 220, 220);
-      doc.setLineWidth(0.3);
-      doc.line(M + 20, 141, W - M - 20, 141);
-
-      // Référence dossier
-      doc.setTextColor(150, 150, 150);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.5);
-      doc.text(`Réf. dossier · ${dossier.numero_dossier || dossier.id?.slice(0, 8).toUpperCase() || 'N/A'}`, W / 2, 150, { align: 'center' });
-
-      // Bloc signataire
-      doc.setFillColor(240, 246, 242);
-      doc.roundedRect(M + 20, 160, CW - 40, 40, 2, 2, 'F');
-      doc.setDrawColor(...GREEN);
-      doc.setLineWidth(0.4);
-      doc.roundedRect(M + 20, 160, CW - 40, 40, 2, 2, 'S');
-
-      doc.setTextColor(130, 130, 130);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.5);
-      doc.text('CONSEILLER SIGNATAIRE', W / 2, 170, { align: 'center' });
-
-      doc.setTextColor(...GREEN);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(13);
-      doc.text(conseillerNom, W / 2, 181, { align: 'center' });
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.setTextColor(100, 100, 100);
-      doc.text(`${conseillerTitre} · Hunters Immobilier`, W / 2, 190, { align: 'center' });
-
-      // Date
-      doc.setTextColor(150, 150, 150);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.text(dateStr, W / 2, 222, { align: 'center' });
-
-      // Logo bas page de garde
-      if (logoBase64) {
-        try { doc.addImage(logoBase64, 'PNG', W / 2 - 7, 240, 14.5, 16); } catch { /* ignore */ }
-      }
-
-      // Tagline
-      doc.setTextColor(...GOLD);
-      doc.setFont('helvetica', 'italic');
-      doc.setFontSize(7.5);
-      doc.text('Chasseur Immobilier · Tours', W / 2, 260, { align: 'center' });
-
-      // ══ PAGE 2 — DISCLAIMER + SOMMAIRE ══
+      // ══ PAGE 2 — AVERTISSEMENT + SOMMAIRE ══
       doc.addPage();
-      let y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN, dossier.numero_dossier);
+      drawHeader(doc, refDossier, ctx.titrePage);
+      let y = LAYOUT.headerH + 8;
 
-      doc.setTextColor(...GREEN);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.text('AVERTISSEMENT LÉGAL', M, y + 8);
-      y += 14;
-
-      doc.setFillColor(...GOLD);
-      doc.rect(M, y, CW, 0.6, 'F');
-      y += 8;
-
-      const dLines = doc.splitTextToSize(DISCLAIMER, CW - 12);
-      const dH     = dLines.length * 5.2 + 14;
-      doc.setDrawColor(...GOLD);
-      doc.setLineWidth(0.5);
-      doc.setFillColor(...LIGHT_GOLD);
-      doc.roundedRect(M, y, CW, dH, 2, 2, 'FD');
-      doc.setTextColor(60, 60, 60);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.text(dLines, M + 6, y + 8);
+      y = drawSectionTitle(doc, 'Avertissement légal', y);
+      doc.setFont(FONT.body, 'normal');
+      doc.setFontSize(9.5);
+      const dLines = doc.splitTextToSize(sanitizePdfText(DISCLAIMER), CW - 11.2) as string[];
+      const dH = dLines.length * 5.5 + 11;
+      drawIvoryBox(doc, y, dH);
+      doc.setTextColor(...C.ink);
+      dLines.forEach((l, i) => doc.text(l, M + 5.6, y + 7.5 + i * 5.5));
       y += dH + 12;
 
-      doc.setTextColor(...GREEN);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.text('SOMMAIRE', M, y);
-      y += 6;
-      doc.setFillColor(...GOLD);
-      doc.rect(M, y, CW, 0.6, 'F');
-      y += 8;
-
-      doc.setFont('helvetica', 'normal');
+      y = drawSectionTitle(doc, 'Sommaire', y);
+      doc.setFont(FONT.body, 'normal');
       doc.setFontSize(9.5);
       SECTION_TITLES.forEach((t, i) => {
-        const c = i % 2 === 0 ? GREEN : TEXT;
-        doc.setTextColor(c[0], c[1], c[2]);
-        doc.text(`${i + 1 < 10 ? '0' + (i + 1) : i + 1}  ·  ${t.replace(/^\d+\.\s+/, '')}`, M + 4, y);
-        y += 6;
+        y = ensureSpace(doc, y, 6.5, ctx);
+        doc.setFont(FONT.body, 'bold');
+        doc.setTextColor(...C.gold);
+        doc.text(`${i + 1 < 10 ? '0' + (i + 1) : i + 1}`, M, y);
+        doc.setFont(FONT.body, 'normal');
+        doc.setTextColor(...C.ink);
+        doc.text(sanitizePdfText(t.replace(/^\d+\.\s+/, '')), M + 10, y);
+        y += 6.5;
       });
 
       // ══ PAGES SECTIONS ══
       doc.addPage();
-      y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN, dossier.numero_dossier);
+      drawHeader(doc, refDossier, ctx.titrePage);
+      y = LAYOUT.headerH + 8;
 
-      const ensure = (h: number) => {
-        if (y + h > H - 22) {
-          doc.addPage();
-          y = drawPageHeader(doc, logoBase64, M, W, GOLD, GREEN, dossier.numero_dossier);
-        }
-      };
-
-      const drawSectionHeader = (title: string) => {
-        ensure(16);
-        doc.setFillColor(...GREEN);
-        doc.rect(M, y, CW, 10, 'F');
-        doc.setFillColor(...GOLD);
-        doc.rect(M, y + 10, CW, 1, 'F');
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9.5);
-        doc.setTextColor(255, 255, 255);
-        doc.text(title.replace(/^\d+\.\s+/, '').toUpperCase(), M + 5, y + 6.8);
-        const num = title.match(/^(\d+)\./)?.[1] || '';
-        doc.setTextColor(...GOLD);
-        doc.setFontSize(7);
-        doc.text(num, M + CW - 8, y + 6.8);
-        y += 16;
-      };
+      const ensure = (h: number) => { y = ensureSpace(doc, y, h, ctx); };
 
       const drawMarkdownTable = (rows: string[][]) => {
         if (rows.length < 2) return;
         const [header, ...body] = rows;
         const colCount = header.length;
-        const colW     = CW / colCount;
-        ensure(10);
-        doc.setFillColor(...GREEN);
-        doc.rect(M, y, CW, 7.5, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8);
-        header.forEach((h, i) => {
-          doc.text(doc.splitTextToSize(h, colW - 4), M + i * colW + 2.5, y + 5);
-        });
-        y += 8;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        doc.setTextColor(...TEXT);
+        const colW = CW / colCount;
+        ensure(16);
+        y = drawTableHeader(
+          doc,
+          y,
+          header.map((h, i) => ({ label: h, x: M + i * colW + 2.5 })),
+        );
         body.forEach((row, idx) => {
-          const wrapped = row.map(c => doc.splitTextToSize(c, colW - 4));
-          const rh      = Math.max(6.5, Math.max(...wrapped.map(w => w.length)) * 4.2 + 2.5);
+          doc.setFont(FONT.body, 'normal');
+          doc.setFontSize(9);
+          const wrapped = row.map(c => doc.splitTextToSize(sanitizePdfText(c), colW - 5) as string[]);
+          const rh = Math.max(7.5, Math.max(...wrapped.map(w => w.length)) * 4.6 + 3);
           ensure(rh);
-          if (idx % 2 === 0) { doc.setFillColor(...ROW_ALT); doc.rect(M, y, CW, rh, 'F'); }
-          doc.setDrawColor(210, 210, 210);
-          doc.setLineWidth(0.1);
-          doc.rect(M, y, CW, rh);
-          wrapped.forEach((w, i) => doc.text(w, M + i * colW + 2.5, y + 4.5));
+          // Fond alterné + filet horizontal via le design system
+          doc.setFillColor(...(idx % 2 === 0 ? C.white : C.creamLight));
+          doc.rect(M, y, CW, rh, 'F');
+          doc.setFontSize(9);
+          doc.setTextColor(...C.ink);
+          wrapped.forEach((w, i) => {
+            doc.setFont(FONT.body, i === 0 ? 'normal' : 'bold');
+            doc.text(w, M + i * colW + 2.5, y + 5);
+          });
+          doc.setDrawColor(...C.border);
+          doc.setLineWidth(0.18);
+          doc.line(M, y + rh, M + CW, y + rh);
           y += rh;
         });
-        y += 4;
+        y += 6;
       };
 
       const drawBodyText = (text: string) => {
@@ -479,27 +303,30 @@ export default function RapportConseilButton({ dossier }: Props) {
             tableBuf.push(cells);
             continue;
           } else if (tableBuf) { flushTable(); }
-          if (!line.trim()) { y += 2.5; continue; }
+          if (!line.trim()) { y += 3; continue; }
           const isBullet = /^[-•*]\s+/.test(line.trim());
-          const txt      = isBullet ? '• ' + line.trim().replace(/^[-•*]\s+/, '') : line.trim();
-          doc.setFont('helvetica', 'normal');
+          const txt = isBullet ? '\xB7 ' + line.trim().replace(/^[-•*]\s+/, '') : line.trim();
+          doc.setFont(FONT.body, 'normal');
           doc.setFontSize(9.5);
-          doc.setTextColor(...TEXT);
-          const wrapped = doc.splitTextToSize(txt, CW - (isBullet ? 6 : 0));
-          ensure(wrapped.length * 4.8 + 1);
-          doc.text(wrapped, M + (isBullet ? 6 : 0), y);
-          y += wrapped.length * 4.8 + 1;
+          doc.setTextColor(...C.ink);
+          const wrapped = doc.splitTextToSize(sanitizePdfText(txt), CW - (isBullet ? 6 : 0)) as string[];
+          for (const w of wrapped) {
+            ensure(5.5);
+            doc.text(w, M + (isBullet ? 6 : 0), y);
+            y += 5.5;
+          }
+          y += 1;
         }
         flushTable();
       };
 
       const drawStrategieTable = () => {
         if (!strategie) return;
-        ensure(14);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9.5);
-        doc.setTextColor(...GREEN);
-        doc.text('Indicateurs clés — synthèse patrimoniale', M, y);
+        ensure(20);
+        doc.setFont(FONT.body, 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(...C.green);
+        doc.text(sanitizePdfText('Indicateurs clés — synthèse patrimoniale'), M, y);
         y += 6;
         drawMarkdownTable([
           ['Indicateur', 'Valeur'],
@@ -510,10 +337,10 @@ export default function RapportConseilButton({ dossier }: Props) {
           ['Cash-flow mensuel libre', `${fmtPdfEurInt(strategie.indicateurs_cles.cash_flow_mensuel_libre)}`],
         ]);
         if (strategie.recommandations.length > 0) {
-          ensure(10);
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(9.5);
-          doc.setTextColor(...GREEN);
+          ensure(16);
+          doc.setFont(FONT.body, 'bold');
+          doc.setFontSize(10);
+          doc.setTextColor(...C.green);
           doc.text('Investissements recommandés', M, y);
           y += 6;
           const recoRows: string[][] = [['Dispositif', 'Budget', 'Mensualité', 'Loyer', 'Cash-flow net', 'Rdt brut']];
@@ -535,74 +362,60 @@ export default function RapportConseilButton({ dossier }: Props) {
         ensure(44);
         const phases = ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4', 'Phase 5'];
         const startX = M + 12;
-        const endX   = W - M - 12;
+        const endX   = pageW - marginR - 12;
         const cy     = y + 16;
-        doc.setDrawColor(...GREEN);
-        doc.setLineWidth(1.8);
+        doc.setDrawColor(...C.green);
+        doc.setLineWidth(1.2);
         doc.line(startX, cy, endX, cy);
         const step = (endX - startX) / (phases.length - 1);
         phases.forEach((p, i) => {
           const cx = startX + step * i;
-          doc.setFillColor(200, 200, 200);
-          doc.circle(cx + 0.5, cy + 0.5, 5.5, 'F');
-          doc.setFillColor(...GOLD);
-          doc.circle(cx, cy, 5.5, 'F');
-          doc.setTextColor(255, 255, 255);
-          doc.setFont('helvetica', 'bold');
+          doc.setFillColor(...C.green);
+          doc.circle(cx, cy, 5, 'F');
+          doc.setTextColor(...C.cream);
+          doc.setFont(FONT.body, 'bold');
           doc.setFontSize(8.5);
           doc.text(`${i + 1}`, cx, cy + 1.2, { align: 'center' });
-          doc.setTextColor(...GREEN);
-          doc.setFontSize(7.5);
-          doc.setFont('helvetica', 'bold');
-          doc.text(p, cx, cy + 13, { align: 'center' });
+          doc.setTextColor(...C.textMuted);
+          doc.setFontSize(8);
+          doc.setFont(FONT.body, 'normal');
+          doc.text(p, cx, cy + 12, { align: 'center' });
         });
         y += 34;
       };
 
       const drawChartImage = (img: string | null, label: string) => {
         if (!img) return;
-        ensure(86);
-        doc.setFont('helvetica', 'italic');
-        doc.setFontSize(7.5);
-        doc.setTextColor(130, 130, 130);
-        doc.text(label, M, y);
-        y += 3;
+        ensure(88);
+        doc.setFont(FONT.body, 'italic');
+        doc.setFontSize(8);
+        doc.setTextColor(...C.textMuted);
+        doc.text(sanitizePdfText(label), M, y);
+        y += 4;
         try { doc.addImage(img, 'PNG', M, y, CW, 76); } catch { /* ignore */ }
         y += 80;
       };
 
       sections.forEach((content, i) => {
-        drawSectionHeader(SECTION_TITLES[i]);
-        drawBodyText(content || '_(section vide)_');
+        ensure(24);
+        y = drawSectionTitle(doc, SECTION_TITLES[i].replace(/^\d+\.\s+/, ''), y);
+        drawBodyText(content || '(section vide)');
         if (i === 3) { y += 3; drawStrategieTable(); }
         if (i === 4 && compareImg) { y += 3; drawChartImage(compareImg, 'Graphique comparatif des scénarios'); }
         if (i === 5 && projImg)    { y += 3; drawChartImage(projImg, 'Projection du cash-flow cumulé sur 10 ans'); }
         if (i === 7)               { y += 3; drawTimeline(); }
-        y += 5;
+        y += 6;
       });
 
-      // ══ PIED DE PAGE ══
+      // ══ PIEDS DE PAGE (hors couverture) ══
       const total = doc.getNumberOfPages();
       for (let p = 2; p <= total; p++) {
         doc.setPage(p);
-        doc.setFillColor(...GREEN);
-        doc.rect(0, H - 12, W, 12, 'F');
-        doc.setFillColor(...GOLD);
-        doc.rect(0, H - 12, W, 0.6, 'F');
-        if (logoBase64) {
-          try { doc.addImage(logoBase64, 'PNG', M, H - 10, 5.5, 6); } catch { /* ignore */ }
-        }
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(6.5);
-        doc.setTextColor(...GOLD);
-        doc.text('HUNTERS IMMOBILIER', M + 8, H - 5.5);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(255, 255, 255);
-        doc.text('Cabinet de conseil en investissement immobilier · Tours', W / 2, H - 5.5, { align: 'center' });
-        doc.text(`Page ${p} / ${total}`, W - M, H - 5.5, { align: 'right' });
+        drawFooter(doc, p - 1, total - 1, 'HUNTERS · Rapport de conseil');
       }
 
       doc.save(`Rapport_Conseil_${dossier.client_name.replace(/\s+/g, '_')}_${new Date().getFullYear()}.pdf`);
+
 
       // Archivage: trace l'export dans documents_generes
       try {

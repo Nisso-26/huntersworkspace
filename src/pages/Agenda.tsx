@@ -103,48 +103,78 @@ export default function Agenda() {
     })).sort((a, b) => b.count - a.count);
   }, [isAdmin, evenements, mandataires, weekStart]);
 
-  // PDF export
+  // PDF export — charte HUNTERS V2.0
   const exportPDF = async () => {
     const { default: jsPDF } = await import('jspdf');
-    const doc = new jsPDF();
-    doc.setFillColor(26, 77, 46);
-    doc.rect(0, 0, 210, 25, 'F');
-    doc.setTextColor(245, 168, 0);
-    doc.setFontSize(16);
-    doc.text('HUNTERS — Agenda Réseau', 14, 16);
-    doc.setTextColor(255);
-    doc.setFontSize(10);
-    const weekLabel = `Semaine du ${format(weekStart, 'dd MMM yyyy', { locale: fr })}`;
-    doc.text(weekLabel, 140, 16);
+    const {
+      C, FONT, LAYOUT, drawHeader, drawFooter, drawSectionTitle,
+      drawIvoryBox, ensureSpace, sanitizePdfText,
+    } = await import('@/lib/pdf-design-system');
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const { marginL } = LAYOUT;
+    const weekLabel = `Semaine du ${format(weekStart, 'dd MMMM yyyy', { locale: fr })}`;
+    const ctx = { titrePage: 'Agenda réseau' };
 
-    let y = 35;
-    doc.setTextColor(0);
+    drawHeader(doc, null, ctx.titrePage);
+    let y = LAYOUT.headerH + 8;
+    y = drawSectionTitle(doc, 'Agenda réseau', y);
+
+    drawIvoryBox(doc, y, 12);
+    doc.setFont(FONT.body, 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...C.ink);
+    doc.text(sanitizePdfText(weekLabel), marginL + 5.6, y + 7.6);
+    y += 20;
+
     weekDays.forEach(day => {
       const dayEvts = getEventsForDay(day);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text(format(day, 'EEEE dd MMM', { locale: fr }), 14, y);
+      y = ensureSpace(doc, y, 16, ctx);
+      doc.setFont(FONT.body, 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(...C.green);
+      doc.text(sanitizePdfText(format(day, 'EEEE dd MMMM', { locale: fr })), marginL, y);
+      y += 2.5;
+      doc.setDrawColor(...C.gold);
+      doc.setLineWidth(0.35);
+      doc.line(marginL, y, marginL + 22, y);
       y += 6;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
+
+      doc.setFont(FONT.body, 'normal');
+      doc.setFontSize(9.5);
       if (dayEvts.length === 0) {
-        doc.setTextColor(150);
-        doc.text('  Aucun événement', 14, y);
-        doc.setTextColor(0);
-        y += 5;
+        doc.setTextColor(...C.textMuted);
+        doc.text('Aucun evenement', marginL + 4, y);
+        y += 6;
       } else {
         dayEvts.forEach(evt => {
+          y = ensureSpace(doc, y, 6, ctx);
           const h = `${format(new Date(evt.date_debut), 'HH:mm')} - ${format(new Date(evt.date_fin), 'HH:mm')}`;
-          doc.text(`  ${h}  ${evt.titre} (${evt.mandataire_name})`, 14, y);
-          y += 5;
-          if (y > 275) { doc.addPage(); y = 20; }
+          doc.setFont(FONT.body, 'bold');
+          doc.setTextColor(...C.green);
+          doc.text(h, marginL + 4, y);
+          doc.setFont(FONT.body, 'normal');
+          doc.setTextColor(...C.ink);
+          doc.text(
+            sanitizePdfText(`${evt.titre}${evt.mandataire_name ? ` · ${evt.mandataire_name}` : ''}`),
+            marginL + 28,
+            y,
+            { maxWidth: LAYOUT.contentW - 28 },
+          );
+          y += 6;
         });
       }
-      y += 3;
+      y += 4;
     });
+
+    const total = doc.getNumberOfPages();
+    for (let p = 1; p <= total; p++) {
+      doc.setPage(p);
+      drawFooter(doc, p, total, `HUNTERS · Agenda réseau — ${weekLabel}`);
+    }
 
     doc.save(`agenda-hunters-${format(weekStart, 'yyyy-MM-dd')}.pdf`);
   };
+
 
   const renderEventPill = (evt: Evenement, compact = false) => {
     const isMine = evt.mandataire_id === user?.id;

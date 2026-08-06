@@ -46,6 +46,8 @@ export interface Facture {
   mandataire_name?: string;
   mandataire_zone?: string;
   dossier_numero?: string | null;
+  dossier_email?: string | null;
+
   email_statut?: DocEmailStatut | null;
   email_destinataire?: string | null;
   email_envoye_at?: string | null;
@@ -78,12 +80,14 @@ export function useFactures() {
       }
 
       const dossierIds = [...new Set((data || []).map((f: any) => f.dossier_id).filter(Boolean))];
-      let dossierMap: Record<string, string | null> = {};
+      let dossierMap: Record<string, { numero: string | null; email: string | null }> = {};
       if (dossierIds.length > 0) {
         const { data: dossiers } = await (supabase.from('dossiers') as any)
-          .select('id, numero_dossier')
+          .select('id, numero_dossier, email')
           .in('id', dossierIds);
-        (dossiers || []).forEach((d: any) => { dossierMap[d.id] = d.numero_dossier; });
+        (dossiers || []).forEach((d: any) => {
+          dossierMap[d.id] = { numero: d.numero_dossier, email: d.email };
+        });
       }
 
       return (data || []).map((f: any) => ({
@@ -93,8 +97,10 @@ export function useFactures() {
         montant_ttc: Number(f.montant_ttc) || 0,
         mandataire_name: profilesMap[f.mandataire_id]?.full_name || 'N/A',
         mandataire_zone: profilesMap[f.mandataire_id]?.zone || '',
-        dossier_numero: f.dossier_id ? dossierMap[f.dossier_id] || null : null,
+        dossier_numero: f.dossier_id ? dossierMap[f.dossier_id]?.numero || null : null,
+        dossier_email: f.dossier_id ? dossierMap[f.dossier_id]?.email || null : null,
       })) as Facture[];
+
     },
     enabled: !!user,
   });

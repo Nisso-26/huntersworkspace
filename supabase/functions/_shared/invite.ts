@@ -95,8 +95,14 @@ export async function inviteUser(
       const { data: notifData, error: notifError } = await adminClient.functions.invoke(
         "send-notification",
         {
+          // functions.invoke n'ajoute pas d'en-tête Authorization : on force la clé
+          // service_role pour que send-notification reconnaisse un appel interne.
+          headers: {
+            Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          },
           body: {
             to: email,
+
             // L'invité n'existe pas encore comme contact connu du système au moment
             // de l'envoi : le garde-fou anti-phishing doit être explicitement levé.
             allow_external: true,

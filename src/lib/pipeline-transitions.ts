@@ -10,17 +10,8 @@ export function shouldTriggerHonoraires(from: string, to: string): boolean {
   return to === 'signe' && from !== 'signe';
 }
 
-/**
- * Calcule le taux de commission selon le niveau du mandataire.
- * - N2 : 60%
- * - N1 (par défaut, fallback) : 50%
- * @deprecated Utiliser commissionRateForService() (taux réels par service depuis company_settings).
- */
-export function commissionRateForLevel(niveau: string | null | undefined): number {
-  return (niveau || '').toUpperCase() === 'N2' ? 60 : 50;
-}
-
 export type CommissionService = 'conseil' | 'chasse' | 'amo' | 'deco';
+
 
 const DEFAULT_RATES: Record<CommissionService, { n1: number; n2: number }> = {
   conseil: { n1: 50, n2: 60 },

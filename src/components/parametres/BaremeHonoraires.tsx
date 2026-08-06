@@ -103,7 +103,7 @@ function ServiceEditor({ service, all }: { service: BaremeService; all: BaremeHu
 
       <div className="flex items-start gap-2 text-xs text-muted-foreground border-t pt-3">
         <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-        <span>Tous les montants sont exprimés HT. TVA applicable : 20%.</span>
+        <span>Tous les montants sont exprimés HT. TVA applicable : {tvaRate}%.</span>
       </div>
     </Card>
   );
@@ -119,7 +119,7 @@ function PackPanel() {
       <p className="text-xs text-muted-foreground">Ce mode n'a pas de barème propre — il s'appuie sur les barèmes des autres services.</p>
       <div className="flex items-start gap-2 text-xs text-muted-foreground border-t pt-3">
         <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-        <span>Tous les montants sont exprimés HT. TVA applicable : 20%.</span>
+        <span>Tous les montants sont exprimés HT. TVA applicable : {tvaRate}%.</span>
       </div>
     </Card>
   );

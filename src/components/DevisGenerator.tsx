@@ -321,6 +321,11 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
     drawFooter(doc, 1, 1);
 
     const fileName = `Devis_${sanitizePdfText(dossier.client_name || 'client').replace(/\s+/g, '_')}_${ref || 'HUNTERS'}.pdf`;
+    return { doc, fileName };
+  };
+
+  const generatePdf = async () => {
+    const { doc, fileName } = await buildPdf();
     doc.save(fileName);
   };
 
@@ -337,6 +342,34 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
       contenu: { lignes } as any,
     });
   };
+
+  const handleSend = async () => {
+    const { doc, fileName } = await buildPdf();
+    const bytes = new Uint8Array(doc.output('arraybuffer') as ArrayBuffer);
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 8192) {
+      bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
+    }
+    const pdfBase64 = btoa(bin);
+
+    envoyerMut.mutate({
+      devis: {
+        dossier_id: dossier.id,
+        montant_ht: totalHT,
+        remise_pack: remisePack,
+        tva_taux: 20,
+        montant_ttc: totalTTC,
+        pack_actif: packActif,
+        contenu: { lignes } as any,
+      },
+      destinataire: emailClient,
+      client_name: dossier.client_name || 'Madame, Monsieur',
+      numero_dossier: (dossier as any).numero_dossier || null,
+      pdf_base64: pdfBase64,
+      pdf_filename: fileName,
+    });
+  };
+
 
   return (
     <div className="space-y-4">

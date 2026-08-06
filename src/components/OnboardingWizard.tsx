@@ -99,6 +99,8 @@ const EMPTY_FORM: FormData = {
   adresse_ville: '',
   telephone: '',
   statut_juridique: '',
+  statut_deco: '',
+  statut_pro: '',
   rsac_numero: '',
   rsac_greffe: '',
   rsac_date: '',

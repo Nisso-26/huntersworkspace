@@ -117,6 +117,9 @@ async function envoyerEmailSignature(
     const { data, error } = await supabase.functions.invoke('send-notification', {
       body: {
         to: row.signataire_email,
+        // Le signataire est un client externe : autorisé car déjà enregistré en base.
+        allow_external: true,
+
         subject: opts.rappel ? `Rappel — document à signer : ${label}` : `Document à signer — ${label}`,
         numero_dossier: opts.numeroDossier ?? null,
         eyebrow: 'Signature électronique',

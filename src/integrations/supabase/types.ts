@@ -781,6 +781,21 @@ export type Database = {
         }
         Relationships: []
       }
+      devis_counters: {
+        Row: {
+          last_number: number
+          year: number
+        }
+        Insert: {
+          last_number?: number
+          year: number
+        }
+        Update: {
+          last_number?: number
+          year?: number
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string
@@ -1434,36 +1449,6 @@ export type Database = {
         }
         Relationships: []
       }
-      honoraires_tranches: {
-        Row: {
-          created_at: string | null
-          id: string
-          montant_minimum: number | null
-          ordre: number
-          prix_max: number | null
-          prix_min: number
-          taux: number
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          montant_minimum?: number | null
-          ordre?: number
-          prix_max?: number | null
-          prix_min?: number
-          taux?: number
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          montant_minimum?: number | null
-          ordre?: number
-          prix_max?: number | null
-          prix_min?: number
-          taux?: number
-        }
-        Relationships: []
-      }
       jalons_facturation: {
         Row: {
           created_at: string
@@ -2107,62 +2092,6 @@ export type Database = {
           user_name?: string | null
         }
         Relationships: []
-      }
-      signature_requests: {
-        Row: {
-          created_at: string
-          created_by: string
-          document_name: string
-          document_type: string
-          dossier_id: string
-          id: string
-          signed_at: string | null
-          signed_document_path: string | null
-          signer_email: string
-          signer_name: string
-          status: string
-          updated_at: string
-          yousign_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          document_name: string
-          document_type?: string
-          dossier_id: string
-          id?: string
-          signed_at?: string | null
-          signed_document_path?: string | null
-          signer_email: string
-          signer_name: string
-          status?: string
-          updated_at?: string
-          yousign_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          document_name?: string
-          document_type?: string
-          dossier_id?: string
-          id?: string
-          signed_at?: string | null
-          signed_document_path?: string | null
-          signer_email?: string
-          signer_name?: string
-          status?: string
-          updated_at?: string
-          yousign_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "signature_requests_dossier_id_fkey"
-            columns: ["dossier_id"]
-            isOneToOne: false
-            referencedRelation: "dossiers"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       signatures_electroniques: {
         Row: {

@@ -134,15 +134,6 @@ export function useUpdateFacture() {
   });
 }
 
-// Helper: hex (#RRGGBB) -> [r, g, b]
-function hexToRgb(hex: string | null | undefined, fallback: [number, number, number]): [number, number, number] {
-  if (!hex) return fallback;
-  const m = hex.replace('#', '').match(/^([0-9a-f]{6})$/i);
-  if (!m) return fallback;
-  const n = parseInt(m[1], 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-}
-
 const typeLabels: Record<string, string> = {
   honoraires: 'Honoraires de chasse immobilière',
   abonnement: 'Pack mandataire mensuel',
@@ -150,19 +141,6 @@ const typeLabels: Record<string, string> = {
   avoir: 'Avoir / Remboursement',
 };
 
-async function loadImageAsDataUrl(url: string): Promise<string | null> {
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const blob = await res.blob();
-    return await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch { return null; }
-}
 
 export async function generateFacturePDF(facture: Facture, settings?: Partial<CompanySettings> | null) {
   // Lazy-load jsPDF (≈ 350 kB) uniquement à la demande pour alléger le bundle initial

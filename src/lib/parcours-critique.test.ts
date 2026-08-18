@@ -49,7 +49,7 @@ describe('Calcul financier complet à l\'acte signé', () => {
     const taux = commissionRateForService(null, 'conseil', 'N2');
     const commission = computeCommission(honoraires, taux);
     expect(taux).toBe(40);
-    expect(commission).toBe(7200 * 40 / 60 / 1);
+    expect(commission).toBe(4800);
   });
 
   it('honoraires nuls : aucune rémunération générée', () => {

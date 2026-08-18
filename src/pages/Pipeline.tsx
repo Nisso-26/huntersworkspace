@@ -181,24 +181,16 @@ export default function Pipeline() {
     setActiveDossier(dossier || null);
   };
 
-  const handleDragEnd = useCallback(
-    async (e: DragEndEvent) => {
-      setActiveDossier(null);
-      const { active, over } = e;
-      if (!over) return;
-
-      const dossierId = String(active.id);
-      const newStatus = String(over.id);
-
-      if (!isValidPipelineStatus(newStatus)) return;
-
-      const dossier = dossiers.find((d) => d.id === dossierId);
-      if (!dossier || dossier.status === newStatus) return;
-
+  const applyStatus = useCallback(
+    async (dossier: Dossier, newStatus: string, sousStatut: 'gagne' | 'perdu' | null) => {
       const oldStatus = dossier.status;
 
       try {
-        await updateMut.mutateAsync({ id: dossierId, status: newStatus });
+        await updateMut.mutateAsync({
+          id: dossier.id,
+          status: newStatus,
+          sous_statut: newStatus === 'cloture' ? sousStatut : null,
+        } as any);
 
         if (shouldTriggerHonoraires(oldStatus, newStatus)) {
           await supabase.from('alertes').insert({
@@ -248,17 +240,46 @@ export default function Pipeline() {
             }
           }
 
-
           qc.invalidateQueries({ queryKey: ['factures'] });
           qc.invalidateQueries({ queryKey: ['commissions'] });
           toast.success('Facturation et commission générées automatiquement');
         }
       } catch (err: any) {
-        toast.error(err?.message || 'Erreur lors du déplacement');
+        toast.error(err?.message || 'Erreur lors du changement de statut');
       }
     },
-    [dossiers, updateMut, qc, baremes, company]
+    [updateMut, qc, baremes, company]
   );
+
+  // Le passage en « Clôturé » exige de qualifier l'issue : Gagné ou Perdu
+  const requestStatus = useCallback(
+    (dossier: Dossier, newStatus: string) => {
+      if (dossier.status === newStatus) return;
+      if (newStatus === 'cloture') {
+        setPendingCloture({ dossier });
+        return;
+      }
+      void applyStatus(dossier, newStatus, null);
+    },
+    [applyStatus]
+  );
+
+  const handleDragEnd = useCallback(
+    (e: DragEndEvent) => {
+      setActiveDossier(null);
+      const { active, over } = e;
+      if (!over) return;
+
+      const newStatus = String(over.id);
+      if (!isValidPipelineStatus(newStatus)) return;
+
+      const dossier = dossiers.find((d) => d.id === String(active.id));
+      if (!dossier) return;
+      requestStatus(dossier, newStatus);
+    },
+    [dossiers, requestStatus]
+  );
+
 
   return (
     <AppLayout>

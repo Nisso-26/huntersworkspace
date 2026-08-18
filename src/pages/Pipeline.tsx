@@ -38,17 +38,25 @@ import { useCompanySettings } from '@/hooks/use-company-settings';
 // ─────────────────────────────────────────────
 // Carte dossier draggable (souris + tactile + clavier)
 // ─────────────────────────────────────────────
-function DraggableCard({ dossier, idx }: { dossier: Dossier; idx: number }) {
+function DraggableCard({
+  dossier,
+  idx,
+  onRequestStatus,
+}: {
+  dossier: Dossier;
+  idx: number;
+  onRequestStatus: (dossier: Dossier, status: string) => void;
+}) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: dossier.id,
     data: { dossier },
   });
-  const updateMut = useUpdateDossier();
 
-  const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.stopPropagation();
-    await updateMut.mutateAsync({ id: dossier.id, status: e.target.value });
+    onRequestStatus(dossier, e.target.value);
   };
+
 
   return (
     <DossierDialog

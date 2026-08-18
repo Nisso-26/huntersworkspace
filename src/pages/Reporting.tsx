@@ -7,12 +7,19 @@ import { useMandataires } from '@/hooks/use-mandataires';
 import { useFactures } from '@/hooks/use-factures';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchAllPaginated } from '@/lib/supabase-pagination';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { useBaremesHunters } from '@/hooks/use-baremes-hunters';
+import { useCompanySettings } from '@/hooks/use-company-settings';
+import { computeCommissionsParService } from '@/lib/pipeline-transitions';
+import { repartitionHonoraires } from '@/lib/commission-repartition';
+
+// Statuts hors activité commerciale courante (inclut « cloture », gagné ou perdu)
+const INACTIVE_STATUSES: string[] = ['nouveau', 'signe', 'cloture'];
 
 const fmtEur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
@@ -43,6 +50,21 @@ export default function Reporting() {
   const { data: mandataires = [], isLoading: mLoad } = useMandataires();
   const { data: factures = [], isLoading: fLoad } = useFactures();
   const { data: tarifs = [] } = useTarifsServices();
+  const { data: baremes = [] } = useBaremesHunters();
+  const { data: company } = useCompanySettings();
+
+  // Commission réelle d'un dossier signé : répartition des honoraires par
+  // service puis application du taux propre à chaque service (N1/N2).
+  const commissionDossier = useCallback(
+    (dossier: any, niveau: string) => {
+      const lignes = repartitionHonoraires(dossier, baremes);
+      return computeCommissionsParService(lignes, company as any, niveau).reduce(
+        (s, c) => s + c.montant,
+        0
+      );
+    },
+    [baremes, company]
+  );
 
   const { data: jalons = [] } = useQuery({
     queryKey: ['jalons_reporting'],
@@ -66,15 +88,14 @@ export default function Reporting() {
     const signes = dossiers.filter(d => d.status === 'signe');
     const signesMois = signes.filter(d => new Date(d.updated_at) >= monthStart);
     const caMois = signesMois.reduce((s, d) => s + (Number(d.honoraires) || 0), 0);
-    const actifs = dossiers.filter(d => !['nouveau', 'signe', 'cloture'].includes(d.status)).length;
+    const actifs = dossiers.filter(d => !INACTIVE_STATUSES.includes(d.status) && !d.sous_statut).length;
     const tauxConv = dossiers.length > 0 ? (signes.length / dossiers.length) * 100 : 0;
 
-    // Commissions du mois selon niveau (N1 50% / N2 60%)
+    // Commissions du mois : barème réel par service (company_settings)
     const niveauMap = new Map(mandataires.map(m => [m.id, m.niveau || 'N1']));
     const commMois = signesMois.reduce((s, d) => {
-      const niveau = d.mandataire_id ? niveauMap.get(d.mandataire_id) : 'N1';
-      const taux = niveau === 'N2' ? 0.6 : 0.5;
-      return s + (Number(d.honoraires) || 0) * taux;
+      const niveau = (d.mandataire_id ? niveauMap.get(d.mandataire_id) : 'N1') || 'N1';
+      return s + commissionDossier(d, niveau);
     }, 0);
 
     // Packs mensuels (factures type "pack" sur le mois en cours)
@@ -89,18 +110,18 @@ export default function Reporting() {
     const projectionAnnuelle = caMois * 12;
 
     return { caMois, actifs, tauxConv, commMois, packsPayes, packsAttente, projectionAnnuelle };
-  }, [dossiers, mandataires, factures, monthStart]);
+  }, [dossiers, mandataires, factures, monthStart, commissionDossier]);
 
   const perfRows = useMemo(() => {
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     return mandataires.map(m => {
       const mDoss = dossiers.filter(d => d.mandataire_id === m.id);
-      const actifs = mDoss.filter(d => !['nouveau', 'signe', 'cloture'].includes(d.status)).length;
+      const actifs = mDoss.filter(d => !INACTIVE_STATUSES.includes(d.status) && !d.sous_statut).length;
       const signes = mDoss.filter(d => d.status === 'signe');
       const ca = signes.reduce((s, d) => s + (Number(d.honoraires) || 0), 0);
       const signesMois = signes.filter(d => new Date(d.updated_at) >= monthStart);
-      const taux = (m.niveau || 'N1') === 'N2' ? 0.6 : 0.5;
-      const commMois = signesMois.reduce((s, d) => s + (Number(d.honoraires) || 0) * taux, 0);
+      const niveau = m.niveau || 'N1';
+      const commMois = signesMois.reduce((s, d) => s + commissionDossier(d, niveau), 0);
       const lastUpdate = mDoss.reduce((max, d) => {
         const t = new Date(d.updated_at).getTime();
         return t > max ? t : max;
@@ -116,7 +137,7 @@ export default function Reporting() {
         isActive,
       };
     }).sort((a, b) => b.ca - a.ca);
-  }, [dossiers, mandataires, monthStart, now]);
+  }, [dossiers, mandataires, monthStart, now, commissionDossier]);
 
   const caParService = useMemo(() => {
     const map = new Map<string, number>();

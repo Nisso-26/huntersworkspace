@@ -3,7 +3,6 @@ import {
   shouldTriggerHonoraires,
   commissionRateForService,
   computeCommission,
-  computeBonusParrainage,
   isValidPipelineStatus,
 } from './pipeline-transitions';
 
@@ -24,16 +23,22 @@ describe('shouldTriggerHonoraires', () => {
 });
 
 describe('commissionRateForService', () => {
-  it('renvoie 60 pour N2', () => {
-    expect(commissionRateForService(null, 'conseil', 'N2')).toBe(60);
-    expect(commissionRateForService(null, 'conseil', 'n2')).toBe(60);
+  it('applique le barème réel par service en N2', () => {
+    expect(commissionRateForService(null, 'conseil', 'N2')).toBe(40);
+    expect(commissionRateForService(null, 'chasse', 'n2')).toBe(60);
+    expect(commissionRateForService(null, 'amo', 'N2')).toBe(25);
+    expect(commissionRateForService(null, 'deco', 'N2')).toBe(20);
   });
 
-  it('renvoie 50 pour N1 ou inconnu (fallback)', () => {
-    expect(commissionRateForService(null, 'conseil', 'N1')).toBe(50);
-    expect(commissionRateForService(null, 'conseil', null)).toBe(50);
-    expect(commissionRateForService(null, 'conseil', undefined)).toBe(50);
-    expect(commissionRateForService(null, 'conseil', '')).toBe(50);
+  it('applique le barème réel par service en N1 ou inconnu (fallback)', () => {
+    expect(commissionRateForService(null, 'conseil', 'N1')).toBe(30);
+    expect(commissionRateForService(null, 'chasse', null)).toBe(55);
+    expect(commissionRateForService(null, 'amo', undefined)).toBe(20);
+    expect(commissionRateForService(null, 'deco', '')).toBe(15);
+  });
+
+  it('privilégie les taux de company_settings', () => {
+    expect(commissionRateForService({ commission_chasse_n1: 45 }, 'chasse', 'N1')).toBe(45);
   });
 });
 
@@ -48,13 +53,6 @@ describe('computeCommission', () => {
     expect(computeCommission(-100, 50)).toBe(0);
     expect(computeCommission(1000, NaN)).toBe(0);
     expect(computeCommission(1000, -10)).toBe(0);
-  });
-});
-
-describe('computeBonusParrainage', () => {
-  it('représente 2% des honoraires', () => {
-    expect(computeBonusParrainage(10000)).toBe(200);
-    expect(computeBonusParrainage(0)).toBe(0);
   });
 });
 

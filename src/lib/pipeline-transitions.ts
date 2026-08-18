@@ -13,12 +13,14 @@ export function shouldTriggerHonoraires(from: string, to: string): boolean {
 export type CommissionService = 'conseil' | 'chasse' | 'amo' | 'deco';
 
 
+// Barème réel HUNTERS (fallback si company_settings est incomplet)
 const DEFAULT_RATES: Record<CommissionService, { n1: number; n2: number }> = {
-  conseil: { n1: 50, n2: 60 },
-  chasse: { n1: 50, n2: 60 },
-  amo: { n1: 50, n2: 60 },
-  deco: { n1: 50, n2: 60 },
+  conseil: { n1: 30, n2: 40 },
+  chasse: { n1: 55, n2: 60 },
+  amo: { n1: 20, n2: 25 },
+  deco: { n1: 15, n2: 20 },
 };
+
 
 /**
  * Taux réel de commission pour un service donné, lu depuis company_settings

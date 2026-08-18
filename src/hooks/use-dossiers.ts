@@ -12,6 +12,7 @@ export interface Dossier {
   phone: string | null;
   mandataire_id: string | null;
   status: string;
+  sous_statut?: 'gagne' | 'perdu' | null;
   budget: number;
   ville: string | null;
   strategie: string | Record<string, any> | null;

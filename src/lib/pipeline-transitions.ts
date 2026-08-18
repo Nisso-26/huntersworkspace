@@ -76,12 +76,6 @@ export function computeCommission(honoraires: number, taux: number): number {
   return Math.round((safeHon * safeTaux) / 100 * 100) / 100;
 }
 
-/**
- * Bonus parrainage : 2% des honoraires pour le parrain.
- */
-export function computeBonusParrainage(honoraires: number): number {
-  return computeCommission(honoraires, 2);
-}
 
 /**
  * Vérifie qu'un statut cible est bien dans la liste connue du pipeline.

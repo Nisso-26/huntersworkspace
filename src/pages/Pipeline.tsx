@@ -24,7 +24,9 @@ import {
   useSensors,
   closestCenter,
 } from '@dnd-kit/core';
-import { GripVertical, Hash } from 'lucide-react';
+import { GripVertical, Hash, Trophy, XCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import {
   shouldTriggerHonoraires,
   computeCommission,
@@ -162,6 +164,7 @@ export default function Pipeline() {
   const { data: baremes = [] } = useBaremesHunters();
   const { data: company } = useCompanySettings();
   const [activeDossier, setActiveDossier] = useState<Dossier | null>(null);
+  const [pendingCloture, setPendingCloture] = useState<{ dossier: Dossier } | null>(null);
 
 
   // Sensors :
@@ -329,7 +332,7 @@ export default function Pipeline() {
                 return (
                   <DroppableColumn key={status} status={status} count={statusDossiers.length}>
                     {statusDossiers.map((d, idx) => (
-                      <DraggableCard key={d.id} dossier={d} idx={idx} />
+                      <DraggableCard key={d.id} dossier={d} idx={idx} onRequestStatus={requestStatus} />
                     ))}
                     {statusDossiers.length === 0 && (
                       <p className="text-xs text-muted-foreground text-center py-6">Aucun dossier</p>
@@ -357,6 +360,53 @@ export default function Pipeline() {
           </DndContext>
         )}
       </div>
+
+      {/* Qualification obligatoire à la clôture d'un dossier */}
+      <Dialog open={!!pendingCloture} onOpenChange={(o) => !o && setPendingCloture(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Clôturer le dossier</DialogTitle>
+            <DialogDescription>
+              {pendingCloture
+                ? `Quelle est l'issue du dossier ${pendingCloture.dossier.client_name} ? Ce choix est obligatoire pour clôturer.`
+                : ''}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex-col gap-2 border-hunters-success/40 hover:bg-hunters-success/10"
+              onClick={() => {
+                if (!pendingCloture) return;
+                const d = pendingCloture.dossier;
+                setPendingCloture(null);
+                void applyStatus(d, 'cloture', 'gagne');
+              }}
+            >
+              <Trophy className="w-5 h-5 text-hunters-success" />
+              <span className="font-semibold">Gagné</span>
+              <span className="text-xs text-muted-foreground font-normal">Mission menée à terme</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex-col gap-2 border-destructive/40 hover:bg-destructive/10"
+              onClick={() => {
+                if (!pendingCloture) return;
+                const d = pendingCloture.dossier;
+                setPendingCloture(null);
+                void applyStatus(d, 'cloture', 'perdu');
+              }}
+            >
+              <XCircle className="w-5 h-5 text-destructive" />
+              <span className="font-semibold">Perdu</span>
+              <span className="text-xs text-muted-foreground font-normal">Client abandonné / non abouti</span>
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setPendingCloture(null)}>Annuler</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

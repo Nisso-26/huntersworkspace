@@ -3,7 +3,6 @@ import {
   shouldTriggerHonoraires,
   commissionRateForService,
   computeCommission,
-  computeBonusParrainage,
   isValidPipelineStatus,
 } from './pipeline-transitions';
 import { fetchAllPaginated } from './supabase-pagination';
@@ -11,7 +10,7 @@ import { fetchAllPaginated } from './supabase-pagination';
 /**
  * Tests d'intégration sur le parcours critique :
  *   création dossier → progression pipeline → acte signé →
- *   déclenchement facture honoraires + commissions N1/N2 + bonus parrainage.
+ *   déclenchement facture honoraires + commissions N1/N2 par service.
  *
  * On simule le passage par chaque étape pour garantir qu'aucune transition
  * ne déclenche la facturation prématurément, et que le calcul financier
@@ -39,32 +38,22 @@ describe('Parcours critique : Nouveau dossier → Acte signé', () => {
 describe('Calcul financier complet à l\'acte signé', () => {
   const honoraires = 12000; // 12k€ d'honoraires sur un dossier type
 
-  it('mandataire N1 sans parrain : commission 50%', () => {
+  it('mandataire N1 : commission conseil 30%', () => {
     const taux = commissionRateForService(null, 'conseil', 'N1');
     const commission = computeCommission(honoraires, taux);
-    expect(taux).toBe(50);
-    expect(commission).toBe(6000);
+    expect(taux).toBe(30);
+    expect(commission).toBe(3600);
   });
 
-  it('mandataire N2 sans parrain : commission 60%', () => {
+  it('mandataire N2 : commission conseil 40%', () => {
     const taux = commissionRateForService(null, 'conseil', 'N2');
     const commission = computeCommission(honoraires, taux);
-    expect(taux).toBe(60);
-    expect(commission).toBe(7200);
-  });
-
-  it('mandataire avec parrain : bonus 2% en plus pour le parrain', () => {
-    const commissionFilleul = computeCommission(honoraires, commissionRateForService(null, 'conseil', 'N1'));
-    const bonusParrain = computeBonusParrainage(honoraires);
-    expect(commissionFilleul).toBe(6000);
-    expect(bonusParrain).toBe(240);
-    // Total versé par l'agence = commission filleul + bonus parrain
-    expect(commissionFilleul + bonusParrain).toBe(6240);
+    expect(taux).toBe(40);
+    expect(commission).toBe(4800);
   });
 
   it('honoraires nuls : aucune rémunération générée', () => {
-    expect(computeCommission(0, 50)).toBe(0);
-    expect(computeBonusParrainage(0)).toBe(0);
+    expect(computeCommission(0, 30)).toBe(0);
   });
 
   it('protection contre données corrompues (NaN, négatif)', () => {

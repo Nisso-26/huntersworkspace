@@ -35,6 +35,7 @@ import FacturationSection from '@/components/FacturationSection';
 import FicheClientFields from '@/components/FicheClientFields';
 import { emptyFicheValues, loadFicheFromDossier, serializeFicheForSave, type FicheValues } from '@/lib/fiche-client-fields';
 import { ALL_SERVICES_TRUE } from '@/lib/workflow';
+import { sousStatutColors, sousStatutLabels } from '@/data/status-config';
 
 const statuses = [
   { value: 'nouveau', label: 'Nouveau' },
@@ -72,6 +73,7 @@ export default function DossierDetail() {
     notes: '',
     type_accompagnement: 'cle_en_main',
     services_souscrits: { ...ALL_SERVICES_TRUE, gestion_locative: false } as Record<string, boolean>,
+    sous_statut: '' as '' | 'gagne' | 'perdu',
   });
 
   const [fiche, setFiche] = useState<FicheValues>(emptyFicheValues());
@@ -92,18 +94,24 @@ export default function DossierDetail() {
       notes: dossier.notes || '',
       type_accompagnement: dossier.type_accompagnement || 'cle_en_main',
       services_souscrits: (dossier.services_souscrits as Record<string, boolean>) || { ...ALL_SERVICES_TRUE, gestion_locative: false },
+      sous_statut: (dossier.sous_statut as any) || '',
     });
     setFiche(loadFicheFromDossier(dossier as any));
   }
 
   const handleSave = async () => {
     if (!dossier) return;
+    if (form.status === 'cloture' && !form.sous_statut) {
+      toast.error('Précisez l’issue du dossier : Gagné ou Perdu');
+      return;
+    }
     await updateMut.mutateAsync({
       id: dossier.id,
       ...form,
       ...serializeFicheForSave(fiche),
       budget: Number(form.budget) || 0,
       honoraires: Number(form.honoraires) || 0,
+      sous_statut: form.status === 'cloture' ? form.sous_statut : null,
     } as any);
     toast.success('Dossier enregistré');
   };
@@ -160,6 +168,11 @@ export default function DossierDetail() {
               </div>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <StatusBadge status={dossier.status as any} />
+                {dossier.sous_statut && (
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${sousStatutColors[dossier.sous_statut]}`}>
+                    {sousStatutLabels[dossier.sous_statut]}
+                  </span>
+                )}
                 {dossier.created_at && (
                   <span className="text-xs text-muted-foreground">
                     Créé le {new Date(dossier.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -262,6 +275,23 @@ export default function DossierDetail() {
                     </SelectContent>
                   </Select>
                 </div>
+                {form.status === 'cloture' && (
+                  <div className="space-y-2">
+                    <Label>
+                      Issue du dossier <span className="text-destructive">*</span>
+                    </Label>
+                    <Select
+                      value={form.sous_statut || '__none__'}
+                      onValueChange={v => setForm(f => ({ ...f, sous_statut: v === '__none__' ? '' : (v as 'gagne' | 'perdu') }))}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Gagné ou Perdu" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gagne">Gagné</SelectItem>
+                        <SelectItem value="perdu">Perdu</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label>Ville</Label>
                   <Input value={form.ville} onChange={e => setForm(f => ({ ...f, ville: e.target.value }))} />

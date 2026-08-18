@@ -24,69 +24,41 @@ import {
   useSensors,
   closestCenter,
 } from '@dnd-kit/core';
-import { GripVertical, Hash } from 'lucide-react';
+import { GripVertical, Hash, Trophy, XCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import {
   shouldTriggerHonoraires,
   computeCommission,
   computeCommissionsParService,
-  computeBonusParrainage,
   isValidPipelineStatus,
-  type ServiceMontant,
-  type CommissionService,
 } from '@/lib/pipeline-transitions';
+import { servicesMontants } from '@/lib/commission-repartition';
 import { useBaremesHunters, type BaremeHunters } from '@/hooks/use-baremes-hunters';
 import { useCompanySettings } from '@/hooks/use-company-settings';
-
-// Montant HT d'un service à partir du barème HUNTERS (tranches par base)
-function montantBareme(baremes: BaremeHunters[], service: CommissionService, base: number): number {
-  const t = baremes.find(
-    (r) =>
-      r.service === service &&
-      base >= Number(r.tranche_min) &&
-      (r.tranche_max === null || base <= Number(r.tranche_max))
-  );
-  if (!t) return 0;
-  const fixe = Number(t.valeur_fixe) || 0;
-  if (t.type === 'forfait') return Number(t.valeur) || fixe || 0;
-  return fixe + (base * (Number(t.valeur) || 0)) / 100;
-}
-
-// Décomposition des montants HT par service souscrit sur le dossier
-function servicesMontants(dossier: Dossier, baremes: BaremeHunters[]): ServiceMontant[] {
-  const services = ((dossier as any).services_souscrits as Record<string, boolean>) || {};
-  const budget = Number(dossier.budget) || 0;
-  const out: ServiceMontant[] = [];
-
-  if (services.conseil !== false) {
-    out.push({ service: 'conseil', montant_ht: Number((dossier as any).tarif_conseil_ht) || 0 });
-  }
-  if (services.chasse) {
-    out.push({ service: 'chasse', montant_ht: montantBareme(baremes, 'chasse', budget) });
-  }
-  if (services.amo) {
-    out.push({ service: 'amo', montant_ht: montantBareme(baremes, 'amo', 0) });
-  }
-  if (services.deco) {
-    out.push({ service: 'deco', montant_ht: montantBareme(baremes, 'deco', 0) });
-  }
-  return out.filter((l) => l.montant_ht > 0);
-}
-
 
 // ─────────────────────────────────────────────
 // Carte dossier draggable (souris + tactile + clavier)
 // ─────────────────────────────────────────────
-function DraggableCard({ dossier, idx }: { dossier: Dossier; idx: number }) {
+function DraggableCard({
+  dossier,
+  idx,
+  onRequestStatus,
+}: {
+  dossier: Dossier;
+  idx: number;
+  onRequestStatus: (dossier: Dossier, status: string) => void;
+}) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: dossier.id,
     data: { dossier },
   });
-  const updateMut = useUpdateDossier();
 
-  const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.stopPropagation();
-    await updateMut.mutateAsync({ id: dossier.id, status: e.target.value });
+    onRequestStatus(dossier, e.target.value);
   };
+
 
   return (
     <DossierDialog
@@ -192,6 +164,7 @@ export default function Pipeline() {
   const { data: baremes = [] } = useBaremesHunters();
   const { data: company } = useCompanySettings();
   const [activeDossier, setActiveDossier] = useState<Dossier | null>(null);
+  const [pendingCloture, setPendingCloture] = useState<{ dossier: Dossier } | null>(null);
 
 
   // Sensors :
@@ -211,24 +184,16 @@ export default function Pipeline() {
     setActiveDossier(dossier || null);
   };
 
-  const handleDragEnd = useCallback(
-    async (e: DragEndEvent) => {
-      setActiveDossier(null);
-      const { active, over } = e;
-      if (!over) return;
-
-      const dossierId = String(active.id);
-      const newStatus = String(over.id);
-
-      if (!isValidPipelineStatus(newStatus)) return;
-
-      const dossier = dossiers.find((d) => d.id === dossierId);
-      if (!dossier || dossier.status === newStatus) return;
-
+  const applyStatus = useCallback(
+    async (dossier: Dossier, newStatus: string, sousStatut: 'gagne' | 'perdu' | null) => {
       const oldStatus = dossier.status;
 
       try {
-        await updateMut.mutateAsync({ id: dossierId, status: newStatus });
+        await updateMut.mutateAsync({
+          id: dossier.id,
+          status: newStatus,
+          sous_statut: newStatus === 'cloture' ? sousStatut : null,
+        } as any);
 
         if (shouldTriggerHonoraires(oldStatus, newStatus)) {
           await supabase.from('alertes').insert({
@@ -252,7 +217,7 @@ export default function Pipeline() {
           if (dossier.mandataire_id) {
             const { data: profile } = await supabase
               .from('profiles')
-              .select('niveau, parrain_id')
+              .select('niveau')
               .eq('id', dossier.mandataire_id)
               .single();
 
@@ -276,32 +241,48 @@ export default function Pipeline() {
                 statut: 'due',
               } as any);
             }
-
-            const parrainId = (profile as any)?.parrain_id;
-            if (parrainId) {
-              const bonusMontant = computeBonusParrainage(dossier.honoraires || 0);
-              await supabase.from('commissions').insert({
-                mandataire_id: parrainId,
-                dossier_id: dossier.id,
-                type: 'parrainage',
-                taux: 2,
-                montant: bonusMontant,
-                statut: 'due',
-              } as any);
-            }
           }
-
 
           qc.invalidateQueries({ queryKey: ['factures'] });
           qc.invalidateQueries({ queryKey: ['commissions'] });
           toast.success('Facturation et commission générées automatiquement');
         }
       } catch (err: any) {
-        toast.error(err?.message || 'Erreur lors du déplacement');
+        toast.error(err?.message || 'Erreur lors du changement de statut');
       }
     },
-    [dossiers, updateMut, qc, baremes, company]
+    [updateMut, qc, baremes, company]
   );
+
+  // Le passage en « Clôturé » exige de qualifier l'issue : Gagné ou Perdu
+  const requestStatus = useCallback(
+    (dossier: Dossier, newStatus: string) => {
+      if (dossier.status === newStatus) return;
+      if (newStatus === 'cloture') {
+        setPendingCloture({ dossier });
+        return;
+      }
+      void applyStatus(dossier, newStatus, null);
+    },
+    [applyStatus]
+  );
+
+  const handleDragEnd = useCallback(
+    (e: DragEndEvent) => {
+      setActiveDossier(null);
+      const { active, over } = e;
+      if (!over) return;
+
+      const newStatus = String(over.id);
+      if (!isValidPipelineStatus(newStatus)) return;
+
+      const dossier = dossiers.find((d) => d.id === String(active.id));
+      if (!dossier) return;
+      requestStatus(dossier, newStatus);
+    },
+    [dossiers, requestStatus]
+  );
+
 
   return (
     <AppLayout>
@@ -351,7 +332,7 @@ export default function Pipeline() {
                 return (
                   <DroppableColumn key={status} status={status} count={statusDossiers.length}>
                     {statusDossiers.map((d, idx) => (
-                      <DraggableCard key={d.id} dossier={d} idx={idx} />
+                      <DraggableCard key={d.id} dossier={d} idx={idx} onRequestStatus={requestStatus} />
                     ))}
                     {statusDossiers.length === 0 && (
                       <p className="text-xs text-muted-foreground text-center py-6">Aucun dossier</p>
@@ -379,6 +360,53 @@ export default function Pipeline() {
           </DndContext>
         )}
       </div>
+
+      {/* Qualification obligatoire à la clôture d'un dossier */}
+      <Dialog open={!!pendingCloture} onOpenChange={(o) => !o && setPendingCloture(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Clôturer le dossier</DialogTitle>
+            <DialogDescription>
+              {pendingCloture
+                ? `Quelle est l'issue du dossier ${pendingCloture.dossier.client_name} ? Ce choix est obligatoire pour clôturer.`
+                : ''}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex-col gap-2 border-hunters-success/40 hover:bg-hunters-success/10"
+              onClick={() => {
+                if (!pendingCloture) return;
+                const d = pendingCloture.dossier;
+                setPendingCloture(null);
+                void applyStatus(d, 'cloture', 'gagne');
+              }}
+            >
+              <Trophy className="w-5 h-5 text-hunters-success" />
+              <span className="font-semibold">Gagné</span>
+              <span className="text-xs text-muted-foreground font-normal">Mission menée à terme</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex-col gap-2 border-destructive/40 hover:bg-destructive/10"
+              onClick={() => {
+                if (!pendingCloture) return;
+                const d = pendingCloture.dossier;
+                setPendingCloture(null);
+                void applyStatus(d, 'cloture', 'perdu');
+              }}
+            >
+              <XCircle className="w-5 h-5 text-destructive" />
+              <span className="font-semibold">Perdu</span>
+              <span className="text-xs text-muted-foreground font-normal">Client abandonné / non abouti</span>
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setPendingCloture(null)}>Annuler</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

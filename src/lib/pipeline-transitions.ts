@@ -13,12 +13,14 @@ export function shouldTriggerHonoraires(from: string, to: string): boolean {
 export type CommissionService = 'conseil' | 'chasse' | 'amo' | 'deco';
 
 
+// Barème réel HUNTERS (fallback si company_settings est incomplet)
 const DEFAULT_RATES: Record<CommissionService, { n1: number; n2: number }> = {
-  conseil: { n1: 50, n2: 60 },
-  chasse: { n1: 50, n2: 60 },
-  amo: { n1: 50, n2: 60 },
-  deco: { n1: 50, n2: 60 },
+  conseil: { n1: 30, n2: 40 },
+  chasse: { n1: 55, n2: 60 },
+  amo: { n1: 20, n2: 25 },
+  deco: { n1: 15, n2: 20 },
 };
+
 
 /**
  * Taux réel de commission pour un service donné, lu depuis company_settings
@@ -74,12 +76,6 @@ export function computeCommission(honoraires: number, taux: number): number {
   return Math.round((safeHon * safeTaux) / 100 * 100) / 100;
 }
 
-/**
- * Bonus parrainage : 2% des honoraires pour le parrain.
- */
-export function computeBonusParrainage(honoraires: number): number {
-  return computeCommission(honoraires, 2);
-}
 
 /**
  * Vérifie qu'un statut cible est bien dans la liste connue du pipeline.

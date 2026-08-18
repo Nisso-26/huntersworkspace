@@ -106,8 +106,8 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
             <p className="text-xs text-muted-foreground">Commissions dues</p>
           </div>
           <div className="bg-secondary/50 rounded-lg p-3 text-center">
-            <p className="text-lg font-bold text-foreground">{m.bonus_parrainage.toLocaleString('fr-FR')} €</p>
-            <p className="text-xs text-muted-foreground">Bonus parrainage</p>
+            <p className="text-lg font-bold text-foreground">{m.dossiers_clotures}</p>
+            <p className="text-xs text-muted-foreground">Clôturés</p>
           </div>
         </div>
         <div className="grid grid-cols-3 gap-3">

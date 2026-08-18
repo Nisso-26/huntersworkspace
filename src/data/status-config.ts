@@ -46,3 +46,13 @@ export const columnColors: Record<string, string> = {
   signe: 'border-t-hunters-success',
   cloture: 'border-t-muted-foreground',
 };
+
+export const sousStatutLabels: Record<string, string> = {
+  gagne: 'Gagné',
+  perdu: 'Perdu',
+};
+
+export const sousStatutColors: Record<string, string> = {
+  gagne: 'bg-hunters-success/15 text-hunters-success',
+  perdu: 'bg-destructive/15 text-destructive',
+};

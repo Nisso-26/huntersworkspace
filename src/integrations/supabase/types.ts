@@ -1025,6 +1025,7 @@ export type Database = {
           services_souscrits: Json | null
           situation_familiale: string | null
           source_recommandation: string | null
+          sous_statut: string | null
           status: string
           statut_professionnel: string | null
           strategie: string | null
@@ -1103,6 +1104,7 @@ export type Database = {
           services_souscrits?: Json | null
           situation_familiale?: string | null
           source_recommandation?: string | null
+          sous_statut?: string | null
           status?: string
           statut_professionnel?: string | null
           strategie?: string | null
@@ -1181,6 +1183,7 @@ export type Database = {
           services_souscrits?: Json | null
           situation_familiale?: string | null
           source_recommandation?: string | null
+          sous_statut?: string | null
           status?: string
           statut_professionnel?: string | null
           strategie?: string | null

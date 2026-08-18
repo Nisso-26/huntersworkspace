@@ -23,7 +23,6 @@ export interface MandataireProfile {
   iban: string | null;
   commissions_dues: number;
   commissions_versees: number;
-  bonus_parrainage: number;
   dossiers_signes: number;
   dossiers_clotures: number;
   suspendu: boolean;
@@ -108,10 +107,6 @@ export function useMandataires() {
         const commVersees = mandCommissions
           .filter((c) => c.statut === 'versee' && c.type === 'commission')
           .reduce((s, c) => s + Number(c.montant), 0);
-        const bonusParrainage = mandCommissions
-          .filter((c) => c.type === 'parrainage')
-          .reduce((s, c) => s + Number(c.montant), 0);
-
         const parrainProfile = p.parrain_id ? profileMap.get(p.parrain_id) : null;
 
         const mandFactures = facturesPack.filter((f) => f.mandataire_id === p.id);
@@ -142,7 +137,6 @@ export function useMandataires() {
           dossiers_clotures: clotures,
           commissions_dues: commDues,
           commissions_versees: commVersees,
-          bonus_parrainage: bonusParrainage,
           suspendu: Boolean(p.suspendu),
           pack_relance_etape: packRelanceEtape,
           pack_impaye_montant: packImpaye,

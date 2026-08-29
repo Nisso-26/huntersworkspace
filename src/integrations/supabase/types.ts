@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      acces_portail: {
+        Row: {
+          created_by: string | null
+          date_expiration: string
+          date_generation: string
+          date_revocation: string | null
+          dossier_id: string
+          id: string
+          nature_validation: string | null
+          nb_ouvertures_effectuees: number
+          nb_ouvertures_max: number
+          partenaire_id: string
+          scope_decision: Json
+          scope_lecture: Json
+          token: string
+        }
+        Insert: {
+          created_by?: string | null
+          date_expiration: string
+          date_generation?: string
+          date_revocation?: string | null
+          dossier_id: string
+          id?: string
+          nature_validation?: string | null
+          nb_ouvertures_effectuees?: number
+          nb_ouvertures_max?: number
+          partenaire_id: string
+          scope_decision?: Json
+          scope_lecture?: Json
+          token?: string
+        }
+        Update: {
+          created_by?: string | null
+          date_expiration?: string
+          date_generation?: string
+          date_revocation?: string | null
+          dossier_id?: string
+          id?: string
+          nature_validation?: string | null
+          nb_ouvertures_effectuees?: number
+          nb_ouvertures_max?: number
+          partenaire_id?: string
+          scope_decision?: Json
+          scope_lecture?: Json
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acces_portail_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "acces_portail_partenaire_id_fkey"
+            columns: ["partenaire_id"]
+            isOneToOne: false
+            referencedRelation: "partenaires"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       achats_deco: {
         Row: {
           chantier_id: string
@@ -714,6 +777,50 @@ export type Database = {
             columns: ["dossier_id"]
             isOneToOne: false
             referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      decisions_partenaire: {
+        Row: {
+          acces_portail_id: string
+          code_confirmation_genere: string | null
+          code_confirmation_saisi: string | null
+          created_at: string
+          date_decision: string | null
+          id: string
+          ip_session: string | null
+          justification: string
+          verdict: string
+        }
+        Insert: {
+          acces_portail_id: string
+          code_confirmation_genere?: string | null
+          code_confirmation_saisi?: string | null
+          created_at?: string
+          date_decision?: string | null
+          id?: string
+          ip_session?: string | null
+          justification: string
+          verdict: string
+        }
+        Update: {
+          acces_portail_id?: string
+          code_confirmation_genere?: string | null
+          code_confirmation_saisi?: string | null
+          created_at?: string
+          date_decision?: string | null
+          id?: string
+          ip_session?: string | null
+          justification?: string
+          verdict?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decisions_partenaire_acces_portail_id_fkey"
+            columns: ["acces_portail_id"]
+            isOneToOne: false
+            referencedRelation: "acces_portail"
             referencedColumns: ["id"]
           },
         ]
@@ -1488,6 +1595,38 @@ export type Database = {
         }
         Relationships: []
       }
+      log_acces_portail: {
+        Row: {
+          acces_portail_id: string
+          detail: Json | null
+          evenement: string
+          horodatage: string
+          id: string
+        }
+        Insert: {
+          acces_portail_id: string
+          detail?: Json | null
+          evenement: string
+          horodatage?: string
+          id?: string
+        }
+        Update: {
+          acces_portail_id?: string
+          detail?: Json | null
+          evenement?: string
+          horodatage?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "log_acces_portail_acces_portail_id_fkey"
+            columns: ["acces_portail_id"]
+            isOneToOne: false
+            referencedRelation: "acces_portail"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lots_travaux: {
         Row: {
           artisan: string | null
@@ -2066,6 +2205,48 @@ export type Database = {
           },
         ]
       }
+      quitus: {
+        Row: {
+          contenu: Json
+          contenu_pdf_url: string | null
+          date_generation: string
+          decision_id: string
+          dossier_id: string
+          id: string
+        }
+        Insert: {
+          contenu?: Json
+          contenu_pdf_url?: string | null
+          date_generation?: string
+          decision_id: string
+          dossier_id: string
+          id?: string
+        }
+        Update: {
+          contenu?: Json
+          contenu_pdf_url?: string | null
+          date_generation?: string
+          decision_id?: string
+          dossier_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quitus_decision_id_fkey"
+            columns: ["decision_id"]
+            isOneToOne: false
+            referencedRelation: "decisions_partenaire"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quitus_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       settings_audit_log: {
         Row: {
           action: string
@@ -2426,6 +2607,7 @@ export type Database = {
           id: string
         }[]
       }
+      get_partner_portal_payload: { Args: { _token: string }; Returns: Json }
       get_portal_payload: { Args: { _token: string }; Returns: Json }
       get_portal_token: {
         Args: { _token: string }
@@ -2450,10 +2632,27 @@ export type Database = {
         }
         Returns: boolean
       }
+      log_partner_consultation: {
+        Args: { _section: string; _token: string }
+        Returns: undefined
+      }
       mark_portal_token_viewed: { Args: { _token: string }; Returns: undefined }
       notify_super_admins_expert_dossier: {
         Args: { _client_name: string; _dossier_id: string; _score: number }
         Returns: undefined
+      }
+      start_partner_decision: {
+        Args: { _justification: string; _token: string; _verdict: string }
+        Returns: Json
+      }
+      submit_partner_decision: {
+        Args: {
+          _code: string
+          _decision_id: string
+          _ip?: string
+          _token: string
+        }
+        Returns: Json
       }
     }
     Enums: {

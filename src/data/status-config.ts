@@ -50,9 +50,20 @@ export const columnColors: Record<string, string> = {
 export const sousStatutLabels: Record<string, string> = {
   gagne: 'Gagné',
   perdu: 'Perdu',
+  en_attente_partenaire: 'En attente partenaire',
+  valide_quitus: 'Validé — quitus partenaire',
+  invalide_motive: 'Invalidé — motivé',
+  corrige_auto_valide: 'Corrigé et auto-validé',
+  conteste_escalade: 'Contesté — escaladé Direction',
 };
 
 export const sousStatutColors: Record<string, string> = {
   gagne: 'bg-hunters-success/15 text-hunters-success',
   perdu: 'bg-destructive/15 text-destructive',
+  en_attente_partenaire: 'bg-hunters-info/15 text-hunters-info',
+  valide_quitus: 'bg-hunters-success/15 text-hunters-success',
+  invalide_motive: 'bg-destructive/15 text-destructive',
+  corrige_auto_valide: 'bg-hunters-success/15 text-hunters-success',
+  conteste_escalade: 'bg-hunters-warning/15 text-hunters-warning',
 };
+

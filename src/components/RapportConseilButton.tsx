@@ -235,7 +235,7 @@ export default function RapportConseilButton({ dossier }: Props) {
         titre: 'Investissement immobilier',
         sousTitre: 'Analyse patrimoniale et scenarios de financement',
         client: dossier.client_name,
-        conseiller: `${conseillerNom} — ${conseillerTitre}`,
+        conseiller: conseillerCouverture,
         refDossier,
         date: dateStr,
         confidentiel: true,

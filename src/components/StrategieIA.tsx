@@ -100,7 +100,12 @@ export default function StrategieIA({ dossier }: Props) {
       if (!res.data?.ok) throw new Error(res.data?.error || 'Erreur de génération');
 
       const strategieJson = JSON.stringify(res.data.strategie);
-      await updateMut.mutateAsync({ id: dossier.id, strategie: strategieJson });
+      // Report explicite des valeurs corrigées vers la fiche dossier (opt-in uniquement).
+      const patch = syncToDossier ? strategieFormToDossierPatch(form) : {};
+      await updateMut.mutateAsync({ id: dossier.id, strategie: strategieJson, ...patch } as any);
+      if (syncToDossier && Object.keys(patch).length > 0) {
+        toast.success('Fiche dossier mise à jour avec ces valeurs');
+      }
 
       // Snapshot figé : on archive les valeurs d'entrée utilisées pour cette génération,
       // afin qu'une relecture ultérieure ne dépende pas de l'état courant du dossier.

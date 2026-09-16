@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import {
+  mandataireNomDossier, mentionMandataireHuntersFromNom,
+  HUNTERS_LABEL, QUALITE_MANDATAIRE,
+} from '@/lib/mandataire-signature';
 import { Dossier } from '@/hooks/use-dossiers';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -42,11 +45,8 @@ const DISCLAIMER =
   "Hunters Immobilier n'est pas conseiller en gestion de patrimoine (CGP) ni conseiller fiscal. " +
   "Toute décision d'investissement doit être prise après consultation d'un professionnel habilité.";
 
-function roleToTitle(role: string | null | undefined): string {
-  if (role === 'super_admin') return 'Directeur';
-  if (role === 'decoratrice') return 'Décoratrice';
-  return 'Conseiller';
-}
+// Le conseiller mentionné sur le rapport est le mandataire du dossier
+// (voir src/lib/mandataire-signature.ts), jamais l'utilisateur connecté.
 
 function splitSections(markdown: string): string[] {
   const out = SECTION_TITLES.map(() => '');

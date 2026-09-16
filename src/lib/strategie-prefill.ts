@@ -36,6 +36,35 @@ export const RISQUE_OPTIONS = ['Faible', 'Modérée', 'Élevée'];
 export const SITUATION_OPTIONS = ['Célibataire', 'Marié(e)', 'Pacsé(e)', 'Divorcé(e)', 'Veuf/veuve'];
 export const STATUT_PRO_OPTIONS = ['Salarié CDI', 'Fonctionnaire', 'TNS', 'Gérant', 'Retraité', 'Autre'];
 
+
+// La fiche dossier stocke des valeurs techniques (slugs) : on les traduit vers
+// les libellés attendus par les listes déroulantes de ce formulaire.
+const SLUG_MAPS: Record<string, Record<string, string>> = {
+  situation_familiale: { celibataire: 'Célibataire', marie: 'Marié(e)', pacse: 'Pacsé(e)', divorce: 'Divorcé(e)', veuf: 'Veuf/veuve' },
+  statut_pro: { salarie: 'Salarié CDI', tns: 'TNS', fonctionnaire: 'Fonctionnaire', retraite: 'Retraité', sans_activite: 'Autre' },
+  horizon: { court: 'Court terme (< 5 ans)', moyen: 'Moyen terme (5-10 ans)', long: 'Long terme (> 10 ans)' },
+  tolerance_risque: { prudent: 'Faible', equilibre: 'Modérée', dynamique: 'Élevée' },
+};
+
+const FREE_TEXT_LABELS: Record<string, Record<string, string>> = {
+  objectifs: {
+    revenus_complementaires: 'Revenus complémentaires',
+    constitution_patrimoine: 'Constitution de patrimoine',
+    retraite: 'Préparation retraite',
+    transmission: 'Transmission',
+    reduction_fiscale: 'Réduction fiscale',
+  },
+  types_biens: { appartement: 'Appartement', maison: 'Maison', immeuble: 'Immeuble', local_commercial: 'Local commercial' },
+  implication: { delegue_tout: 'Délègue tout', gere_en_partie: 'Gère en partie', gere_tout: 'Gère tout seul' },
+  delai_decision: { urgent: 'Urgent', '3_mois': '< 3 mois', '6_mois': '< 6 mois', '1_an': '< 1 an', flexible: 'Flexible' },
+};
+
+const humanize = (field: string, v: any): string => {
+  if (!v) return '';
+  const s = String(v).trim();
+  return FREE_TEXT_LABELS[field]?.[s] ?? s;
+};
+
 export function emptyStrategieForm(): StrategieFormValues {
   return {
     age: '', situation_familiale: '', enfants: '0', profession: '', statut_pro: '',
@@ -61,9 +90,10 @@ function ageFromBirthdate(d: any): string {
 }
 
 /** Ne garde la valeur que si elle correspond exactement à une option du select. */
-function matchOption(v: any, options: string[]): string {
+function matchOption(v: any, options: string[], field?: string): string {
   if (!v) return '';
-  const s = String(v).trim();
+  const raw = String(v).trim();
+  const s = (field && SLUG_MAPS[field]?.[raw.toLowerCase()]) || raw;
   const hit = options.find(o => o.toLowerCase() === s.toLowerCase());
   return hit ?? '';
 }
@@ -101,10 +131,10 @@ export function prefillStrategieForm(dossier: any): {
 
   const mapped: Partial<StrategieFormValues> = {
     age: ageFromBirthdate(d.date_naissance),
-    situation_familiale: matchOption(d.situation_familiale, SITUATION_OPTIONS),
+    situation_familiale: matchOption(d.situation_familiale, SITUATION_OPTIONS, 'situation_familiale'),
     enfants: d.nombre_enfants != null ? String(d.nombre_enfants) : '',
     profession: d.profession || '',
-    statut_pro: matchOption(d.statut_professionnel, STATUT_PRO_OPTIONS),
+    statut_pro: matchOption(d.statut_professionnel, STATUT_PRO_OPTIONS, 'statut_pro'),
     revenus_nets_mensuels: num(d.revenus_nets_mensuels),
     revenus_conjoint_mensuels: num(d.revenus_conjoint),
     autres_revenus_mensuels: num(d.autres_revenus),
@@ -115,13 +145,13 @@ export function prefillStrategieForm(dossier: any): {
     capacite_epargne: num(d.capacite_epargne_mensuelle),
     patrimoine_immo: patrimoineImmo(d),
     duree_credit: d.duree_credit_souhaitee != null ? String(d.duree_credit_souhaitee) : '',
-    objectifs: d.objectif_principal || '',
-    horizon: matchOption(d.horizon_investissement, HORIZON_OPTIONS),
-    implication: d.aversion_gestion || '',
-    tolerance_risque: matchOption(d.appetence_risque, RISQUE_OPTIONS),
+    objectifs: humanize('objectifs', d.objectif_principal),
+    horizon: matchOption(d.horizon_investissement, HORIZON_OPTIONS, 'horizon'),
+    implication: humanize('implication', d.aversion_gestion),
+    tolerance_risque: matchOption(d.appetence_risque, RISQUE_OPTIONS, 'tolerance_risque'),
     zones_souhaitees: d.contraintes_geographiques || '',
-    types_biens: d.type_bien_souhaite || '',
-    delai_decision: d.delai_concretisation || '',
+    types_biens: humanize('types_biens', d.type_bien_souhaite),
+    delai_decision: humanize('delai_decision', d.delai_concretisation),
   };
 
   const values = { ...base };

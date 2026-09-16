@@ -9,6 +9,7 @@ import {
   type AccesPortail,
 } from '@/hooks/use-portail-partenaire';
 import { buildQuitusPdf } from '@/lib/quitus-pdf';
+import { mentionMandataireHunters } from '@/lib/mandataire-signature';
 import { buildScopedPdf, sectionsFromDossier } from '@/lib/export-scope-pdf';
 import { SECTION_LABELS } from '@/lib/export-scope-pdf';
 import { Button } from '@/components/ui/button';
@@ -132,7 +133,8 @@ export default function PortailPartenaireSection({ dossier }: Props) {
         refDossier: dossier.numero_dossier,
         sections: sectionsFromDossier(dossier, 'financement'),
         client: dossier.client_name,
-        conseiller: (user?.user_metadata as any)?.full_name || user?.email || 'Hunters Immobilier',
+        // Mandataire du dossier, pas l'utilisateur connecté.
+        conseiller: mentionMandataireHunters(dossier),
       });
       doc.save(`Financement_${dossier.numero_dossier || dossier.id.slice(0, 8)}.pdf`);
       toast.success('Export financement généré');

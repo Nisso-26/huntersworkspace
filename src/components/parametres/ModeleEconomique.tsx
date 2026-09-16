@@ -59,8 +59,8 @@ export default function ModeleEconomique() {
         commission_deco_n1: form.commission_deco_n1,
         commission_deco_n2: form.commission_deco_n2,
         seuil_passage_n2: form.seuil_passage_n2,
-        ca_objectif_n1_trimestre: form.ca_objectif_n1_trimestre ?? 20000,
-        ca_objectif_n2_trimestre: form.ca_objectif_n2_trimestre ?? 30000,
+        ca_objectif_n1_trimestre: form.ca_objectif_n1_trimestre,
+        ca_objectif_n2_trimestre: form.ca_objectif_n2_trimestre,
         mandats_objectif_trimestre: form.mandats_objectif_trimestre ?? 2,
         conseils_objectif_mois: form.conseils_objectif_mois ?? 1,
       } as any,
@@ -137,15 +137,15 @@ export default function ModeleEconomique() {
       </div>
 
       <div className="space-y-3 pt-4 border-t">
-        <h3 className="font-heading font-semibold">Objectifs mandataires</h3>
+        <h3 className="font-heading font-semibold">Cibles recommandées aux mandataires</h3>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>CA objectif N1 / trimestre (€)</Label>
-            <Input type="number" disabled={!isAdmin} value={form.ca_objectif_n1_trimestre ?? 20000} onChange={e => set('ca_objectif_n1_trimestre', Number(e.target.value))} />
+            <Label>CA trimestriel recommandé N1 (€)</Label>
+            <Input type="number" disabled={!isAdmin} value={form.ca_objectif_n1_trimestre ?? ''} onChange={e => set('ca_objectif_n1_trimestre', Number(e.target.value))} />
           </div>
           <div className="space-y-2">
-            <Label>CA objectif N2 / trimestre (€)</Label>
-            <Input type="number" disabled={!isAdmin} value={form.ca_objectif_n2_trimestre ?? 30000} onChange={e => set('ca_objectif_n2_trimestre', Number(e.target.value))} />
+            <Label>CA trimestriel recommandé N2 (€)</Label>
+            <Input type="number" disabled={!isAdmin} value={form.ca_objectif_n2_trimestre ?? ''} onChange={e => set('ca_objectif_n2_trimestre', Number(e.target.value))} />
           </div>
           <div className="space-y-2">
             <Label>Mandats objectif / trimestre</Label>

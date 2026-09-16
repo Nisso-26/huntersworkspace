@@ -48,6 +48,10 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
 
   const mandataire = mandataires.find((m) => m.id === dossier.mandataire_id);
   const conseiller = mandataire?.full_name || '';
+  const conseillerNiveau = mandataire?.niveau === 'N2' ? 'N2' : 'N1';
+  const caTrimestrielRecommande = conseillerNiveau === 'N2'
+    ? company?.ca_objectif_n2_trimestre
+    : company?.ca_objectif_n1_trimestre;
   const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 
   // Variables texte enrichies (client, mandataire, cabinet, scoring, services, objectifs)
@@ -69,7 +73,7 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
     conseiller_rsac:      (mandataire as any)?.rsac_numero || '',
     conseiller_greffe:    (mandataire as any)?.rsac_greffe || '',
     conseiller_zone:      (mandataire as any)?.zone_label || (mandataire as any)?.zone || '',
-    conseiller_niveau:    (mandataire as any)?.niveau || 'N1',
+    conseiller_niveau:    conseillerNiveau,
     conseiller_siret:     (mandataire as any)?.siret || '',
 
     // ── HUNTERS IMMOBILIER ──
@@ -100,13 +104,13 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
                             }[k as string] || k))
                             .join(', '),
 
-    // ── OBJECTIFS CONTRACTUELS ──
-    objectif_ca:          '20 000 € HT / trimestre',
-    objectif_mandats:     '2 mandats signés / trimestre',
-    objectif_conseil:     '1 rapport de conseil / mois',
-    pack_mensuel:         '149 € HT / mois',
-    seuil_n2:             '100 000 € CA HT cumulé',
-  }), [dossier, mandataire, company, conseiller, today]);
+    // ── CIBLES RECOMMANDÉES ──
+    objectif_ca:          caTrimestrielRecommande == null ? '' : `${caTrimestrielRecommande.toLocaleString('fr-FR')} € HT / trimestre`,
+    objectif_mandats:     company?.mandats_objectif_trimestre == null ? '' : `${company.mandats_objectif_trimestre} mandats signés / trimestre`,
+    objectif_conseil:     company?.conseils_objectif_mois == null ? '' : `${company.conseils_objectif_mois} rapport de conseil / mois`,
+    pack_mensuel:         company?.tarif_abonnement_defaut == null ? '' : `${company.tarif_abonnement_defaut.toLocaleString('fr-FR')} € HT / mois`,
+    seuil_n2:             company?.seuil_passage_n2 == null ? '' : `${company.seuil_passage_n2.toLocaleString('fr-FR')} € CA HT cumulé`,
+  }), [dossier, mandataire, company, conseiller, conseillerNiveau, caTrimestrielRecommande, today]);
 
   const sections = (modele.contenu_template?.sections || []) as ModeleSection[];
 
@@ -124,6 +128,17 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
   const [variables, setVariables] = useState<Record<string, string>>(() =>
     Object.fromEntries(Object.entries(baseVariables).map(([k, v]) => [k, String(v ?? '')])),
   );
+
+  useEffect(() => {
+    setVariables((prev) => ({
+      ...prev,
+      objectif_ca: String(baseVariables.objectif_ca ?? ''),
+      objectif_mandats: String(baseVariables.objectif_mandats ?? ''),
+      objectif_conseil: String(baseVariables.objectif_conseil ?? ''),
+      pack_mensuel: String(baseVariables.pack_mensuel ?? ''),
+      seuil_n2: String(baseVariables.seuil_n2 ?? ''),
+    }));
+  }, [baseVariables.objectif_ca, baseVariables.objectif_mandats, baseVariables.objectif_conseil, baseVariables.pack_mensuel, baseVariables.seuil_n2]);
   const [financierSaisies, setFinancierSaisies] = useState<Record<string, Record<string, number>>>({});
   const [textOverrides, setTextOverrides] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);

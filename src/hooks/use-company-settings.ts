@@ -38,6 +38,11 @@ export interface CompanySettings {
   numero_tva_intra: string;
   capital_social: string;
   rcs: string;
+  ca_objectif_n1_trimestre: number;
+  ca_objectif_n2_trimestre: number;
+  mandats_objectif_trimestre: number;
+  conseils_objectif_mois: number;
+  seuil_passage_n2: number;
 }
 
 

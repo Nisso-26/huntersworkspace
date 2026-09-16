@@ -85,9 +85,9 @@ const VARIABLE_GROUPS: { label: string; icon: React.ElementType; color: string; 
     icon: FileCheck,
     color: 'text-rose-600 bg-rose-50',
     vars: [
-      { key: '{{objectif_ca}}', desc: '20 000 € HT / trimestre' },
-      { key: '{{objectif_mandats}}', desc: '2 mandats / trimestre' },
-      { key: '{{objectif_conseil}}', desc: '1 rapport de conseil / mois' },
+      { key: '{{objectif_ca}}', desc: 'CA trimestriel recommandé N1 ou N2' },
+      { key: '{{objectif_mandats}}', desc: 'Cible trimestrielle recommandée de mandats' },
+      { key: '{{objectif_conseil}}', desc: 'Cible mensuelle recommandée de conseils' },
       { key: '{{pack_mensuel}}', desc: '149 € HT / mois' },
       { key: '{{seuil_n2}}', desc: '100 000 € CA HT cumulé' },
     ],

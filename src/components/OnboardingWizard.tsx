@@ -202,7 +202,13 @@ export default function OnboardingWizard({ onComplete }: Props) {
       const decoAuto = wizardRole === 'decoratrice' && form.statut_deco === 'auto-entrepreneuse';
       const profileFields: Record<string, unknown> = {
         full_name: [form.first_name, form.last_name].filter(Boolean).join(' ').trim() || null,
-        phone: form.telephone || null,
+        first_name: form.first_name || null,
+        last_name: form.last_name || null,
+        telephone: form.telephone || null,
+        date_naissance: form.date_naissance || null,
+        adresse_rue: form.adresse_rue || null,
+        adresse_cp: form.adresse_cp || null,
+        adresse_ville: form.adresse_ville || null,
         statut_juridique:
           isMandataire
             ? form.statut_juridique || null
@@ -211,6 +217,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
               : form.statut_pro || null,
         onboarding_step: step,
       };
+
       if (isMandataire) {
         Object.assign(profileFields, {
           rsac_numero: form.rsac_numero || null,

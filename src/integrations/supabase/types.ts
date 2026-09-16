@@ -950,6 +950,7 @@ export type Database = {
       documents_generes: {
         Row: {
           conseiller_id: string | null
+          contenu: Json | null
           created_at: string
           date_generation: string
           dossier_id: string
@@ -963,6 +964,7 @@ export type Database = {
         }
         Insert: {
           conseiller_id?: string | null
+          contenu?: Json | null
           created_at?: string
           date_generation?: string
           dossier_id: string
@@ -976,6 +978,7 @@ export type Database = {
         }
         Update: {
           conseiller_id?: string | null
+          contenu?: Json | null
           created_at?: string
           date_generation?: string
           dossier_id?: string

@@ -177,9 +177,11 @@ export default function FacturationSection({ dossier }: Props) {
     const lignes = serviceKeys.map(k => {
       const t = tarifMap[k];
       if (!t) return null;
+      if (!t.tarif) return null;
       return {
         service_key: k,
         label: t.label,
+        detail: t.detail,
         tarif_base: t.tarif,
         remise_pct: 0,
         remise_montant: 0,
@@ -246,6 +248,28 @@ export default function FacturationSection({ dossier }: Props) {
           {isCleEnMain ? 'Clé en main' : 'À la carte'}
         </Badge>
       </div>
+
+      {/* Bases de calcul du barème à paliers HUNTERS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-sm border bg-muted/40">
+        <div className="space-y-1">
+          <Label className="text-[10px] uppercase">Prix d'acquisition (chasse)</Label>
+          <Input type="number" value={prixBien} onChange={e => setPrixBien(Number(e.target.value))} />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-[10px] uppercase">Budget travaux (AMO)</Label>
+          <Input type="number" value={budgetTravaux} onChange={e => setBudgetTravaux(Number(e.target.value))} />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-[10px] uppercase">Budget décoration (déco)</Label>
+          <Input type="number" value={budgetDeco} onChange={e => setBudgetDeco(Number(e.target.value))} />
+        </div>
+        <p className="col-span-full text-[10px] text-muted-foreground italic">
+          Montants calculés depuis le barème à paliers HUNTERS. Conseil indexé sur le score de qualification
+          {(dossier as any).score_qualification != null ? ` (score ${(dossier as any).score_qualification})` : ''}.
+        </p>
+      </div>
+
+
 
       {isCleEnMain ? (
         <div className="space-y-4">
@@ -344,7 +368,7 @@ export default function FacturationSection({ dossier }: Props) {
               <div key={k} className="grid grid-cols-12 gap-2 items-center p-3 border rounded-sm">
                 <div className="col-span-12 sm:col-span-4">
                   <p className="text-sm font-semibold">{SERVICE_LABELS[k]}</p>
-                  <p className="text-[10px] text-muted-foreground">{fmtEur(t.tarif)} (tarif plein)</p>
+                  <p className="text-[10px] text-muted-foreground">{t.detail} — tarif plein</p>
                 </div>
                 <div className="col-span-6 sm:col-span-2">
                   <p className="text-[10px] uppercase text-muted-foreground">Net HT</p>

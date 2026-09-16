@@ -19,6 +19,7 @@ export type Database = {
           created_by: string | null
           date_expiration: string
           date_generation: string
+          date_relance: string | null
           date_revocation: string | null
           dossier_id: string
           id: string
@@ -34,6 +35,7 @@ export type Database = {
           created_by?: string | null
           date_expiration: string
           date_generation?: string
+          date_relance?: string | null
           date_revocation?: string | null
           dossier_id: string
           id?: string
@@ -49,6 +51,7 @@ export type Database = {
           created_by?: string | null
           date_expiration?: string
           date_generation?: string
+          date_relance?: string | null
           date_revocation?: string | null
           dossier_id?: string
           id?: string

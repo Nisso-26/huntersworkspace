@@ -28,7 +28,7 @@ const fmtEur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(n);
 
 export default function FacturationSection({ dossier }: Props) {
-  const { data: tarifs = [] } = useTarifsServices();
+  const { data: baremes = [] } = useBaremesHunters();
   const { data: settings } = useCompanySettings();
   const { data: jalons = [] } = useJalons(dossier.id);
   const saveJalons = useSaveJalons();
@@ -36,15 +36,43 @@ export default function FacturationSection({ dossier }: Props) {
   const createFacture = useCreateFacture();
   const updateDossier = useUpdateDossier();
 
-  const tarifMap = useMemo(() => {
-    const m: Record<string, { tarif: number; tva: number; label: string }> = {};
-    tarifs.forEach(t => { m[t.service_key] = { tarif: Number(t.tarif_base), tva: Number(t.tva_taux), label: t.label }; });
-    return m;
-  }, [tarifs]);
-
   const isCleEnMain = (dossier.type_accompagnement || 'cle_en_main') === 'cle_en_main';
   const services = getServices(dossier);
   const statuts = getStatuts(dossier);
+
+  // ─── Bases de calcul du barème à paliers ───
+  const [prixBien, setPrixBien] = useState<number>(Number(dossier.budget) || 0);
+  const [budgetTravaux, setBudgetTravaux] = useState<number>(0);
+  const [budgetDeco, setBudgetDeco] = useState<number>(0);
+
+  const tvaDefaut = Number((settings as any)?.tva_taux_defaut);
+  const tvaTaux = Number.isFinite(tvaDefaut) && tvaDefaut >= 0 ? tvaDefaut : 20;
+
+  // Base indexée par service : conseil → score de qualification, chasse → prix
+  // d'acquisition, AMO → budget travaux, déco → budget décoration.
+  const baseParService: Record<string, number> = {
+    conseil: Number((dossier as any).score_qualification) || 0,
+    chasse: prixBien,
+    amo: budgetTravaux,
+    deco: budgetDeco,
+  };
+
+  const tarifMap = useMemo(() => {
+    const m: Record<string, { tarif: number; tva: number; label: string; detail: string }> = {};
+    (['conseil', 'chasse', 'amo', 'deco'] as const).forEach(k => {
+      const base = baseParService[k];
+      const { montant, detail } = computeMontant(pickTranche(baremes, k, base), base);
+      // Le conseil peut être figé sur le dossier (tarif validé par le directeur).
+      const fige = k === 'conseil' ? Number((dossier as any).tarif_conseil_ht) || 0 : 0;
+      m[k] = {
+        tarif: fige || montant,
+        tva: tvaTaux,
+        label: SERVICE_LABELS[k as ServiceKey] || k,
+        detail: fige ? `Forfait ${fige.toLocaleString('fr-FR')} € — tarif plein` : detail,
+      };
+    });
+    return m;
+  }, [baremes, prixBien, budgetTravaux, budgetDeco, tvaTaux, dossier]);
 
   // ─── Clé en main ───────────────────────────
   const remisePackPct = Number((settings as any)?.remise_pack_pct ?? 10);
@@ -64,8 +92,7 @@ export default function FacturationSection({ dossier }: Props) {
   const tarifAmo = tarifMap['amo']?.tarif || 0;
   const tarifDeco = tarifMap['deco']?.tarif || 0;
   const remisablePack = tarifChasse + tarifAmo + tarifDeco;
-  const tarifPackComputed = tarifConseil + remisablePack;
-  const baseCleEnMain = tarifPackComputed > 0 ? tarifPackComputed : (tarifMap['cle_en_main']?.tarif || 0);
+  const baseCleEnMain = tarifConseil + remisablePack;
   const remiseMontantPack = remisablePack * (remisePackPct / 100);
   const netCleEnMain = baseCleEnMain - remiseMontantPack;
 

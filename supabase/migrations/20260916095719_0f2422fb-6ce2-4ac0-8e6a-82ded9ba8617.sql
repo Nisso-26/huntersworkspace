@@ -1,0 +1,1 @@
+ALTER TABLE public.documents_generes ADD COLUMN IF NOT EXISTS contenu jsonb;

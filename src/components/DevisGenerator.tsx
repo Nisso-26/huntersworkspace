@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Download, Save, Send, FileText, Loader2, CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useBaremesHunters, type BaremeHunters, type BaremeService } from '@/hooks/use-baremes-hunters';
+import { pickTranche, computeMontant } from '@/lib/baremes-hunters';
 import {
   useDevis, useSaveDevis, useUpdateDevisStatut, useEnvoyerDevis, useRenvoyerDevis,
   DEVIS_EMAIL_LABELS,
@@ -35,7 +36,6 @@ function toBase64(buf: ArrayBuffer) {
 }
 
 // pickTranche / computeMontant : voir src/lib/baremes-hunters.ts
-}
 
 const STATUT_VARIANT: Record<DevisStatut, 'secondary' | 'default' | 'destructive' | 'outline'> = {
   brouillon: 'outline',

@@ -202,7 +202,13 @@ export default function OnboardingWizard({ onComplete }: Props) {
       const decoAuto = wizardRole === 'decoratrice' && form.statut_deco === 'auto-entrepreneuse';
       const profileFields: Record<string, unknown> = {
         full_name: [form.first_name, form.last_name].filter(Boolean).join(' ').trim() || null,
-        phone: form.telephone || null,
+        first_name: form.first_name || null,
+        last_name: form.last_name || null,
+        telephone: form.telephone || null,
+        date_naissance: form.date_naissance || null,
+        adresse_rue: form.adresse_rue || null,
+        adresse_cp: form.adresse_cp || null,
+        adresse_ville: form.adresse_ville || null,
         statut_juridique:
           isMandataire
             ? form.statut_juridique || null
@@ -211,6 +217,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
               : form.statut_pro || null,
         onboarding_step: step,
       };
+
       if (isMandataire) {
         Object.assign(profileFields, {
           rsac_numero: form.rsac_numero || null,
@@ -226,7 +233,9 @@ export default function OnboardingWizard({ onComplete }: Props) {
           siret: form.siret || null,
         });
       }
-      await supabase.from('profiles').update(profileFields as any).eq('id', user.id);
+      const { error: profileError } = await supabase.from('profiles').update(profileFields as any).eq('id', user.id);
+      if (profileError) console.error('Onboarding profile update failed', profileError);
+
 
     } catch (e) {
       // silencieux — réessai au prochain changement
@@ -272,7 +281,9 @@ export default function OnboardingWizard({ onComplete }: Props) {
         return ibanOk && siretOk && form.accept_pack;
       }
       case 'zone':
-        return zones.length > 0 && form.accept_zone && form.accept_prescripteurs && form.accept_objectifs && form.accept_encaissement;
+        // L'affectation de zone est faite par le Directeur et peut arriver après
+        // l'activation : elle ne doit pas bloquer l'activation du compte.
+        return form.accept_zone && form.accept_prescripteurs && form.accept_objectifs && form.accept_encaissement;
       default:
         return false;
     }

@@ -97,6 +97,29 @@ export default function StrategieIA({ dossier }: Props) {
 
       const strategieJson = JSON.stringify(res.data.strategie);
       await updateMut.mutateAsync({ id: dossier.id, strategie: strategieJson });
+
+      // Snapshot figé : on archive les valeurs d'entrée utilisées pour cette génération,
+      // afin qu'une relecture ultérieure ne dépende pas de l'état courant du dossier.
+      try {
+        await (supabase.from('documents_generes') as any).insert({
+          dossier_id: dossier.id,
+          type: 'strategie_patrimoniale',
+          numero_dossier: (dossier as any).numero_dossier || null,
+          conseiller_id: user?.id || null,
+          contenu: {
+            entrees: form,
+            champs_prefilles: Array.from(prefilled),
+            client_name: dossier.client_name,
+            ville: dossier.ville,
+            budget: dossier.budget,
+            notes: dossier.notes,
+            strategie: res.data.strategie,
+          },
+        });
+      } catch (snapErr) {
+        console.warn('Snapshot stratégie échoué:', snapErr);
+      }
+
       toast.success('Stratégie générée avec succès');
       setShowForm(false);
       window.location.reload();

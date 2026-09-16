@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Receipt, FileText, Plus, Trash2, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
-import { useTarifsServices } from '@/hooks/use-tarifs-services';
+import { useBaremesHunters } from '@/hooks/use-baremes-hunters';
+import { pickTranche, computeMontant } from '@/lib/baremes-hunters';
 import { useJalons, useSaveJalons, useUpdateJalon } from '@/hooks/use-jalons';
 import { useCreateFacture, generateFacturePDF } from '@/hooks/use-factures';
 import { useCompanySettings } from '@/hooks/use-company-settings';
@@ -27,7 +28,7 @@ const fmtEur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(n);
 
 export default function FacturationSection({ dossier }: Props) {
-  const { data: tarifs = [] } = useTarifsServices();
+  const { data: baremes = [] } = useBaremesHunters();
   const { data: settings } = useCompanySettings();
   const { data: jalons = [] } = useJalons(dossier.id);
   const saveJalons = useSaveJalons();
@@ -35,15 +36,43 @@ export default function FacturationSection({ dossier }: Props) {
   const createFacture = useCreateFacture();
   const updateDossier = useUpdateDossier();
 
-  const tarifMap = useMemo(() => {
-    const m: Record<string, { tarif: number; tva: number; label: string }> = {};
-    tarifs.forEach(t => { m[t.service_key] = { tarif: Number(t.tarif_base), tva: Number(t.tva_taux), label: t.label }; });
-    return m;
-  }, [tarifs]);
-
   const isCleEnMain = (dossier.type_accompagnement || 'cle_en_main') === 'cle_en_main';
   const services = getServices(dossier);
   const statuts = getStatuts(dossier);
+
+  // ─── Bases de calcul du barème à paliers ───
+  const [prixBien, setPrixBien] = useState<number>(Number(dossier.budget) || 0);
+  const [budgetTravaux, setBudgetTravaux] = useState<number>(0);
+  const [budgetDeco, setBudgetDeco] = useState<number>(0);
+
+  const tvaDefaut = Number((settings as any)?.tva_taux_defaut);
+  const tvaTaux = Number.isFinite(tvaDefaut) && tvaDefaut >= 0 ? tvaDefaut : 20;
+
+  // Base indexée par service : conseil → score de qualification, chasse → prix
+  // d'acquisition, AMO → budget travaux, déco → budget décoration.
+  const baseParService: Record<string, number> = {
+    conseil: Number((dossier as any).score_qualification) || 0,
+    chasse: prixBien,
+    amo: budgetTravaux,
+    deco: budgetDeco,
+  };
+
+  const tarifMap = useMemo(() => {
+    const m: Record<string, { tarif: number; tva: number; label: string; detail: string }> = {};
+    (['conseil', 'chasse', 'amo', 'deco'] as const).forEach(k => {
+      const base = baseParService[k];
+      const { montant, detail } = computeMontant(pickTranche(baremes, k, base), base);
+      // Le conseil peut être figé sur le dossier (tarif validé par le directeur).
+      const fige = k === 'conseil' ? Number((dossier as any).tarif_conseil_ht) || 0 : 0;
+      m[k] = {
+        tarif: fige || montant,
+        tva: tvaTaux,
+        label: SERVICE_LABELS[k as ServiceKey] || k,
+        detail: fige ? `Forfait ${fige.toLocaleString('fr-FR')} € — tarif plein` : detail,
+      };
+    });
+    return m;
+  }, [baremes, prixBien, budgetTravaux, budgetDeco, tvaTaux, dossier]);
 
   // ─── Clé en main ───────────────────────────
   const remisePackPct = Number((settings as any)?.remise_pack_pct ?? 10);
@@ -63,8 +92,7 @@ export default function FacturationSection({ dossier }: Props) {
   const tarifAmo = tarifMap['amo']?.tarif || 0;
   const tarifDeco = tarifMap['deco']?.tarif || 0;
   const remisablePack = tarifChasse + tarifAmo + tarifDeco;
-  const tarifPackComputed = tarifConseil + remisablePack;
-  const baseCleEnMain = tarifPackComputed > 0 ? tarifPackComputed : (tarifMap['cle_en_main']?.tarif || 0);
+  const baseCleEnMain = tarifConseil + remisablePack;
   const remiseMontantPack = remisablePack * (remisePackPct / 100);
   const netCleEnMain = baseCleEnMain - remiseMontantPack;
 
@@ -90,7 +118,7 @@ export default function FacturationSection({ dossier }: Props) {
 
   const genererFactureUnique = async () => {
     const ht = netCleEnMain;
-    const tva = tarifMap['cle_en_main']?.tva || 20;
+    const tva = tvaTaux;
     const lignes = [{
       service_key: 'cle_en_main',
       label: 'Pack Clé en main',
@@ -105,7 +133,7 @@ export default function FacturationSection({ dossier }: Props) {
 
   const genererFactureJalon = async (jalon: any) => {
     const baseJalon = netCleEnMain * (Number(jalon.pourcentage) / 100);
-    const tva = tarifMap['cle_en_main']?.tva || 20;
+    const tva = tvaTaux;
     const lignes = [{
       service_key: 'cle_en_main',
       label: `Pack Clé en main — ${jalon.libelle} (${jalon.pourcentage}%)`,
@@ -131,10 +159,11 @@ export default function FacturationSection({ dossier }: Props) {
 
   const genererFactureService = async (k: ServiceKey) => {
     const t = tarifMap[k];
-    if (!t) { toast.error('Tarif introuvable'); return; }
+    if (!t || !t.tarif) { toast.error('Tarif introuvable pour ce service (barème)'); return; }
     const lignes = [{
       service_key: k,
       label: t.label,
+      detail: t.detail,
       tarif_base: t.tarif,
       remise_pct: 0,
       remise_montant: 0,
@@ -148,9 +177,11 @@ export default function FacturationSection({ dossier }: Props) {
     const lignes = serviceKeys.map(k => {
       const t = tarifMap[k];
       if (!t) return null;
+      if (!t.tarif) return null;
       return {
         service_key: k,
         label: t.label,
+        detail: t.detail,
         tarif_base: t.tarif,
         remise_pct: 0,
         remise_montant: 0,
@@ -217,6 +248,28 @@ export default function FacturationSection({ dossier }: Props) {
           {isCleEnMain ? 'Clé en main' : 'À la carte'}
         </Badge>
       </div>
+
+      {/* Bases de calcul du barème à paliers HUNTERS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-sm border bg-muted/40">
+        <div className="space-y-1">
+          <Label className="text-[10px] uppercase">Prix d'acquisition (chasse)</Label>
+          <Input type="number" value={prixBien} onChange={e => setPrixBien(Number(e.target.value))} />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-[10px] uppercase">Budget travaux (AMO)</Label>
+          <Input type="number" value={budgetTravaux} onChange={e => setBudgetTravaux(Number(e.target.value))} />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-[10px] uppercase">Budget décoration (déco)</Label>
+          <Input type="number" value={budgetDeco} onChange={e => setBudgetDeco(Number(e.target.value))} />
+        </div>
+        <p className="col-span-full text-[10px] text-muted-foreground italic">
+          Montants calculés depuis le barème à paliers HUNTERS. Conseil indexé sur le score de qualification
+          {(dossier as any).score_qualification != null ? ` (score ${(dossier as any).score_qualification})` : ''}.
+        </p>
+      </div>
+
+
 
       {isCleEnMain ? (
         <div className="space-y-4">
@@ -315,7 +368,7 @@ export default function FacturationSection({ dossier }: Props) {
               <div key={k} className="grid grid-cols-12 gap-2 items-center p-3 border rounded-sm">
                 <div className="col-span-12 sm:col-span-4">
                   <p className="text-sm font-semibold">{SERVICE_LABELS[k]}</p>
-                  <p className="text-[10px] text-muted-foreground">{fmtEur(t.tarif)} (tarif plein)</p>
+                  <p className="text-[10px] text-muted-foreground">{t.detail} — tarif plein</p>
                 </div>
                 <div className="col-span-6 sm:col-span-2">
                   <p className="text-[10px] uppercase text-muted-foreground">Net HT</p>

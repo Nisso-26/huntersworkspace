@@ -74,8 +74,8 @@ const VARIABLE_GROUPS: { label: string; icon: React.ElementType; color: string; 
     vars: [
       { key: '{{numero_dossier}}', desc: 'Référence dossier automatique' },
       { key: '{{date}}', desc: 'Date du jour' },
-      { key: '{{score_qualification}}', desc: 'Score client (0-10)' },
-      { key: '{{niveau_client}}', desc: 'standard / complexe / expert' },
+      { key: '{{score_qualification}}', desc: 'Score client (0-13)' },
+      { key: '{{niveau_client}}', desc: 'Standard (<3) / Complexe (3-5) / Expert (≥6)' },
       { key: '{{tarif_conseil}}', desc: 'Tarif conseil calculé en €' },
       { key: '{{services_liste}}', desc: 'Liste des services souscrits' },
     ],

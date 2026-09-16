@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Download, Save, Send, FileText, Loader2, CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useBaremesHunters, type BaremeHunters, type BaremeService } from '@/hooks/use-baremes-hunters';
+import { pickTranche, computeMontant } from '@/lib/baremes-hunters';
 import {
   useDevis, useSaveDevis, useUpdateDevisStatut, useEnvoyerDevis, useRenvoyerDevis,
   DEVIS_EMAIL_LABELS,
@@ -34,31 +35,7 @@ function toBase64(buf: ArrayBuffer) {
   return btoa(bin);
 }
 
-function pickTranche(rows: BaremeHunters[], service: BaremeService, base: number) {
-  return rows.find(r =>
-    r.service === service &&
-    base >= Number(r.tranche_min) &&
-    (r.tranche_max === null || base <= Number(r.tranche_max))
-  );
-}
-
-function computeMontant(t: BaremeHunters | undefined, base: number) {
-  if (!t) return { montant: 0, detail: 'Tranche non définie' };
-  const fixe = Number(t.valeur_fixe) || 0;
-  if (t.type === 'forfait') {
-    const m = Number(t.valeur) || fixe || 0;
-    return { montant: m, detail: `Forfait ${fmtPdfEur(m)}` };
-  }
-  const pct = Number(t.valeur) || 0;
-  const variable = (base * pct) / 100;
-  const m = fixe + variable;
-  return {
-    montant: m,
-    detail: fixe > 0
-      ? `${fmtPdfEur(fixe)} + ${pct}% × ${fmtPdfEur(base)} = ${fmtPdfEur(m)}`
-      : `${pct}% × ${fmtPdfEur(base)} = ${fmtPdfEur(m)}`,
-  };
-}
+// pickTranche / computeMontant : voir src/lib/baremes-hunters.ts
 
 const STATUT_VARIANT: Record<DevisStatut, 'secondary' | 'default' | 'destructive' | 'outline'> = {
   brouillon: 'outline',

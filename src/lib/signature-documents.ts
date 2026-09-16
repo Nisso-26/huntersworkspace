@@ -54,22 +54,8 @@ function v(x: string | undefined | null, fallback = '.....................'): st
   return s === '' ? fallback : s;
 }
 
-// ─── Barème chasse (identique à DevisGenerator) ──────────────────────────────
-export function pickTranche(rows: BaremeHunters[], service: BaremeService, base: number) {
-  return rows.find(
-    (r) =>
-      r.service === service &&
-      base >= Number(r.tranche_min) &&
-      (r.tranche_max === null || base <= Number(r.tranche_max)),
-  );
-}
-
-export function computeMontantBareme(t: BaremeHunters | undefined, base: number): number {
-  if (!t) return 0;
-  const fixe = Number(t.valeur_fixe) || 0;
-  if (t.type === 'forfait') return Number(t.valeur) || fixe || 0;
-  return fixe + (base * (Number(t.valeur) || 0)) / 100;
-}
+// ─── Barème : implémentation unique dans src/lib/baremes-hunters.ts ──────────
+export { pickTranche, computeMontantBareme } from '@/lib/baremes-hunters';
 
 /** Taux de TVA applicable (%) issu des paramètres société, repli légal 20%. */
 export function tvaRateFromSettings(company?: Partial<CompanySettings> | null): number {

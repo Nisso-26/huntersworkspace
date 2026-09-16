@@ -1,23 +1,9 @@
 import type { BaremeHunters } from '@/hooks/use-baremes-hunters';
 import type { CommissionService, ServiceMontant } from '@/lib/pipeline-transitions';
 
-/** Montant HT d'un service à partir du barème HUNTERS (tranches par base) */
-export function montantBareme(
-  baremes: BaremeHunters[],
-  service: CommissionService,
-  base: number
-): number {
-  const t = baremes.find(
-    (r) =>
-      r.service === service &&
-      base >= Number(r.tranche_min) &&
-      (r.tranche_max === null || base <= Number(r.tranche_max))
-  );
-  if (!t) return 0;
-  const fixe = Number(t.valeur_fixe) || 0;
-  if (t.type === 'forfait') return Number(t.valeur) || fixe || 0;
-  return fixe + (base * (Number(t.valeur) || 0)) / 100;
-}
+// Le calcul du barème vit dans src/lib/baremes-hunters.ts (implémentation unique).
+export { montantBareme } from '@/lib/baremes-hunters';
+import { montantBareme } from '@/lib/baremes-hunters';
 
 export interface DossierRepartition {
   budget?: number | null;

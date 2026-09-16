@@ -18,6 +18,7 @@ import {
 
 import { useCompanySettings } from '@/hooks/use-company-settings';
 import { fmtPdfEur } from '@/lib/pdf-utils';
+import { signataireHunters } from '@/lib/mandataire-signature';
 import type { Dossier } from '@/hooks/use-dossiers';
 import {
   C, T, LAYOUT,
@@ -370,9 +371,11 @@ export default function DevisGenerator({ dossier }: { dossier: Dossier }) {
       sanitizePdfText(dossier.client_name || ''), 'Client',
       'Signature client',
     );
+    // Mandataire du dossier — jamais l'utilisateur connecté, jamais un nom en dur.
+    const sigHunters = signataireHunters(dossier);
     drawSignatureZone(
       doc, marginL + contentW / 2 + 6, y, sigW,
-      'Anais SAIZONOU', 'Conseiller HUNTERS Immobilier',
+      sanitizePdfText(sigHunters.nom), sigHunters.qualite,
       'Pour HUNTERS Immobilier',
     );
 

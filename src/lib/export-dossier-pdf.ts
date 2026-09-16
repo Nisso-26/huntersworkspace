@@ -65,7 +65,7 @@ export async function exportFicheClient(dossier: Dossier) {
     titre: sanitizePdfText(dossier.client_name || 'Client'),
     sousTitre: 'Synthese de votre dossier investissement',
     client: sanitizePdfText(dossier.client_name || ''),
-    conseiller: sanitizePdfText((dossier as any).mandataire_name || 'HUNTERS Immobilier'),
+    conseiller: sanitizePdfText(mentionMandataireHunters(dossier)),
     refDossier: ref,
     date: today(),
     confidentiel: false,
@@ -260,7 +260,7 @@ export async function exportDossierIntegral(dossier: Dossier) {
     titre: 'Dossier integral',
     sousTitre: `Vue exhaustive du dossier de ${sanitizePdfText(dossier.client_name || '')}`,
     client: sanitizePdfText(dossier.client_name || ''),
-    conseiller: sanitizePdfText((dossier as any).mandataire_name || 'HUNTERS Immobilier'),
+    conseiller: sanitizePdfText(mentionMandataireHunters(dossier)),
     refDossier: ref,
     date: today(),
     confidentiel: true,
@@ -485,10 +485,11 @@ export async function exportDossierIntegral(dossier: Dossier) {
     'Client',
     'Signature client',
   );
+  const sigHunters = signataireHunters(dossier);
   drawSignatureZone(
     doc, margin + contentW / 2 + 6, y, contentW / 2 - 6,
-    sanitizePdfText((dossier as any).mandataire_name || 'Anais SAIZONOU'),
-    'Conseiller HUNTERS Immobilier',
+    sanitizePdfText(sigHunters.nom),
+    sigHunters.qualite,
     'Signature conseiller',
   );
 

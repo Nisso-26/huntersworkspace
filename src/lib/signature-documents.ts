@@ -56,6 +56,7 @@ function v(x: string | undefined | null, fallback = '.....................'): st
 
 // ─── Barème : implémentation unique dans src/lib/baremes-hunters.ts ──────────
 export { pickTranche, computeMontantBareme } from '@/lib/baremes-hunters';
+import { pickTranche, computeMontantBareme } from '@/lib/baremes-hunters';
 
 /** Taux de TVA applicable (%) issu des paramètres société, repli légal 20%. */
 export function tvaRateFromSettings(company?: Partial<CompanySettings> | null): number {

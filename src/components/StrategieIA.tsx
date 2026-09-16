@@ -45,33 +45,24 @@ export default function StrategieIA({ dossier }: Props) {
   const rawText = parsed.rawText;
 
 
-  const [form, setForm] = useState({
-    age: '',
-    situation_familiale: '',
-    enfants: '0',
-    profession: '',
-    statut_pro: '',
-    revenus_nets_mensuels: '',
-    revenus_conjoint_mensuels: '',
-    autres_revenus_mensuels: '',
-    tmi: '',
-    charges_mensuelles: '',
-    mensualites_credits: '',
-    loyer_mensuel: '',
-    epargne_disponible: '',
-    capacite_epargne: '',
-    patrimoine_immo: '',
-    taux_credit: '3.8',
-    duree_credit: '20',
-    objectifs: '',
-    horizon: '',
-    revenu_cible: '',
-    implication: '',
-    tolerance_risque: '',
-    zones_souhaitees: '',
-    types_biens: '',
-    delai_decision: '',
-  });
+  // Pré-remplissage depuis la fiche dossier (source unique). Les modifications
+  // faites ici restent locales à cette génération : aucune écriture vers `dossiers`.
+  const initial = useMemo(() => prefillStrategieForm(dossier as any), [dossier]);
+  const [form, setForm] = useState<StrategieFormValues>(initial.values);
+  const prefilled = initial.prefilled;
+  const lastDossierId = useRef(dossier.id);
+
+  useEffect(() => {
+    if (lastDossierId.current !== dossier.id) {
+      lastDossierId.current = dossier.id;
+      setForm(initial.values);
+    }
+  }, [dossier.id, initial.values]);
+
+  const mark = (k: keyof StrategieFormValues) =>
+    prefilled.has(k) ? (
+      <span title="Repris de la fiche dossier" className="ml-1 text-accent align-middle">•</span>
+    ) : null;
 
   const handleExportPdf = async () => {
     if (!strategie) return;

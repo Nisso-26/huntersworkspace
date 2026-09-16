@@ -233,7 +233,9 @@ export default function OnboardingWizard({ onComplete }: Props) {
           siret: form.siret || null,
         });
       }
-      await supabase.from('profiles').update(profileFields as any).eq('id', user.id);
+      const { error: profileError } = await supabase.from('profiles').update(profileFields as any).eq('id', user.id);
+      if (profileError) console.error('Onboarding profile update failed', profileError);
+
 
     } catch (e) {
       // silencieux — réessai au prochain changement

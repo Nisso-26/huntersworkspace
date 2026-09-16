@@ -272,7 +272,9 @@ export default function OnboardingWizard({ onComplete }: Props) {
         return ibanOk && siretOk && form.accept_pack;
       }
       case 'zone':
-        return zones.length > 0 && form.accept_zone && form.accept_prescripteurs && form.accept_objectifs && form.accept_encaissement;
+        // L'affectation de zone est faite par le Directeur et peut arriver après
+        // l'activation : elle ne doit pas bloquer l'activation du compte.
+        return form.accept_zone && form.accept_prescripteurs && form.accept_objectifs && form.accept_encaissement;
       default:
         return false;
     }

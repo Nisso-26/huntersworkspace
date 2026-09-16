@@ -2064,6 +2064,7 @@ export type Database = {
           status: string | null
           statut_juridique: string | null
           suspendu: boolean
+          telephone: string | null
           updated_at: string
           zone: string | null
           zone_acceptee: boolean
@@ -2103,6 +2104,7 @@ export type Database = {
           status?: string | null
           statut_juridique?: string | null
           suspendu?: boolean
+          telephone?: string | null
           updated_at?: string
           zone?: string | null
           zone_acceptee?: boolean
@@ -2142,6 +2144,7 @@ export type Database = {
           status?: string | null
           statut_juridique?: string | null
           suspendu?: boolean
+          telephone?: string | null
           updated_at?: string
           zone?: string | null
           zone_acceptee?: boolean

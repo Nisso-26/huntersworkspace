@@ -191,15 +191,15 @@ export default function StrategieIA({ dossier }: Props) {
       {/* Formulaire de saisie */}
       {showForm && (
         <div className="bg-secondary/30 rounded-lg p-4 space-y-4 border">
-          <p className="text-xs text-muted-foreground">Complétez le profil financier du client pour une stratégie précise. Les champs marqués * sont importants.</p>
+          <p className="text-xs text-muted-foreground">Complétez le profil financier du client pour une stratégie précise. Les champs marqués * sont importants. Les champs suivis d'un <span className="text-accent">•</span> sont repris de la fiche dossier ; vous pouvez les ajuster ici sans modifier la fiche.</p>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-xs">Âge *</Label>
+              <Label className="text-xs">Âge *{mark('age')}</Label>
               <Input type="number" placeholder="42" value={form.age} onChange={e => setForm(f => ({ ...f, age: e.target.value }))} className="h-8 text-sm" />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Situation familiale</Label>
+              <Label className="text-xs">Situation familiale{mark('situation_familiale')}</Label>
               <Select value={form.situation_familiale} onValueChange={v => setForm(f => ({ ...f, situation_familiale: v }))}>
                 <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Choisir" /></SelectTrigger>
                 <SelectContent>
@@ -210,11 +210,11 @@ export default function StrategieIA({ dossier }: Props) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Enfants à charge</Label>
+              <Label className="text-xs">Enfants à charge{mark('enfants')}</Label>
               <Input type="number" placeholder="0" value={form.enfants} onChange={e => setForm(f => ({ ...f, enfants: e.target.value }))} className="h-8 text-sm" />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">TMI (%) *</Label>
+              <Label className="text-xs">TMI (%) *{mark('tmi')}</Label>
               <Select value={form.tmi} onValueChange={v => setForm(f => ({ ...f, tmi: v }))}>
                 <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="%" /></SelectTrigger>
                 <SelectContent>
@@ -225,11 +225,11 @@ export default function StrategieIA({ dossier }: Props) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Profession</Label>
+              <Label className="text-xs">Profession{mark('profession')}</Label>
               <Input placeholder="Cadre supérieur" value={form.profession} onChange={e => setForm(f => ({ ...f, profession: e.target.value }))} className="h-8 text-sm" />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Statut professionnel</Label>
+              <Label className="text-xs">Statut professionnel{mark('statut_pro')}</Label>
               <Select value={form.statut_pro} onValueChange={v => setForm(f => ({ ...f, statut_pro: v }))}>
                 <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Choisir" /></SelectTrigger>
                 <SelectContent>
@@ -245,27 +245,27 @@ export default function StrategieIA({ dossier }: Props) {
             <p className="text-xs font-semibold text-foreground mb-2">Finances (€/mois)</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs">Revenus nets *</Label>
+                <Label className="text-xs">Revenus nets *{mark('revenus_nets_mensuels')}</Label>
                 <Input type="number" placeholder="4500" value={form.revenus_nets_mensuels} onChange={e => setForm(f => ({ ...f, revenus_nets_mensuels: e.target.value }))} className="h-8 text-sm" />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Revenus conjoint</Label>
+                <Label className="text-xs">Revenus conjoint{mark('revenus_conjoint_mensuels')}</Label>
                 <Input type="number" placeholder="0" value={form.revenus_conjoint_mensuels} onChange={e => setForm(f => ({ ...f, revenus_conjoint_mensuels: e.target.value }))} className="h-8 text-sm" />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Charges courantes</Label>
+                <Label className="text-xs">Charges courantes{mark('charges_mensuelles')}</Label>
                 <Input type="number" placeholder="1200" value={form.charges_mensuelles} onChange={e => setForm(f => ({ ...f, charges_mensuelles: e.target.value }))} className="h-8 text-sm" />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Mensualités crédits</Label>
+                <Label className="text-xs">Mensualités crédits{mark('mensualites_credits')}</Label>
                 <Input type="number" placeholder="500" value={form.mensualites_credits} onChange={e => setForm(f => ({ ...f, mensualites_credits: e.target.value }))} className="h-8 text-sm" />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Épargne disponible (€)</Label>
+                <Label className="text-xs">Épargne disponible (€){mark('epargne_disponible')}</Label>
                 <Input type="number" placeholder="30000" value={form.epargne_disponible} onChange={e => setForm(f => ({ ...f, epargne_disponible: e.target.value }))} className="h-8 text-sm" />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Capacité épargne/mois</Label>
+                <Label className="text-xs">Capacité épargne/mois{mark('capacite_epargne')}</Label>
                 <Input type="number" placeholder="800" value={form.capacite_epargne} onChange={e => setForm(f => ({ ...f, capacite_epargne: e.target.value }))} className="h-8 text-sm" />
               </div>
               <div className="space-y-1">
@@ -273,7 +273,7 @@ export default function StrategieIA({ dossier }: Props) {
                 <Input type="number" step="0.1" placeholder="3.8" value={form.taux_credit} onChange={e => setForm(f => ({ ...f, taux_credit: e.target.value }))} className="h-8 text-sm" />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Durée crédit (ans)</Label>
+                <Label className="text-xs">Durée crédit (ans){mark('duree_credit')}</Label>
                 <Input type="number" placeholder="20" value={form.duree_credit} onChange={e => setForm(f => ({ ...f, duree_credit: e.target.value }))} className="h-8 text-sm" />
               </div>
             </div>
@@ -283,11 +283,11 @@ export default function StrategieIA({ dossier }: Props) {
             <p className="text-xs font-semibold text-foreground mb-2">Objectifs & contraintes</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1 col-span-2">
-                <Label className="text-xs">Objectifs *</Label>
+                <Label className="text-xs">Objectifs *{mark('objectifs')}</Label>
                 <Textarea placeholder="Revenus complémentaires, défiscalisation, constitution de patrimoine..." value={form.objectifs} onChange={e => setForm(f => ({ ...f, objectifs: e.target.value }))} rows={2} className="text-sm" />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Horizon</Label>
+                <Label className="text-xs">Horizon{mark('horizon')}</Label>
                 <Select value={form.horizon} onValueChange={v => setForm(f => ({ ...f, horizon: v }))}>
                   <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Choisir" /></SelectTrigger>
                   <SelectContent>
@@ -302,7 +302,7 @@ export default function StrategieIA({ dossier }: Props) {
                 <Input type="number" placeholder="500" value={form.revenu_cible} onChange={e => setForm(f => ({ ...f, revenu_cible: e.target.value }))} className="h-8 text-sm" />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Tolérance au risque</Label>
+                <Label className="text-xs">Tolérance au risque{mark('tolerance_risque')}</Label>
                 <Select value={form.tolerance_risque} onValueChange={v => setForm(f => ({ ...f, tolerance_risque: v }))}>
                   <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Choisir" /></SelectTrigger>
                   <SelectContent>
@@ -313,7 +313,7 @@ export default function StrategieIA({ dossier }: Props) {
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Zones souhaitées</Label>
+                <Label className="text-xs">Zones souhaitées{mark('zones_souhaitees')}</Label>
                 <Input placeholder="Tours, Lyon, Paris..." value={form.zones_souhaitees} onChange={e => setForm(f => ({ ...f, zones_souhaitees: e.target.value }))} className="h-8 text-sm" />
               </div>
             </div>

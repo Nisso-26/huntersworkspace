@@ -63,7 +63,7 @@ export const sousStatutColors: Record<string, string> = {
   en_attente_partenaire: 'bg-hunters-info/15 text-hunters-info',
   valide_quitus: 'bg-hunters-success/15 text-hunters-success',
   invalide_motive: 'bg-destructive/15 text-destructive',
-  corrige_auto_valide: 'bg-hunters-success/15 text-hunters-success',
+  corrige_en_attente_validation: 'bg-hunters-success/15 text-hunters-success',
   conteste_escalade: 'bg-hunters-warning/15 text-hunters-warning',
 };
 

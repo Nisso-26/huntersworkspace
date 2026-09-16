@@ -12,6 +12,7 @@ import NouveauDocumentButton from '@/components/NouveauDocumentButton';
 import DocumentsContractuelsList from '@/components/DocumentsContractuelsList';
 import SignatureHuntersSection from '@/components/SignatureHuntersSection';
 import ClientPortalSection, { ClientComments } from '@/components/ClientPortalSection';
+import PortailPartenaireSection from '@/components/PortailPartenaireSection';
 import StrategieIA from '@/components/StrategieIA';
 import GrilleControleAnalyste from '@/components/GrilleControleAnalyste';
 import { BadgeStatutGrille } from '@/components/BadgeStatutGrille';
@@ -392,6 +393,9 @@ export default function DossierDetail() {
           <TabsContent value="portail" className="mt-4 space-y-4">
             <div className="bg-card border rounded-xl p-6">
               <ClientPortalSection dossierId={dossier.id} clientName={form.client_name} />
+            </div>
+            <div className="bg-card border rounded-xl p-6">
+              <PortailPartenaireSection dossier={dossier as any} />
             </div>
             <div className="bg-card border rounded-xl p-6">
               <p className="text-sm font-semibold text-foreground mb-3">💬 Commentaires client</p>

@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Receipt, FileText, Plus, Trash2, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
-import { useTarifsServices } from '@/hooks/use-tarifs-services';
+import { useBaremesHunters } from '@/hooks/use-baremes-hunters';
+import { pickTranche, computeMontant } from '@/lib/baremes-hunters';
 import { useJalons, useSaveJalons, useUpdateJalon } from '@/hooks/use-jalons';
 import { useCreateFacture, generateFacturePDF } from '@/hooks/use-factures';
 import { useCompanySettings } from '@/hooks/use-company-settings';

@@ -1,6 +1,7 @@
 import HelpTip from '@/components/HelpTip';
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { prefillStrategieForm, type StrategieFormValues } from '@/lib/strategie-prefill';
+import { prefillStrategieForm, strategieFormToDossierPatch, type StrategieFormValues } from '@/lib/strategie-prefill';
+import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { Dossier } from '@/hooks/use-dossiers';
 import { useUpdateDossier } from '@/hooks/use-dossiers';
@@ -52,11 +53,14 @@ export default function StrategieIA({ dossier }: Props) {
   const [form, setForm] = useState<StrategieFormValues>(initial.values);
   const prefilled = initial.prefilled;
   const lastDossierId = useRef(dossier.id);
+  // Report vers la fiche dossier : toujours à l'initiative du mandataire.
+  const [syncToDossier, setSyncToDossier] = useState(false);
 
   useEffect(() => {
     if (lastDossierId.current !== dossier.id) {
       lastDossierId.current = dossier.id;
       setForm(initial.values);
+      setSyncToDossier(false);
     }
   }, [dossier.id, initial.values]);
 
@@ -96,7 +100,12 @@ export default function StrategieIA({ dossier }: Props) {
       if (!res.data?.ok) throw new Error(res.data?.error || 'Erreur de génération');
 
       const strategieJson = JSON.stringify(res.data.strategie);
-      await updateMut.mutateAsync({ id: dossier.id, strategie: strategieJson });
+      // Report explicite des valeurs corrigées vers la fiche dossier (opt-in uniquement).
+      const patch = syncToDossier ? strategieFormToDossierPatch(form) : {};
+      await updateMut.mutateAsync({ id: dossier.id, strategie: strategieJson, ...patch } as any);
+      if (syncToDossier && Object.keys(patch).length > 0) {
+        toast.success('Fiche dossier mise à jour avec ces valeurs');
+      }
 
       // Snapshot figé : on archive les valeurs d'entrée utilisées pour cette génération,
       // afin qu'une relecture ultérieure ne dépende pas de l'état courant du dossier.
@@ -317,6 +326,21 @@ export default function StrategieIA({ dossier }: Props) {
                 <Input placeholder="Tours, Lyon, Paris..." value={form.zones_souhaitees} onChange={e => setForm(f => ({ ...f, zones_souhaitees: e.target.value }))} className="h-8 text-sm" />
               </div>
             </div>
+          </div>
+
+          <div className="flex items-start gap-2 rounded border bg-secondary/20 p-2.5 mt-2">
+            <Checkbox
+              id="sync-fiche-dossier"
+              checked={syncToDossier}
+              onCheckedChange={v => setSyncToDossier(v === true)}
+              className="mt-0.5"
+            />
+            <Label htmlFor="sync-fiche-dossier" className="text-xs font-normal leading-relaxed cursor-pointer">
+              Mettre à jour la fiche dossier avec ces valeurs
+              <span className="block text-muted-foreground">
+                Sans cette option, vos corrections ne servent qu'à cette génération et la fiche client reste inchangée.
+              </span>
+            </Label>
           </div>
 
           <div className="flex gap-2 pt-2">

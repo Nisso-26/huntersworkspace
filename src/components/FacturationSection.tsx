@@ -118,7 +118,7 @@ export default function FacturationSection({ dossier }: Props) {
 
   const genererFactureUnique = async () => {
     const ht = netCleEnMain;
-    const tva = tarifMap['cle_en_main']?.tva || 20;
+    const tva = tvaTaux;
     const lignes = [{
       service_key: 'cle_en_main',
       label: 'Pack Clé en main',
@@ -133,7 +133,7 @@ export default function FacturationSection({ dossier }: Props) {
 
   const genererFactureJalon = async (jalon: any) => {
     const baseJalon = netCleEnMain * (Number(jalon.pourcentage) / 100);
-    const tva = tarifMap['cle_en_main']?.tva || 20;
+    const tva = tvaTaux;
     const lignes = [{
       service_key: 'cle_en_main',
       label: `Pack Clé en main — ${jalon.libelle} (${jalon.pourcentage}%)`,
@@ -159,10 +159,11 @@ export default function FacturationSection({ dossier }: Props) {
 
   const genererFactureService = async (k: ServiceKey) => {
     const t = tarifMap[k];
-    if (!t) { toast.error('Tarif introuvable'); return; }
+    if (!t || !t.tarif) { toast.error('Tarif introuvable pour ce service (barème)'); return; }
     const lignes = [{
       service_key: k,
       label: t.label,
+      detail: t.detail,
       tarif_base: t.tarif,
       remise_pct: 0,
       remise_montant: 0,

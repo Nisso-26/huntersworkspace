@@ -53,7 +53,7 @@ export const sousStatutLabels: Record<string, string> = {
   en_attente_partenaire: 'En attente partenaire',
   valide_quitus: 'Validé — quitus partenaire',
   invalide_motive: 'Invalidé — motivé',
-  corrige_auto_valide: 'Corrigé et auto-validé',
+  corrige_en_attente_validation: 'Corrigé — en attente de revalidation partenaire',
   conteste_escalade: 'Contesté — escaladé Direction',
 };
 

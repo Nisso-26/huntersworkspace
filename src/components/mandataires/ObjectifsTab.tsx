@@ -13,7 +13,7 @@ import {
 const MOIS = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
 
 function StatutBadge({ s }: { s: ObjectifTrimestriel['statut'] }) {
-  if (s === 'atteint') return <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-hunters-success/10 text-hunters-success"><CheckCircle2 className="w-3 h-3"/>Objectif atteint</span>;
+  if (s === 'atteint') return <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-hunters-success/10 text-hunters-success"><CheckCircle2 className="w-3 h-3"/>Cible atteinte</span>;
   if (s === 'insuffisant') return <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-destructive/10 text-destructive"><XCircle className="w-3 h-3"/>Insuffisant</span>;
   return <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-hunters-warning/10 text-hunters-warning"><Clock className="w-3 h-3"/>En cours</span>;
 }
@@ -63,8 +63,9 @@ export default function ObjectifsTab({ mandataireId, canEdit = false }: { mandat
   return (
     <div className="space-y-5">
       {/* Bannière permanente */}
-      <div className="p-3 rounded-sm border-2 border-destructive bg-destructive/5 text-sm text-destructive font-medium">
-        ⚠️ Rappel : le conseil patrimonial est facturé au tarif plein — aucune remise autorisée, y compris en pack clé en main.
+      <div className="p-3 rounded-sm border border-hunters-warning/40 bg-hunters-creme/60 text-sm text-foreground font-medium flex items-start gap-2">
+        <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-hunters-warning" />
+        <span>Rappel : le conseil patrimonial est facturé au tarif plein — aucune remise autorisée, y compris en pack clé en main.</span>
       </div>
 
       {/* Badge leads bloqués */}
@@ -82,21 +83,21 @@ export default function ObjectifsTab({ mandataireId, canEdit = false }: { mandat
             <h3 className="font-heading font-semibold flex items-center gap-2">
               T{obj.trimestre} {obj.annee}
               <HelpTip
-                title="Objectifs du trimestre"
-                intro="Chaque conseiller a trois objectifs sur trois mois : un chiffre d'affaires, un nombre de mandats signés et un nombre de conseils lancés."
+                title="Cibles trimestrielles recommandées"
+                intro="Chaque conseiller dispose de trois repères recommandés sur trois mois : chiffre d'affaires, mandats signés et conseils lancés."
                 points={[
-                  { label: 'Les barres', text: "elles montrent où vous en êtes par rapport à l'objectif. Elles se remplissent automatiquement avec vos dossiers." },
+                  { label: 'Les barres', text: "elles montrent où vous en êtes par rapport à la cible recommandée. Elles se remplissent automatiquement avec vos dossiers." },
                   { label: 'Trimestre raté', text: "cela arrive et ne pose pas de problème en soi. C'est la répétition qui compte." },
                   { label: 'Leads bloqués', text: "après plusieurs trimestres ratés d'affilée, l'envoi de nouveaux contacts est suspendu. Il reprend dès qu'un trimestre est atteint." },
                 ]}
-                note="Les objectifs se clôturent automatiquement à la fin du trimestre : rien à faire de votre côté."
+                note="Les indicateurs se clôturent automatiquement à la fin du trimestre : rien à faire de votre côté."
               />
             </h3>
           </div>
           <StatutBadge s={obj.statut} />
         </div>
         <div className="space-y-3">
-          <Bar label="CA généré" value={obj.ca_realise} target={obj.ca_objectif} suffix=" €" />
+          <Bar label="CA trimestriel recommandé" value={obj.ca_realise} target={obj.ca_objectif} suffix=" €" />
           <Bar label="Mandats signés" value={obj.mandats_realises} target={obj.mandats_objectif} />
           <div className="space-y-1">
             <Bar label="Conseils initiés ce trimestre" value={obj.conseils_realises} target={obj.conseils_objectif} />

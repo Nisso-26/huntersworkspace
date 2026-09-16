@@ -48,8 +48,9 @@ export default function ObjectifsReseauTable() {
   return (
     <div className="space-y-4">
       {/* Bannière politique de prix */}
-      <div className="p-3 rounded-sm border-2 border-destructive bg-destructive/5 text-sm text-destructive font-medium">
-        ⚠️ Politique de prix : le conseil patrimonial se facture toujours au tarif plein. Aucune remise autorisée, y compris en pack clé en main.
+      <div className="p-3 rounded-sm border border-hunters-warning/40 bg-hunters-creme/60 text-sm text-foreground font-medium flex items-start gap-2">
+        <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-hunters-warning" />
+        <span>Politique de prix : le conseil patrimonial se facture toujours au tarif plein. Aucune remise autorisée, y compris en pack clé en main.</span>
       </div>
 
       {/* Alertes prioritaires */}
@@ -75,7 +76,7 @@ export default function ObjectifsReseauTable() {
 
       <div className="bg-card rounded-xl border border-border/60 shadow-card overflow-hidden">
         <div className="px-5 py-3 border-b border-border/50 flex items-center justify-between gap-2">
-          <h2 className="font-heading font-semibold text-sm">Objectifs du trimestre — Réseau</h2>
+          <h2 className="font-heading font-semibold text-sm">Cibles trimestrielles recommandées — Réseau</h2>
           {isAdmin && (
             <Button size="sm" variant="outline" onClick={handleCompute} disabled={computing}>
               <RefreshCw className={cn('w-3.5 h-3.5 mr-1.5', computing && 'animate-spin')} />
@@ -88,7 +89,7 @@ export default function ObjectifsReseauTable() {
             <TableRow>
               <TableHead>Mandataire</TableHead>
               <TableHead>Niveau</TableHead>
-              <TableHead>CA trimestre</TableHead>
+              <TableHead>CA recommandé</TableHead>
               <TableHead>Mandats</TableHead>
               <TableHead>Conseils</TableHead>
               <TableHead>Statut</TableHead>

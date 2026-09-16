@@ -86,7 +86,6 @@ type FormData = {
   // Étape 5
   accept_zone: boolean;
   accept_prescripteurs: boolean;
-  accept_objectifs: boolean;
   accept_encaissement: boolean;
 };
 
@@ -110,7 +109,6 @@ const EMPTY_FORM: FormData = {
   accept_pack: false,
   accept_zone: false,
   accept_prescripteurs: false,
-  accept_objectifs: false,
   accept_encaissement: false,
 };
 
@@ -283,7 +281,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
       case 'zone':
         // L'affectation de zone est faite par le Directeur et peut arriver après
         // l'activation : elle ne doit pas bloquer l'activation du compte.
-        return form.accept_zone && form.accept_prescripteurs && form.accept_objectifs && form.accept_encaissement;
+        return form.accept_zone && form.accept_prescripteurs && form.accept_encaissement;
       default:
         return false;
     }
@@ -826,25 +824,7 @@ function StepZoneActivation({
         </label>
       </section>
 
-      {/* 5.3 — Objectifs */}
-      <section className="space-y-3">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Objectifs contractuels</h3>
-        <div className="rounded-md border border-hunters-success/40 bg-hunters-success/5 p-4 text-sm space-y-2">
-          <p className="font-semibold">Vos objectifs dès le 1er jour — applicables sans période de carence</p>
-          <ul className="list-disc list-inside space-y-0.5">
-            <li>CA HT : 20 000 € / trimestre</li>
-            <li>Mandats signés : 2 / trimestre</li>
-            <li>Conseil patrimonial : 1 rapport / mois</li>
-          </ul>
-          <p>Ces 3 indicateurs sont cumulatifs. Un trimestre est ATTEINT uniquement si les 3 sont au vert simultanément.</p>
-        </div>
-        <label className="flex items-start gap-3 cursor-pointer">
-          <Checkbox checked={form.accept_objectifs} onCheckedChange={(c) => setField('accept_objectifs', c === true)} className="mt-1" />
-          <span className="text-sm">Je comprends que les 3 objectifs sont cumulatifs et applicables dès le 1er jour, sans période de carence.</span>
-        </label>
-      </section>
-
-      {/* 5.4 — Politique de prix */}
+      {/* 5.3 — Politique de prix */}
       <section>
         <div className="rounded-md border-2 border-destructive bg-destructive/5 p-4 text-sm flex gap-2">
           <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
@@ -855,7 +835,7 @@ function StepZoneActivation({
         </div>
       </section>
 
-      {/* 5.5 — Interdiction d'encaissement */}
+      {/* 5.4 — Interdiction d'encaissement */}
       <section className="space-y-3">
         <div className="rounded-md border-2 border-destructive bg-destructive/5 p-4 text-sm space-y-2">
           <p className="font-bold flex items-center gap-2 text-destructive">⚠️ Rappel légal obligatoire</p>

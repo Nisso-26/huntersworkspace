@@ -78,15 +78,17 @@ function splitSections(markdown: string): string[] {
 
 
 export default function RapportConseilButton({ dossier }: Props) {
-  const { user, role } = useAuth();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState<string[]>(() => SECTION_TITLES.map(() => ''));
   const [regenIdx, setRegenIdx] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
 
-  const conseillerNom   = (user?.user_metadata as any)?.full_name || user?.email || 'Hunters Immobilier';
-  const conseillerTitre = roleToTitle(role);
+  // Mandataire assigné au dossier — jamais l'utilisateur qui clique.
+  const mandataireNom   = mandataireNomDossier(dossier);
+  const conseillerNom   = mandataireNom || HUNTERS_LABEL;
+  const conseillerTitre = mandataireNom ? QUALITE_MANDATAIRE : 'Pour HUNTERS Immobilier';
+  const conseillerCouverture = mentionMandataireHuntersFromNom(mandataireNom);
 
   const strategie: StrategieData | null = useMemo(
     () => parseStrategie(dossier.strategie).strategie,

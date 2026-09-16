@@ -28,24 +28,62 @@ export default function ResetPassword() {
       return {
         access_token: get('access_token'),
         refresh_token: get('refresh_token'),
+        token_hash: get('token_hash') ?? get('token'),
+        code: get('code'),
         type: get('type'),
+        error_code: get('error_code') ?? get('error'),
       };
     };
 
     const init = async () => {
-      const { access_token, refresh_token, type } = parseParams();
+      const { access_token, refresh_token, token_hash, code, type, error_code } = parseParams();
 
-      if ((type === 'invite' || type === 'recovery') && access_token && refresh_token) {
-        const { error } = await supabase.auth.setSession({ access_token, refresh_token });
-        if (!error) {
-          setMode(type === 'invite' ? 'invite' : 'recovery');
-          setReady(true);
-        }
+      if (type === 'invite' || type === 'recovery') {
+        setMode(type === 'invite' ? 'invite' : 'recovery');
       }
+
+      // 1) Le client Supabase consomme automatiquement le token présent dans l'URL
+      // (detectSessionInUrl). Si une session existe déjà, ne PAS retenter de
+      // vérifier le token : il est déjà consommé et un second appel échouerait.
+      const { data: { session: existing } } = await supabase.auth.getSession();
+      if (existing) {
+        setReady(true);
+        setChecking(false);
+        return;
+      }
+
+      // Lien réellement en erreur signalé par Supabase (expiré, déjà utilisé...)
+      if (error_code) {
+        setChecking(false);
+        return;
+      }
+
+      // 2) Pas de session : on tente la vérification manuelle selon le format du lien.
+      if (access_token && refresh_token) {
+        const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+        if (!error) setReady(true);
+      } else if (token_hash) {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash,
+          type: type === 'invite' ? 'invite' : 'recovery',
+        });
+        if (!error) setReady(true);
+      } else if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!error) setReady(true);
+      }
+
+      // 3) Petite tolérance : la détection automatique peut se terminer juste après.
+      if (!ready) {
+        const { data: { session: late } } = await supabase.auth.getSession();
+        if (late) setReady(true);
+      }
+
       setChecking(false);
     };
 
     init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleUpdate = async (e: React.FormEvent) => {

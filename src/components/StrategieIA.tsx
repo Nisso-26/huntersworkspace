@@ -53,11 +53,14 @@ export default function StrategieIA({ dossier }: Props) {
   const [form, setForm] = useState<StrategieFormValues>(initial.values);
   const prefilled = initial.prefilled;
   const lastDossierId = useRef(dossier.id);
+  // Report vers la fiche dossier : toujours à l'initiative du mandataire.
+  const [syncToDossier, setSyncToDossier] = useState(false);
 
   useEffect(() => {
     if (lastDossierId.current !== dossier.id) {
       lastDossierId.current = dossier.id;
       setForm(initial.values);
+      setSyncToDossier(false);
     }
   }, [dossier.id, initial.values]);
 

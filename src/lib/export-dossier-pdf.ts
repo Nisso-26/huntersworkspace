@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Dossier } from '@/hooks/use-dossiers';
 import { SERVICE_LABELS, getWorkflowSteps } from '@/lib/workflow';
 import { fmtPdfEur } from '@/lib/pdf-utils';
+import { signataireHunters, mentionMandataireHunters } from '@/lib/mandataire-signature';
 import {
   C, LAYOUT,
   loadLogo, drawHeader, drawFooter,

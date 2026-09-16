@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import { fmtPdfEur, fmtPdfNum } from '@/lib/pdf-utils';
 import { interpolate } from '@/lib/document-template';
+import { signataireHuntersFromNom } from '@/lib/mandataire-signature';
 import type { ModeleSection } from '@/hooks/use-modeles-documents';
 import type { CompanySettings } from '@/hooks/use-company-settings';
 import {

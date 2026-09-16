@@ -1,5 +1,6 @@
 import HelpTip from '@/components/HelpTip';
-import { useState } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { prefillStrategieForm, type StrategieFormValues } from '@/lib/strategie-prefill';
 import { supabase } from '@/integrations/supabase/client';
 import { Dossier } from '@/hooks/use-dossiers';
 import { useUpdateDossier } from '@/hooks/use-dossiers';

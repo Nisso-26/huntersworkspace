@@ -4,6 +4,7 @@ import {
   drawHeader, drawFooter, drawSectionTitle, drawCoverPage,
   ensureSpace, loadLogo, bodyStartY, sanitizePdfText,
 } from '@/lib/pdf-design-system';
+import { HUNTERS_LABEL } from '@/lib/mandataire-signature';
 
 export type ScopeKind = 'financement' | 'montage';
 

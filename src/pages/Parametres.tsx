@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Bell, Building2, Receipt, Network, FileText, History, UserPlus, Tag,
+  Bell, Building2, Receipt, Network, FileText, History, UserPlus,
   MapPin, ShieldCheck, Target,
 } from 'lucide-react';
 
@@ -19,7 +19,6 @@ const ModeleEconomique = lazy(() => import('@/components/parametres/ModeleEconom
 const ModelesDocuments = lazy(() => import('@/components/parametres/ModelesDocuments'));
 const NotificationsSection = lazy(() => import('@/components/parametres/NotificationsSection'));
 const JournalAudit = lazy(() => import('@/components/parametres/JournalAudit'));
-const TarifsServices = lazy(() => import('@/components/parametres/TarifsServices'));
 
 // Sections mandataire (lecture de ses propres données)
 const ZonesTab = lazy(() => import('@/components/mandataires/ZonesTab'));
@@ -69,7 +68,6 @@ export default function Parametres() {
               <TabsTrigger value="identite"><Building2 className="w-4 h-4 mr-1" />Société</TabsTrigger>
               <TabsTrigger value="honoraires"><Receipt className="w-4 h-4 mr-1" />Honoraires</TabsTrigger>
               <TabsTrigger value="economique"><Network className="w-4 h-4 mr-1" />Réseau</TabsTrigger>
-              <TabsTrigger value="tarifs"><Tag className="w-4 h-4 mr-1" />Tarifs des services</TabsTrigger>
               <TabsTrigger value="documents"><FileText className="w-4 h-4 mr-1" />Documents</TabsTrigger>
               <TabsTrigger value="notifications"><Bell className="w-4 h-4 mr-1" />Alertes</TabsTrigger>
               <TabsTrigger value="audit"><History className="w-4 h-4 mr-1" />Journal</TabsTrigger>
@@ -84,7 +82,6 @@ export default function Parametres() {
               )}
               <TabsContent value="identite"><IdentiteSociete /></TabsContent>
               <TabsContent value="honoraires"><BaremeHonoraires /></TabsContent>
-              <TabsContent value="tarifs"><TarifsServices /></TabsContent>
               <TabsContent value="economique"><ModeleEconomique /></TabsContent>
               <TabsContent value="documents"><ModelesDocuments /></TabsContent>
               <TabsContent value="notifications"><NotificationsSection /></TabsContent>

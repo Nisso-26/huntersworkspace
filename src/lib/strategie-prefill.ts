@@ -164,3 +164,70 @@ export function prefillStrategieForm(dossier: any): {
   }
   return { values, prefilled };
 }
+
+// ---------------------------------------------------------------------------
+// Report explicite (jamais automatique) des valeurs du formulaire vers `dossiers`
+// ---------------------------------------------------------------------------
+
+/** Inverse des SLUG_MAPS : libellé affiché -> valeur technique stockée. */
+function toSlug(field: string, label: string): string {
+  const map = SLUG_MAPS[field];
+  if (!map) return label;
+  const hit = Object.entries(map).find(([, l]) => l.toLowerCase() === label.trim().toLowerCase());
+  return hit ? hit[0] : label;
+}
+
+function toFreeSlug(field: string, label: string): string {
+  const map = FREE_TEXT_LABELS[field];
+  if (!map) return label;
+  const hit = Object.entries(map).find(([, l]) => l.toLowerCase() === label.trim().toLowerCase());
+  return hit ? hit[0] : label;
+}
+
+const toNum = (v: string): number | undefined => {
+  if (v == null || String(v).trim() === '') return undefined;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : undefined;
+};
+
+const toInt = (v: string): number | undefined => {
+  const n = toNum(v);
+  return n == null ? undefined : Math.round(n);
+};
+
+/**
+ * Construit un patch pour la table `dossiers` à partir des valeurs du formulaire.
+ * Uniquement les champs qui ont une colonne équivalente. Les valeurs vides sont
+ * ignorées (on n'efface jamais une donnée existante de la fiche).
+ * N'inclut pas l'âge (la fiche stocke une date de naissance), ni les mensualités
+ * de crédits (agrégat calculé), ni le patrimoine immobilier (agrégat calculé).
+ */
+export function strategieFormToDossierPatch(form: StrategieFormValues): Record<string, any> {
+  const candidate: Record<string, any> = {
+    situation_familiale: form.situation_familiale ? toSlug('situation_familiale', form.situation_familiale) : undefined,
+    nombre_enfants: toInt(form.enfants),
+    profession: form.profession?.trim() || undefined,
+    statut_professionnel: form.statut_pro ? toSlug('statut_pro', form.statut_pro) : undefined,
+    revenus_nets_mensuels: toNum(form.revenus_nets_mensuels),
+    revenus_conjoint: toNum(form.revenus_conjoint_mensuels),
+    autres_revenus: toNum(form.autres_revenus_mensuels),
+    tmi: toInt(form.tmi),
+    charges_mensuelles_fixes: toNum(form.charges_mensuelles),
+    epargne_disponible: toNum(form.epargne_disponible),
+    capacite_epargne_mensuelle: toNum(form.capacite_epargne),
+    duree_credit_souhaitee: toInt(form.duree_credit),
+    objectif_principal: form.objectifs ? toFreeSlug('objectifs', form.objectifs) : undefined,
+    horizon_investissement: form.horizon ? toSlug('horizon', form.horizon) : undefined,
+    appetence_risque: form.tolerance_risque ? toSlug('tolerance_risque', form.tolerance_risque) : undefined,
+    contraintes_geographiques: form.zones_souhaitees?.trim() || undefined,
+    type_bien_souhaite: form.types_biens ? toFreeSlug('types_biens', form.types_biens) : undefined,
+    aversion_gestion: form.implication ? toFreeSlug('implication', form.implication) : undefined,
+    delai_concretisation: form.delai_decision ? toFreeSlug('delai_decision', form.delai_decision) : undefined,
+  };
+
+  const patch: Record<string, any> = {};
+  for (const [k, v] of Object.entries(candidate)) {
+    if (v !== undefined && v !== null && v !== '') patch[k] = v;
+  }
+  return patch;
+}

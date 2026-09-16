@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import {
+  mandataireNomDossier, mentionMandataireHuntersFromNom,
+  HUNTERS_LABEL, QUALITE_MANDATAIRE,
+} from '@/lib/mandataire-signature';
 import { Dossier } from '@/hooks/use-dossiers';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -42,11 +45,8 @@ const DISCLAIMER =
   "Hunters Immobilier n'est pas conseiller en gestion de patrimoine (CGP) ni conseiller fiscal. " +
   "Toute décision d'investissement doit être prise après consultation d'un professionnel habilité.";
 
-function roleToTitle(role: string | null | undefined): string {
-  if (role === 'super_admin') return 'Directeur';
-  if (role === 'decoratrice') return 'Décoratrice';
-  return 'Conseiller';
-}
+// Le conseiller mentionné sur le rapport est le mandataire du dossier
+// (voir src/lib/mandataire-signature.ts), jamais l'utilisateur connecté.
 
 function splitSections(markdown: string): string[] {
   const out = SECTION_TITLES.map(() => '');
@@ -78,15 +78,17 @@ function splitSections(markdown: string): string[] {
 
 
 export default function RapportConseilButton({ dossier }: Props) {
-  const { user, role } = useAuth();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState<string[]>(() => SECTION_TITLES.map(() => ''));
   const [regenIdx, setRegenIdx] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
 
-  const conseillerNom   = (user?.user_metadata as any)?.full_name || user?.email || 'Hunters Immobilier';
-  const conseillerTitre = roleToTitle(role);
+  // Mandataire assigné au dossier — jamais l'utilisateur qui clique.
+  const mandataireNom   = mandataireNomDossier(dossier);
+  const conseillerNom   = mandataireNom || HUNTERS_LABEL;
+  const conseillerTitre = mandataireNom ? QUALITE_MANDATAIRE : 'Pour HUNTERS Immobilier';
+  const conseillerCouverture = mentionMandataireHuntersFromNom(mandataireNom);
 
   const strategie: StrategieData | null = useMemo(
     () => parseStrategie(dossier.strategie).strategie,
@@ -233,7 +235,7 @@ export default function RapportConseilButton({ dossier }: Props) {
         titre: 'Investissement immobilier',
         sousTitre: 'Analyse patrimoniale et scenarios de financement',
         client: dossier.client_name,
-        conseiller: `${conseillerNom} — ${conseillerTitre}`,
+        conseiller: conseillerCouverture,
         refDossier,
         date: dateStr,
         confidentiel: true,

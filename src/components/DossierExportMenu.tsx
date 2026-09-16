@@ -13,7 +13,8 @@ export default function DossierExportMenu({ dossier }: Props) {
   const { user, role, isAdmin } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
 
-  const conseillerNom = (user?.user_metadata as any)?.full_name || user?.email || 'Hunters Immobilier';
+  // Les exports affichent le mandataire du dossier (voir export-dossier-pdf.ts) :
+  // aucun nom issu de la session connectée n'est transmis.
   const canSeeInterne = isAdmin || dossier.mandataire_id === user?.id;
 
   const run = async (type: 'integral' | 'interne' | 'client') => {

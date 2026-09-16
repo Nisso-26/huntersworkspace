@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { fetchAllPaginated } from '@/lib/supabase-pagination';
 import type { CompanySettings } from './use-company-settings';
 import { fmtPdfEur } from '@/lib/pdf-utils';
+import { mandataireNomDossier, mentionMandataireHuntersFromNom } from '@/lib/mandataire-signature';
 import {
   assertEmail, markEnvoiEnCours, pdfToBase64, safePdfFilename, sendDocumentEmail,
   type DocEmailStatut,
@@ -237,7 +238,10 @@ export async function generateFacturePDF(
     clientEmail,
     clientPhone ? `Tel. ${clientPhone}` : '',
     clientVille,
-    facture.mandataire_name ? `Suivi par ${facture.mandataire_name}` : '',
+    // Mandataire du dossier, explicitement rattaché à HUNTERS.
+    mandataireNomDossier({ mandataire_name: facture.mandataire_name })
+      ? `Dossier suivi par ${mentionMandataireHuntersFromNom(facture.mandataire_name)}`
+      : '',
   ].filter(Boolean);
 
   const blocH = Math.max(emetteurLines.length, clientLines.length) * 5 + 14;

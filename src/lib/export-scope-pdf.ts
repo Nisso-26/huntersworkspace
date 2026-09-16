@@ -4,6 +4,7 @@ import {
   drawHeader, drawFooter, drawSectionTitle, drawCoverPage,
   ensureSpace, loadLogo, bodyStartY, sanitizePdfText,
 } from '@/lib/pdf-design-system';
+import { HUNTERS_LABEL } from '@/lib/mandataire-signature';
 
 export type ScopeKind = 'financement' | 'montage';
 
@@ -146,7 +147,7 @@ export async function buildScopedPdf(opts: {
     titre: meta.titre,
     sousTitre: meta.sousTitre,
     client: opts.client || 'Dossier anonymisé',
-    conseiller: opts.conseiller || 'Hunters Immobilier',
+    conseiller: opts.conseiller || HUNTERS_LABEL,
     refDossier: ref,
     date: new Date().toLocaleDateString('fr-FR'),
     confidentiel: true,

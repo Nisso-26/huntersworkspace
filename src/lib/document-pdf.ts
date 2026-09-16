@@ -256,7 +256,8 @@ export async function buildDocumentPdf(ctx: DocumentBuildContext): Promise<jsPDF
       const nomClient = sanitizePdfText(
         ctx.client || ctx.variables?.nom_client || 'Le Client'
       );
-      const nomConseiller = sanitizePdfText(ctx.conseiller || 'Anais SAIZONOU');
+      // Mandataire du dossier uniquement : aucun nom par défaut en repli.
+      const sigHunters = signataireHuntersFromNom(ctx.conseiller);
 
       drawSignatureZone(
         doc, marginL, y, colW,
@@ -265,7 +266,7 @@ export async function buildDocumentPdf(ctx: DocumentBuildContext): Promise<jsPDF
       );
       drawSignatureZone(
         doc, marginL + contentW / 2 + 6, y, colW,
-        nomConseiller, 'Conseiller HUNTERS Immobilier',
+        sanitizePdfText(sigHunters.nom), sigHunters.qualite,
         'Pour HUNTERS Immobilier',
       );
       y += 35;

@@ -328,6 +328,21 @@ export default function StrategieIA({ dossier }: Props) {
             </div>
           </div>
 
+          <div className="flex items-start gap-2 rounded border bg-secondary/20 p-2.5 mt-2">
+            <Checkbox
+              id="sync-fiche-dossier"
+              checked={syncToDossier}
+              onCheckedChange={v => setSyncToDossier(v === true)}
+              className="mt-0.5"
+            />
+            <Label htmlFor="sync-fiche-dossier" className="text-xs font-normal leading-relaxed cursor-pointer">
+              Mettre à jour la fiche dossier avec ces valeurs
+              <span className="block text-muted-foreground">
+                Sans cette option, vos corrections ne servent qu'à cette génération et la fiche client reste inchangée.
+              </span>
+            </Label>
+          </div>
+
           <div className="flex gap-2 pt-2">
             <Button variant="outline" size="sm" onClick={() => setShowForm(false)} className="flex-1">Annuler</Button>
             <Button size="sm" onClick={handleGenerate} disabled={generating} className="flex-1 gap-2 bg-accent hover:bg-accent/90 text-accent-foreground">

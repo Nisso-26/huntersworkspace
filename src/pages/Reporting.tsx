@@ -1,7 +1,6 @@
 import AppLayout from '@/components/AppLayout';
 import StatCard from '@/components/StatCard';
 import { TrendingUp, Users, Target, Wallet, Package, LineChart, PieChart as PieIcon } from 'lucide-react';
-import { useTarifsServices } from '@/hooks/use-tarifs-services';
 import { useDossiers } from '@/hooks/use-dossiers';
 import { useMandataires } from '@/hooks/use-mandataires';
 import { useFactures } from '@/hooks/use-factures';
@@ -49,7 +48,6 @@ export default function Reporting() {
   const { data: dossiers = [], isLoading: dLoad } = useDossiers();
   const { data: mandataires = [], isLoading: mLoad } = useMandataires();
   const { data: factures = [], isLoading: fLoad } = useFactures();
-  const { data: tarifs = [] } = useTarifsServices();
   const { data: baremes = [] } = useBaremesHunters();
   const { data: company } = useCompanySettings();
 

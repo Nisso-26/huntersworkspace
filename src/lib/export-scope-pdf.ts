@@ -6,12 +6,13 @@ import {
 } from '@/lib/pdf-design-system';
 import { HUNTERS_LABEL } from '@/lib/mandataire-signature';
 
-export type ScopeKind = 'financement' | 'montage';
+export type ScopeKind = 'financement' | 'montage' | 'structure_juridique_fiscale';
 
 // Périmètres alignés sur scopesForSpecialite() et sur get_partner_portal_payload()
 export const SCOPE_SECTIONS: Record<ScopeKind, string[]> = {
   financement: ['situation_financiere', 'projet', 'financement_resume'],
   montage: ['patrimoine', 'projet', 'montage'],
+  structure_juridique_fiscale: ['structure_juridique_fiscale', 'projet'],
 };
 
 export const SECTION_LABELS: Record<string, string> = {
@@ -20,6 +21,7 @@ export const SECTION_LABELS: Record<string, string> = {
   projet: 'Projet',
   montage: 'Montage juridique et fiscal',
   financement_resume: 'Financement — résumé',
+  structure_juridique_fiscale: 'Structure juridique et fiscale',
 };
 
 export const FIELD_LABELS: Record<string, string> = {
@@ -108,6 +110,11 @@ export function sectionsFromDossier(dossier: Record<string, any>, kind: ScopeKin
       'horizon_investissement', 'appetence_risque', 'contraintes_geographiques', 'delai_concretisation',
     ]),
     montage: pick(['strategie', 'type_accompagnement']),
+    structure_juridique_fiscale: pick([
+      'regime_matrimonial', 'situation_familiale', 'nombre_enfants', 'tmi', 'assujetti_ifi',
+      'objectif_fiscal', 'dispositifs_fiscaux_en_cours', 'deficits_fonciers_existants',
+      'strategie', 'type_accompagnement',
+    ]),
     financement_resume: pick(['capacite_emprunt_estimee', 'duree_credit_souhaitee', 'preference_taux', 'budget']),
   };
 
@@ -124,6 +131,11 @@ const TITRES: Record<ScopeKind, { type: string; titre: string; sousTitre: string
     type: 'Montage juridique & fiscal',
     titre: 'Dossier de montage',
     sousTitre: 'Consultation portail partenaire — diffusion interdite',
+  },
+  structure_juridique_fiscale: {
+    type: 'Structure juridique & fiscale',
+    titre: 'Dossier juridique et fiscal',
+    sousTitre: 'Consultation partenaire — périmètre juridique et fiscal restreint',
   },
 };
 
@@ -196,7 +208,7 @@ export async function buildScopedPdf(opts: {
   doc.setFont(FONT.body, 'italic');
   doc.setFontSize(8);
   doc.setTextColor(...C.textMuted);
-  const mention = opts.kind === 'montage'
+  const mention = opts.kind !== 'financement'
     ? "Document de consultation. Toute reproduction, impression ou rediffusion est interdite."
     : "Document confidentiel remis au partenaire dans le seul cadre de l'étude de financement.";
   doc.text(doc.splitTextToSize(sanitizePdfText(mention), LAYOUT.textW) as string[], LAYOUT.marginL, y);
@@ -204,7 +216,7 @@ export async function buildScopedPdf(opts: {
   const total = doc.getNumberOfPages();
   for (let p = 2; p <= total; p++) {
     doc.setPage(p);
-    drawFooter(doc, p, total, opts.kind === 'montage' ? 'HUNTERS · Consultation portail — non diffusable' : 'HUNTERS · Document confidentiel');
+    drawFooter(doc, p, total, opts.kind !== 'financement' ? 'HUNTERS · Consultation portail — non diffusable' : 'HUNTERS · Document confidentiel');
   }
 
   return doc;

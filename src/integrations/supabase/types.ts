@@ -794,6 +794,7 @@ export type Database = {
           id: string
           ip_session: string | null
           justification: string
+          proposition: string | null
           verdict: string
         }
         Insert: {
@@ -805,6 +806,7 @@ export type Database = {
           id?: string
           ip_session?: string | null
           justification: string
+          proposition?: string | null
           verdict: string
         }
         Update: {
@@ -816,6 +818,7 @@ export type Database = {
           id?: string
           ip_session?: string | null
           justification?: string
+          proposition?: string | null
           verdict?: string
         }
         Relationships: [
@@ -2650,10 +2653,20 @@ export type Database = {
         Args: { _client_name: string; _dossier_id: string; _score: number }
         Returns: undefined
       }
-      start_partner_decision: {
-        Args: { _justification: string; _token: string; _verdict: string }
-        Returns: Json
-      }
+      start_partner_decision:
+        | {
+            Args: { _justification: string; _token: string; _verdict: string }
+            Returns: Json
+          }
+        | {
+            Args: {
+              _justification: string
+              _proposition?: string
+              _token: string
+              _verdict: string
+            }
+            Returns: Json
+          }
       submit_partner_decision: {
         Args: {
           _code: string

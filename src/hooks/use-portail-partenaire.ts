@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { partnerPortalProfile, type PartnerProfile } from '@/lib/partner-portal-profile';
 
 export interface AccesPortail {
   id: string;
@@ -23,6 +24,7 @@ export interface DecisionPartenaire {
   acces_portail_id: string;
   verdict: 'quitus' | 'invalidation';
   justification: string;
+  proposition: string | null;
   date_decision: string | null;
 }
 
@@ -38,21 +40,19 @@ export interface QuitusRow {
 export function scopesForSpecialite(specialite?: string | null): {
   scope_lecture: string[];
   scope_decision: string[];
-  famille: 'financement' | 'montage';
+  famille: PartnerProfile;
+  natureValidation: string;
+  labelQuitus: string;
+  labelInvalidation: string;
 } {
-  const s = (specialite || '').toLowerCase();
-  const montage = /cgp|avocat|fiscal|notaire|expert.?comptable/.test(s);
-  if (montage) {
-    return {
-      scope_lecture: ['patrimoine', 'projet', 'montage'],
-      scope_decision: ['montage'],
-      famille: 'montage',
-    };
-  }
+  const config = partnerPortalProfile(specialite);
   return {
-    scope_lecture: ['situation_financiere', 'projet', 'financement_resume'],
-    scope_decision: ['financement_resume'],
-    famille: 'financement',
+    scope_lecture: [...config.scope_lecture],
+    scope_decision: [...config.scope_decision],
+    famille: config.profile,
+    natureValidation: config.natureValidation,
+    labelQuitus: config.labelQuitus,
+    labelInvalidation: config.labelInvalidation,
   };
 }
 
@@ -185,9 +185,9 @@ export async function logPartnerConsultation(token: string, section: string) {
   } catch { /* silencieux */ }
 }
 
-export async function startPartnerDecision(token: string, verdict: string, justification: string) {
+export async function startPartnerDecision(token: string, verdict: string, justification: string, proposition?: string | null) {
   const { data, error } = await (supabase as any).rpc('start_partner_decision', {
-    _token: token, _verdict: verdict, _justification: justification,
+    _token: token, _verdict: verdict, _justification: justification, _proposition: proposition ?? null,
   });
   if (error) throw new Error(error.message);
   return data as { decision_id: string; code: string };

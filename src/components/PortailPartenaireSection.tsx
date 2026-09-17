@@ -21,6 +21,7 @@ import {
   AlertTriangle, Send, RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface Props { dossier: Record<string, any> }
 
@@ -45,6 +46,7 @@ async function sendMail(body: Record<string, unknown>): Promise<string | null> {
 
 export default function PortailPartenaireSection({ dossier }: Props) {
   const { user, isAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const { data: partenaires = [] } = usePartenaires();
   const { data: settings } = useCompanySettings();
   const { data: acces = [], isLoading } = useAccesPortail(dossier.id);
@@ -101,7 +103,7 @@ export default function PortailPartenaireSection({ dossier }: Props) {
         specialite: partenaire.specialite,
         jours: JOURS_DEFAUT,
         nb_ouvertures_max: 20,
-        nature_validation: scopes.famille === 'montage' ? 'Validation montage' : 'Validation financement',
+        nature_validation: scopes.natureValidation,
       });
       if (partenaire.email) {
         const erreur = await sendMail({
@@ -112,7 +114,7 @@ export default function PortailPartenaireSection({ dossier }: Props) {
           title: 'Accès sécurisé à un dossier anonymisé',
           cta: { label: 'Ouvrir le dossier', url: lien(created.token) },
           body: `<p style="margin:0 0 12px;">Bonjour ${partenaire.nom},</p>
-            <p style="margin:0 0 12px;">Un dossier anonymisé vous est soumis pour ${scopes.famille === 'montage' ? 'validation du montage juridique et fiscal' : 'étude de financement'}.</p>
+            <p style="margin:0 0 12px;">Un dossier anonymisé vous est soumis pour ${scopes.natureValidation.toLocaleLowerCase('fr-FR')}.</p>
             <p style="margin:0 0 12px;">Périmètre communiqué : ${scopes.scope_lecture.map((s) => SECTION_LABELS[s] || s).join(', ')}.</p>
             <p style="margin:0;font-size:11px;">Ce lien est personnel, journalisé et expire dans ${JOURS_DEFAUT} jours.</p>`,
         });
@@ -148,6 +150,34 @@ export default function PortailPartenaireSection({ dossier }: Props) {
   const telechargerQuitus = (contenu: Record<string, any>, ref?: string) => {
     const doc = buildQuitusPdf(contenu as any);
     doc.save(`Quitus_${ref || dossier.numero_dossier || 'dossier'}.pdf`);
+  };
+
+  const adopterPropositionCgp = async () => {
+    const proposition = derniereDecision?.proposition?.trim();
+    if (!proposition || !user) return;
+    setBusy(true);
+    try {
+      const { error: archiveError } = await (supabase.from('documents_generes') as any).insert({
+        dossier_id: dossier.id,
+        type: 'strategie_archivee_avant_adoption_cgp',
+        numero_dossier: dossier.numero_dossier,
+        conseiller_id: user.id,
+        contenu: dossier.strategie ?? null,
+      });
+      if (archiveError) throw archiveError;
+
+      const { error: updateError } = await supabase
+        .from('dossiers')
+        .update({ strategie: proposition } as any)
+        .eq('id', dossier.id);
+      if (updateError) throw updateError;
+      await queryClient.invalidateQueries({ queryKey: ['dossiers'] });
+      toast.success('Proposition du CGP adoptée — stratégie précédente archivée');
+    } catch (e: any) {
+      toast.error(e.message || "La proposition n'a pas pu être adoptée");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const corriger = async () => {
@@ -284,19 +314,24 @@ export default function PortailPartenaireSection({ dossier }: Props) {
             Quitus partenaires
           </p>
           {quitusList.map((q) => (
-            <div key={q.id} className="flex items-center gap-2 p-2 rounded-md bg-secondary/50 text-xs">
-              <span className="flex-1 truncate">
-                {(q.contenu as any)?.partenaire_nom || 'Partenaire'} ·{' '}
-                {(q.contenu as any)?.verdict === 'quitus' ? 'Quitus' : 'Invalidation motivée'}
-              </span>
-              <span className="text-[10px] text-muted-foreground">
-                {new Date(q.date_generation).toLocaleDateString('fr-FR')}
-              </span>
-              <Button type="button" variant="ghost" size="icon" className="h-6 w-6"
-                onClick={() => telechargerQuitus(q.contenu, (q.contenu as any)?.numero_dossier)}>
-                <Download className="w-3 h-3" />
-              </Button>
-            </div>
+            (() => {
+              const labels = scopesForSpecialite((q.contenu as any)?.partenaire_specialite);
+              return (
+                <div key={q.id} className="flex items-center gap-2 p-2 rounded-md bg-secondary/50 text-xs">
+                  <span className="flex-1 truncate">
+                    {(q.contenu as any)?.partenaire_nom || 'Partenaire'} ·{' '}
+                    {(q.contenu as any)?.verdict === 'quitus' ? labels.labelQuitus : labels.labelInvalidation}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {new Date(q.date_generation).toLocaleDateString('fr-FR')}
+                  </span>
+                  <Button type="button" variant="ghost" size="icon" className="h-6 w-6"
+                    onClick={() => telechargerQuitus(q.contenu, (q.contenu as any)?.numero_dossier)}>
+                    <Download className="w-3 h-3" />
+                  </Button>
+                </div>
+              );
+            })()
           ))}
         </div>
       )}
@@ -311,6 +346,33 @@ export default function PortailPartenaireSection({ dossier }: Props) {
           {derniereDecision?.justification && (
             <p className="text-xs text-muted-foreground">{derniereDecision.justification}</p>
           )}
+          {derniereDecision?.proposition?.trim() && (() => {
+            const decisionAccess = acces.find((a) => a.id === derniereDecision.acces_portail_id);
+            const decisionProfile = decisionAccess?.scope_lecture.includes('montage')
+              && decisionAccess.scope_lecture.includes('situation_financiere') ? 'cgp' : 'courtier';
+            return (
+              <div className="border bg-secondary/40 p-3 space-y-2">
+                <p className="text-xs font-semibold text-foreground">
+                  {decisionProfile === 'cgp' ? 'Proposition de stratégie du CGP' : 'Montage financier proposé'}
+                </p>
+                {decisionProfile === 'cgp' && dossier.strategie && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-muted-foreground">Stratégie actuelle</p>
+                    <p className="text-xs text-foreground whitespace-pre-wrap">{typeof dossier.strategie === 'string' ? dossier.strategie : JSON.stringify(dossier.strategie)}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-[11px] font-semibold text-muted-foreground">Proposition partenaire</p>
+                  <p className="text-xs text-foreground whitespace-pre-wrap">{derniereDecision.proposition}</p>
+                </div>
+                {decisionProfile === 'cgp' && (
+                  <Button size="sm" onClick={adopterPropositionCgp} disabled={busy}>
+                    Adopter cette proposition
+                  </Button>
+                )}
+              </div>
+            );
+          })()}
           <div className="flex gap-2">
             <Button size="sm" variant="outline" className="gap-2" onClick={corriger} disabled={busy}>
               <RefreshCw className="w-3.5 h-3.5" />

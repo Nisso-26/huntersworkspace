@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Loader2, ShieldCheck, ShieldX, Lock, EyeOff, CheckCircle2, FileSearch } from 'lucide-react';
 import { toast } from 'sonner';
 import huntersLogo from '@/assets/hunters-symbol-dark.svg';
+import { partnerPortalProfile } from '@/lib/partner-portal-profile';
+import { supabase } from '@/integrations/supabase/client';
 
 type Verdict = 'quitus' | 'invalidation';
 
@@ -25,6 +27,7 @@ export default function PortailPartenaire() {
 
   const [verdict, setVerdict] = useState<Verdict | ''>('');
   const [justification, setJustification] = useState('');
+  const [proposition, setProposition] = useState('');
   const [step, setStep] = useState<'form' | 'confirm' | 'done'>('form');
   const [decisionId, setDecisionId] = useState('');
   const [codeGenere, setCodeGenere] = useState('');
@@ -50,6 +53,15 @@ export default function PortailPartenaire() {
   const exclues: string[] = payload?.sections_exclues || [];
   const peutDecider = (payload?.acces?.scope_decision || []).length > 0;
   const montageAutorise = Object.keys(sections).includes('montage');
+  const profile = partnerPortalProfile(payload?.partenaire?.specialite);
+  const courtierNeedsProposalForQuitus = profile.profile === 'courtier'
+    && (!payload?.dossier?.budget_renseigne || !payload?.dossier?.capacite_emprunt_renseignee);
+  const proposalVisible = profile.profile === 'courtier'
+    || (profile.profile === 'cgp' && verdict === 'invalidation');
+  const proposalRequired = (profile.profile === 'cgp' && verdict === 'invalidation')
+    || (profile.profile === 'courtier' && (verdict === 'invalidation' || (verdict === 'quitus' && courtierNeedsProposalForQuitus)));
+  const proposalMinLength = profile.profile === 'courtier' ? 50 : 10;
+  const verdictLabel = verdict === 'quitus' ? profile.labelQuitus : profile.labelInvalidation;
 
   const sectionKeys = useMemo(() => Object.keys(sections), [sections]);
 
@@ -82,9 +94,12 @@ export default function PortailPartenaire() {
   const demarrer = async () => {
     if (!token || !verdict) return toast.error('Choisissez un verdict');
     if (justification.trim().length < 10) return toast.error('Justification obligatoire (10 caractères minimum)');
+    if (proposalRequired && proposition.trim().length < proposalMinLength) {
+      return toast.error(`Proposition obligatoire (${proposalMinLength} caractères minimum)`);
+    }
     setBusy(true);
     try {
-      const res = await startPartnerDecision(token, verdict, justification.trim());
+      const res = await startPartnerDecision(token, verdict, justification.trim(), proposition.trim() || null);
       setDecisionId(res.decision_id);
       setCodeGenere(res.code);
       setStep('confirm');
@@ -99,7 +114,12 @@ export default function PortailPartenaire() {
     if (!token) return;
     setBusy(true);
     try {
-      await submitPartnerDecision(token, decisionId, codeSaisi.trim().toUpperCase());
+      const result = await submitPartnerDecision(token, decisionId, codeSaisi.trim().toUpperCase());
+      if (verdict === 'invalidation') {
+        await supabase.functions.invoke('notify-partner-decision', {
+          body: { token, decision_id: decisionId, proposition_jointe: Boolean(result?.proposition_jointe) },
+        });
+      }
       setStep('done');
       toast.success('Décision enregistrée — accès révoqué');
     } catch (e: any) {
@@ -210,24 +230,30 @@ export default function PortailPartenaire() {
             {step === 'form' && (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
                     onClick={() => setVerdict('quitus')}
-                    className={`rounded-lg border p-3 text-left ${verdict === 'quitus' ? 'border-primary bg-primary/5' : 'border-border'}`}
+                    className={`h-auto items-start justify-start p-3 text-left ${verdict === 'quitus' ? 'border-primary bg-primary/5' : ''}`}
                   >
-                    <ShieldCheck className="w-4 h-4 text-hunters-success mb-1" />
-                    <p className="text-sm font-semibold text-foreground">Quitus</p>
-                    <p className="text-[11px] text-muted-foreground">Je valide le dossier dans mon périmètre.</p>
-                  </button>
-                  <button
+                    <span>
+                      <ShieldCheck className="w-4 h-4 text-hunters-success mb-1" />
+                      <span className="block text-sm font-semibold text-foreground">{profile.labelQuitus}</span>
+                      <span className="block text-[11px] text-muted-foreground">Je valide le dossier dans mon périmètre.</span>
+                    </span>
+                  </Button>
+                  <Button
                     type="button"
+                    variant="outline"
                     onClick={() => setVerdict('invalidation')}
-                    className={`rounded-lg border p-3 text-left ${verdict === 'invalidation' ? 'border-destructive bg-destructive/5' : 'border-border'}`}
+                    className={`h-auto items-start justify-start p-3 text-left ${verdict === 'invalidation' ? 'border-destructive bg-destructive/5' : ''}`}
                   >
-                    <ShieldX className="w-4 h-4 text-destructive mb-1" />
-                    <p className="text-sm font-semibold text-foreground">Invalidation motivée</p>
-                    <p className="text-[11px] text-muted-foreground">Le dossier ne peut pas être validé en l'état.</p>
-                  </button>
+                    <span>
+                      <ShieldX className="w-4 h-4 text-destructive mb-1" />
+                      <span className="block text-sm font-semibold text-foreground">{profile.labelInvalidation}</span>
+                      <span className="block text-[11px] text-muted-foreground">Le dossier ne peut pas être validé en l'état.</span>
+                    </span>
+                  </Button>
                 </div>
 
                 <div className="space-y-2">
@@ -241,6 +267,26 @@ export default function PortailPartenaire() {
                   <p className="text-[11px] text-muted-foreground">{justification.trim().length} caractère(s)</p>
                 </div>
 
+                {proposalVisible && (
+                  <div className="space-y-2">
+                    <Label>
+                      {profile.profile === 'cgp' ? 'Votre proposition de stratégie' : 'Votre proposition de montage financier'}
+                      {proposalRequired && <span className="text-destructive"> *</span>}
+                    </Label>
+                    <Textarea
+                      rows={5}
+                      value={proposition}
+                      onChange={(e) => setProposition(e.target.value)}
+                      placeholder={profile.profile === 'courtier'
+                        ? 'Précisez si possible : montant finançable, durée, taux visé, type de prêt, apport nécessaire, garanties.'
+                        : 'Décrivez la stratégie que vous recommandez.'}
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      {proposition.trim().length} caractère(s){proposalRequired ? ` — minimum ${proposalMinLength}` : ' — facultatif'}
+                    </p>
+                  </div>
+                )}
+
                 <Button onClick={demarrer} disabled={busy} className="gap-2">
                   {busy && <Loader2 className="w-4 h-4 animate-spin" />}
                   Poursuivre
@@ -252,8 +298,11 @@ export default function PortailPartenaire() {
               <div className="space-y-4">
                 <div className="rounded-lg bg-secondary/50 p-4 space-y-2 text-xs">
                   <p><span className="text-muted-foreground">Verdict :</span>{' '}
-                    <strong>{verdict === 'quitus' ? 'Quitus (validation)' : 'Invalidation motivée'}</strong></p>
+                    <strong>{verdictLabel}</strong></p>
                   <p className="text-muted-foreground">{justification}</p>
+                  {proposition.trim() && (
+                    <p><span className="text-muted-foreground">Proposition :</span> {proposition.trim()}</p>
+                  )}
                   <p className="text-[11px] text-muted-foreground">
                     En confirmant, j'atteste avoir examiné les éléments du dossier {payload?.dossier?.numero_dossier}{' '}
                     dans le périmètre présenté, et je certifie l'exactitude de mon verdict et de ma justification.

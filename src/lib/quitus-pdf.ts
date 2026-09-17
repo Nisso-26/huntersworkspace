@@ -4,6 +4,7 @@ import {
   drawHeader, drawFooter, drawSectionTitle, drawIvoryBox,
   ensureSpace, sanitizePdfText,
 } from '@/lib/pdf-design-system';
+import { partnerPortalProfile } from '@/lib/partner-portal-profile';
 
 export interface QuitusContenu {
   numero_dossier?: string;
@@ -13,6 +14,7 @@ export interface QuitusContenu {
   partenaire_societe?: string | null;
   verdict?: string;
   justification?: string;
+  proposition?: string | null;
   perimetre?: string[];
   certification?: string;
   horodatage?: string;
@@ -26,6 +28,7 @@ const SCOPE_LABELS: Record<string, string> = {
   projet: 'Projet',
   montage: 'Montage juridique et fiscal',
   financement_resume: 'Financement (résumé)',
+  structure_juridique_fiscale: 'Structure juridique et fiscale',
 };
 
 // Quitus partenaire — document de traçabilité figé (sans IP de session).
@@ -75,7 +78,8 @@ export function buildQuitusPdf(contenu: QuitusContenu): jsPDF {
   y += 4;
 
   y = drawSectionTitle(doc, 'Décision', y);
-  line('Verdict', contenu.verdict === 'quitus' ? 'Quitus (validation)' : 'Invalidation motivée');
+  const decisionLabels = partnerPortalProfile(contenu.partenaire_specialite);
+  line('Verdict', contenu.verdict === 'quitus' ? decisionLabels.labelQuitus : decisionLabels.labelInvalidation);
   y += 2;
 
   doc.setFont(FONT.body, 'normal');
@@ -87,6 +91,19 @@ export function buildQuitusPdf(contenu: QuitusContenu): jsPDF {
     y += 5.5;
   }
   y += 6;
+
+  if (contenu.proposition) {
+    y = drawSectionTitle(doc, 'Proposition du partenaire', y);
+    doc.setFont(FONT.body, 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...C.ink);
+    for (const l of doc.splitTextToSize(sanitizePdfText(contenu.proposition), LAYOUT.textW) as string[]) {
+      y = ensureSpace(doc, y, 7, { refDossier: ref, titrePage: 'Quitus partenaire' });
+      doc.text(l, marginL, y);
+      y += 5.5;
+    }
+    y += 6;
+  }
 
   y = drawSectionTitle(doc, 'Périmètre consulté', y);
   const badges = (contenu.perimetre || []).map((s) => SCOPE_LABELS[s] || s);

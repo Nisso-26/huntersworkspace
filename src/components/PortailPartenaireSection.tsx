@@ -21,6 +21,7 @@ import {
   AlertTriangle, Send, RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface Props { dossier: Record<string, any> }
 
@@ -45,6 +46,7 @@ async function sendMail(body: Record<string, unknown>): Promise<string | null> {
 
 export default function PortailPartenaireSection({ dossier }: Props) {
   const { user, isAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const { data: partenaires = [] } = usePartenaires();
   const { data: settings } = useCompanySettings();
   const { data: acces = [], isLoading } = useAccesPortail(dossier.id);
@@ -160,7 +162,7 @@ export default function PortailPartenaireSection({ dossier }: Props) {
         type: 'strategie_archivee_avant_adoption_cgp',
         numero_dossier: dossier.numero_dossier,
         conseiller_id: user.id,
-        contenu: { strategie: dossier.strategie ?? null },
+        contenu: dossier.strategie ?? null,
       });
       if (archiveError) throw archiveError;
 
@@ -169,6 +171,7 @@ export default function PortailPartenaireSection({ dossier }: Props) {
         .update({ strategie: proposition } as any)
         .eq('id', dossier.id);
       if (updateError) throw updateError;
+      await queryClient.invalidateQueries({ queryKey: ['dossiers'] });
       toast.success('Proposition du CGP adoptée — stratégie précédente archivée');
     } catch (e: any) {
       toast.error(e.message || "La proposition n'a pas pu être adoptée");

@@ -230,24 +230,30 @@ export default function PortailPartenaire() {
             {step === 'form' && (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
                     onClick={() => setVerdict('quitus')}
-                    className={`rounded-lg border p-3 text-left ${verdict === 'quitus' ? 'border-primary bg-primary/5' : 'border-border'}`}
+                    className={`h-auto items-start justify-start p-3 text-left ${verdict === 'quitus' ? 'border-primary bg-primary/5' : ''}`}
                   >
-                    <ShieldCheck className="w-4 h-4 text-hunters-success mb-1" />
-                     <p className="text-sm font-semibold text-foreground">{profile.labelQuitus}</p>
-                    <p className="text-[11px] text-muted-foreground">Je valide le dossier dans mon périmètre.</p>
-                  </button>
-                  <button
+                    <span>
+                      <ShieldCheck className="w-4 h-4 text-hunters-success mb-1" />
+                      <span className="block text-sm font-semibold text-foreground">{profile.labelQuitus}</span>
+                      <span className="block text-[11px] text-muted-foreground">Je valide le dossier dans mon périmètre.</span>
+                    </span>
+                  </Button>
+                  <Button
                     type="button"
+                    variant="outline"
                     onClick={() => setVerdict('invalidation')}
-                    className={`rounded-lg border p-3 text-left ${verdict === 'invalidation' ? 'border-destructive bg-destructive/5' : 'border-border'}`}
+                    className={`h-auto items-start justify-start p-3 text-left ${verdict === 'invalidation' ? 'border-destructive bg-destructive/5' : ''}`}
                   >
-                    <ShieldX className="w-4 h-4 text-destructive mb-1" />
-                     <p className="text-sm font-semibold text-foreground">{profile.labelInvalidation}</p>
-                    <p className="text-[11px] text-muted-foreground">Le dossier ne peut pas être validé en l'état.</p>
-                  </button>
+                    <span>
+                      <ShieldX className="w-4 h-4 text-destructive mb-1" />
+                      <span className="block text-sm font-semibold text-foreground">{profile.labelInvalidation}</span>
+                      <span className="block text-[11px] text-muted-foreground">Le dossier ne peut pas être validé en l'état.</span>
+                    </span>
+                  </Button>
                 </div>
 
                 <div className="space-y-2">

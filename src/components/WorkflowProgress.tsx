@@ -211,10 +211,6 @@ export default function WorkflowProgress({ dossier }: Props) {
                   <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
                     <span
                       className={cn(
-                        'mt-0.5 w-4 h-4 rounded border flex items-center justify-center flex-shrink-0',
-                        checked ? 'border-transparent' : 'border-border bg-background',
-                      )}
-                      className={cn(
                         'mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border',
                         checked ? 'border-primary bg-primary' : 'border-border bg-background',
                       )}

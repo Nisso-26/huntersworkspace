@@ -13,6 +13,7 @@ export interface QuitusContenu {
   partenaire_societe?: string | null;
   verdict?: string;
   justification?: string;
+  proposition?: string | null;
   perimetre?: string[];
   certification?: string;
   horodatage?: string;
@@ -26,6 +27,7 @@ const SCOPE_LABELS: Record<string, string> = {
   projet: 'Projet',
   montage: 'Montage juridique et fiscal',
   financement_resume: 'Financement (résumé)',
+  structure_juridique_fiscale: 'Structure juridique et fiscale',
 };
 
 // Quitus partenaire — document de traçabilité figé (sans IP de session).

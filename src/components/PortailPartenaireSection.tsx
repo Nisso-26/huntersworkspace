@@ -101,7 +101,7 @@ export default function PortailPartenaireSection({ dossier }: Props) {
         specialite: partenaire.specialite,
         jours: JOURS_DEFAUT,
         nb_ouvertures_max: 20,
-        nature_validation: scopes.famille === 'montage' ? 'Validation montage' : 'Validation financement',
+        nature_validation: scopes.natureValidation,
       });
       if (partenaire.email) {
         const erreur = await sendMail({
@@ -112,7 +112,7 @@ export default function PortailPartenaireSection({ dossier }: Props) {
           title: 'Accès sécurisé à un dossier anonymisé',
           cta: { label: 'Ouvrir le dossier', url: lien(created.token) },
           body: `<p style="margin:0 0 12px;">Bonjour ${partenaire.nom},</p>
-            <p style="margin:0 0 12px;">Un dossier anonymisé vous est soumis pour ${scopes.famille === 'montage' ? 'validation du montage juridique et fiscal' : 'étude de financement'}.</p>
+            <p style="margin:0 0 12px;">Un dossier anonymisé vous est soumis pour ${scopes.natureValidation.toLocaleLowerCase('fr-FR')}.</p>
             <p style="margin:0 0 12px;">Périmètre communiqué : ${scopes.scope_lecture.map((s) => SECTION_LABELS[s] || s).join(', ')}.</p>
             <p style="margin:0;font-size:11px;">Ce lien est personnel, journalisé et expire dans ${JOURS_DEFAUT} jours.</p>`,
         });
@@ -148,6 +148,33 @@ export default function PortailPartenaireSection({ dossier }: Props) {
   const telechargerQuitus = (contenu: Record<string, any>, ref?: string) => {
     const doc = buildQuitusPdf(contenu as any);
     doc.save(`Quitus_${ref || dossier.numero_dossier || 'dossier'}.pdf`);
+  };
+
+  const adopterPropositionCgp = async () => {
+    const proposition = derniereDecision?.proposition?.trim();
+    if (!proposition || !user) return;
+    setBusy(true);
+    try {
+      const { error: archiveError } = await (supabase.from('documents_generes') as any).insert({
+        dossier_id: dossier.id,
+        type: 'strategie_archivee_avant_adoption_cgp',
+        numero_dossier: dossier.numero_dossier,
+        conseiller_id: user.id,
+        contenu: { strategie: dossier.strategie ?? null },
+      });
+      if (archiveError) throw archiveError;
+
+      const { error: updateError } = await supabase
+        .from('dossiers')
+        .update({ strategie: proposition } as any)
+        .eq('id', dossier.id);
+      if (updateError) throw updateError;
+      toast.success('Proposition du CGP adoptée — stratégie précédente archivée');
+    } catch (e: any) {
+      toast.error(e.message || "La proposition n'a pas pu être adoptée");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const corriger = async () => {
@@ -311,6 +338,33 @@ export default function PortailPartenaireSection({ dossier }: Props) {
           {derniereDecision?.justification && (
             <p className="text-xs text-muted-foreground">{derniereDecision.justification}</p>
           )}
+          {derniereDecision?.proposition?.trim() && (() => {
+            const decisionAccess = acces.find((a) => a.id === derniereDecision.acces_portail_id);
+            const decisionPartner = partenaires.find((p) => p.id === decisionAccess?.partenaire_id);
+            const decisionProfile = scopesForSpecialite(decisionPartner?.specialite).famille;
+            return (
+              <div className="border bg-secondary/40 p-3 space-y-2">
+                <p className="text-xs font-semibold text-foreground">
+                  {decisionProfile === 'cgp' ? 'Proposition de stratégie du CGP' : 'Montage financier proposé'}
+                </p>
+                {decisionProfile === 'cgp' && dossier.strategie && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-muted-foreground">Stratégie actuelle</p>
+                    <p className="text-xs text-foreground whitespace-pre-wrap">{typeof dossier.strategie === 'string' ? dossier.strategie : JSON.stringify(dossier.strategie)}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-[11px] font-semibold text-muted-foreground">Proposition partenaire</p>
+                  <p className="text-xs text-foreground whitespace-pre-wrap">{derniereDecision.proposition}</p>
+                </div>
+                {decisionProfile === 'cgp' && (
+                  <Button size="sm" onClick={adopterPropositionCgp} disabled={busy}>
+                    Adopter cette proposition
+                  </Button>
+                )}
+              </div>
+            );
+          })()}
           <div className="flex gap-2">
             <Button size="sm" variant="outline" className="gap-2" onClick={corriger} disabled={busy}>
               <RefreshCw className="w-3.5 h-3.5" />

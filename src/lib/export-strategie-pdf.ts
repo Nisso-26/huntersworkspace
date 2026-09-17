@@ -255,13 +255,13 @@ export async function exportStrategiePdf(
   };
   const ville = formatCriterion(dossier?.ville);
   const zones = formatCriterion(dossier?.zones_souhaitees);
-  const criteres: Array<[string, string]> = [
+  const criteres = ([
     ['Ville cible', ville],
     ['Zones souhaitées', zones && zones !== ville ? zones : ''],
     ['Type de bien souhaité', formatCriterion(dossier?.type_bien_souhaite)],
     ['Budget', dossier?.budget !== null && dossier?.budget !== undefined ? fmtEur(Number(dossier.budget)) : ''],
     ['Contraintes géographiques', formatCriterion(dossier?.contraintes_geographiques)],
-  ].filter(([, value]) => Boolean(value));
+  ] as Array<[string, string]>).filter(([, value]) => Boolean(value));
 
   if (criteres.length) {
     y = ensureSpace(doc, y, 18, ctxHeader);

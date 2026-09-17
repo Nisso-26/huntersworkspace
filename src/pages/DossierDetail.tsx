@@ -224,26 +224,26 @@ export default function DossierDetail() {
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
         {/* Onglets */}
         <Tabs defaultValue="infos" className="min-w-0">
-          <TabsList className="w-full grid grid-cols-7">
-            <TabsTrigger value="infos" className="gap-1.5 text-xs">
+          <TabsList className="flex w-full justify-start overflow-x-auto lg:grid lg:grid-cols-7">
+            <TabsTrigger value="infos" className="shrink-0 gap-1.5 text-xs">
               <User className="w-3.5 h-3.5" />Infos
             </TabsTrigger>
-            <TabsTrigger value="strategie" className="gap-1.5 text-xs">
+            <TabsTrigger value="strategie" className="shrink-0 gap-1.5 text-xs">
               <TrendingUp className="w-3.5 h-3.5" />Stratégie
             </TabsTrigger>
-            <TabsTrigger value="devis" className="gap-1.5 text-xs" disabled={(dossier as any).validation_directeur_requise}>
+            <TabsTrigger value="devis" className="shrink-0 gap-1.5 text-xs" disabled={(dossier as any).validation_directeur_requise}>
               {(dossier as any).validation_directeur_requise ? <Lock className="w-3.5 h-3.5" /> : <FileSignature className="w-3.5 h-3.5" />}Devis
             </TabsTrigger>
-            <TabsTrigger value="facturation" className="gap-1.5 text-xs">
+            <TabsTrigger value="facturation" className="shrink-0 gap-1.5 text-xs">
               <Receipt className="w-3.5 h-3.5" />Facturation
             </TabsTrigger>
-            <TabsTrigger value="documents" className="gap-1.5 text-xs">
+            <TabsTrigger value="documents" className="shrink-0 gap-1.5 text-xs">
               <FileText className="w-3.5 h-3.5" />Documents
             </TabsTrigger>
-            <TabsTrigger value="signature" className="gap-1.5 text-xs">
+            <TabsTrigger value="signature" className="shrink-0 gap-1.5 text-xs">
               <PenTool className="w-3.5 h-3.5" />Signature
             </TabsTrigger>
-            <TabsTrigger value="portail" className="gap-1.5 text-xs">
+            <TabsTrigger value="portail" className="shrink-0 gap-1.5 text-xs">
               <Globe className="w-3.5 h-3.5" />Portail
             </TabsTrigger>
           </TabsList>

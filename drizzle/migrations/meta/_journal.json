@@ -8,6 +8,13 @@
       "when": 1789635415290,
       "tag": "0000_partner_portal_professions_and_proposals",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789635643925,
+      "tag": "0001_secure_legacy_partner_decision_signature",
+      "breakpoints": true
     }
   ]
 }

@@ -34,9 +34,12 @@ import AccompagnementSection from '@/components/AccompagnementSection';
 import DossierExportMenu from '@/components/DossierExportMenu';
 import FacturationSection from '@/components/FacturationSection';
 import FicheClientFields from '@/components/FicheClientFields';
+import DossierClientSummary from '@/components/DossierClientSummary';
+import DossierContextRail from '@/components/DossierContextRail';
 import { emptyFicheValues, loadFicheFromDossier, serializeFicheForSave, type FicheValues } from '@/lib/fiche-client-fields';
 import { ALL_SERVICES_TRUE } from '@/lib/workflow';
 import { sousStatutColors, sousStatutLabels } from '@/data/status-config';
+import { useEffect } from 'react';
 
 const statuses = [
   { value: 'nouveau', label: 'Nouveau' },
@@ -78,11 +81,11 @@ export default function DossierDetail() {
   });
 
   const [fiche, setFiche] = useState<FicheValues>(emptyFicheValues());
+  const [formOpen, setFormOpen] = useState(false);
 
-  // Sync form quand le dossier charge — une seule fois
-  const [formInitialized, setFormInitialized] = useState(false);
-  if (dossier && !formInitialized && !isLoading) {
-    setFormInitialized(true);
+  // Recharge les données locales lors d'une navigation directe entre dossiers.
+  useEffect(() => {
+    if (!dossier || isLoading) return;
     setForm({
       client_name: dossier.client_name,
       email: dossier.email || '',
@@ -98,7 +101,8 @@ export default function DossierDetail() {
       sous_statut: (dossier.sous_statut as any) || '',
     });
     setFiche(loadFicheFromDossier(dossier as any));
-  }
+    setFormOpen(false);
+  }, [dossier?.id, isLoading]);
 
   const handleSave = async () => {
     if (!dossier) return;
@@ -149,44 +153,48 @@ export default function DossierDetail() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="mx-auto max-w-[1500px] space-y-5">
         {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dossiers')}>
+        <header className="border border-border bg-card">
+          <div className="h-1 bg-primary" />
+          <div className="flex flex-col gap-5 p-5 xl:flex-row xl:items-start xl:justify-between xl:p-6">
+          <div className="flex min-w-0 items-start gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/dossiers')} aria-label="Retour aux dossiers">
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-heading font-bold text-foreground">
+                <h1 className="text-3xl font-heading font-normal text-foreground">
                   {dossier.client_name}
                 </h1>
                 {dossier.numero_dossier && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-sm bg-primary text-primary-foreground text-[11px] font-mono font-semibold tracking-wide">
+                  <span className="inline-flex items-center border border-primary/20 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
                     {dossier.numero_dossier}
                   </span>
                 )}
-              </div>
-              <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <StatusBadge status={dossier.status as any} />
                 {dossier.sous_statut && (
-                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${sousStatutColors[dossier.sous_statut]}`}>
+                  <span className={`inline-flex items-center px-2.5 py-1 text-[11px] font-semibold ${sousStatutColors[dossier.sous_statut]}`}>
                     {sousStatutLabels[dossier.sous_statut]}
                   </span>
                 )}
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                <span>{dossier.ville || 'Ville non renseignée'}</span>
+                <span aria-hidden="true">·</span>
+                <span>{dossier.budget.toLocaleString('fr-FR')} €</span>
                 {dossier.created_at && (
-                  <span className="text-xs text-muted-foreground">
+                  <span>
                     Créé le {new Date(dossier.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </span>
                 )}
-                <span className="text-xs text-muted-foreground">·</span>
-                <span className="text-xs text-muted-foreground">{dossier.ville}</span>
-                <span className="text-xs text-muted-foreground">·</span>
-                <span className="text-xs text-muted-foreground">{dossier.budget.toLocaleString('fr-FR')} €</span>
+                {dossier.updated_at && (
+                  <span>Mis à jour le {new Date(dossier.updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                )}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-wrap items-center gap-2 xl:justify-end">
             <DossierExportMenu dossier={dossier} />
             <RapportConseilButton dossier={dossier} />
             <Button
@@ -204,7 +212,8 @@ export default function DossierDetail() {
               {updateMut.isPending ? 'Enregistrement...' : 'Enregistrer'}
             </Button>
           </div>
-        </div>
+          </div>
+        </header>
 
         {/* Bannière validation directeur */}
         <ValidationBanner dossierId={dossier.id} />
@@ -212,35 +221,45 @@ export default function DossierDetail() {
         {/* Workflow progression */}
         <WorkflowProgress dossier={dossier} />
 
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
         {/* Onglets */}
-        <Tabs defaultValue="infos">
-          <TabsList className="w-full grid grid-cols-7">
-            <TabsTrigger value="infos" className="gap-1.5 text-xs">
+        <Tabs defaultValue="infos" className="min-w-0">
+          <TabsList className="flex w-full justify-start overflow-x-auto lg:grid lg:grid-cols-7">
+            <TabsTrigger value="infos" className="shrink-0 gap-1.5 text-xs">
               <User className="w-3.5 h-3.5" />Infos
             </TabsTrigger>
-            <TabsTrigger value="strategie" className="gap-1.5 text-xs">
+            <TabsTrigger value="strategie" className="shrink-0 gap-1.5 text-xs">
               <TrendingUp className="w-3.5 h-3.5" />Stratégie
             </TabsTrigger>
-            <TabsTrigger value="devis" className="gap-1.5 text-xs" disabled={(dossier as any).validation_directeur_requise}>
+            <TabsTrigger value="devis" className="shrink-0 gap-1.5 text-xs" disabled={(dossier as any).validation_directeur_requise}>
               {(dossier as any).validation_directeur_requise ? <Lock className="w-3.5 h-3.5" /> : <FileSignature className="w-3.5 h-3.5" />}Devis
             </TabsTrigger>
-            <TabsTrigger value="facturation" className="gap-1.5 text-xs">
+            <TabsTrigger value="facturation" className="shrink-0 gap-1.5 text-xs">
               <Receipt className="w-3.5 h-3.5" />Facturation
             </TabsTrigger>
-            <TabsTrigger value="documents" className="gap-1.5 text-xs">
+            <TabsTrigger value="documents" className="shrink-0 gap-1.5 text-xs">
               <FileText className="w-3.5 h-3.5" />Documents
             </TabsTrigger>
-            <TabsTrigger value="signature" className="gap-1.5 text-xs">
+            <TabsTrigger value="signature" className="shrink-0 gap-1.5 text-xs">
               <PenTool className="w-3.5 h-3.5" />Signature
             </TabsTrigger>
-            <TabsTrigger value="portail" className="gap-1.5 text-xs">
+            <TabsTrigger value="portail" className="shrink-0 gap-1.5 text-xs">
               <Globe className="w-3.5 h-3.5" />Portail
             </TabsTrigger>
           </TabsList>
 
           {/* Infos */}
-          <TabsContent value="infos" className="mt-4">
-            <div className="bg-card border rounded-xl p-6 space-y-4">
+          <TabsContent value="infos" className="mt-4 space-y-4">
+            <DossierClientSummary dossier={dossier} fiche={fiche} onOpenForm={() => setFormOpen(true)} />
+            {formOpen && (
+            <div className="bg-card border p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-border pb-3">
+                <div>
+                  <p className="text-[11px] font-medium uppercase text-hunters-or">Fiche dossier</p>
+                  <h2 className="mt-1 text-xl">Informations complètes</h2>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => setFormOpen(false)}>Fermer</Button>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2 sm:col-span-2">
                   <Label>Nom du client *</Label>
@@ -320,6 +339,7 @@ export default function DossierDetail() {
                 <FicheClientFields values={fiche} onChange={patch => setFiche(f => ({ ...f, ...patch }))} />
               </div>
             </div>
+            )}
             <div className="mt-4">
               <JournalActivite dossierId={dossier.id} />
             </div>
@@ -403,6 +423,8 @@ export default function DossierDetail() {
             </div>
           </TabsContent>
         </Tabs>
+        <DossierContextRail dossier={dossier} dossiers={dossiers} />
+        </div>
       </div>
     </AppLayout>
   );

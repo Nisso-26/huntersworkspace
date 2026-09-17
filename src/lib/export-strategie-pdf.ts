@@ -16,6 +16,7 @@ export async function exportStrategiePdf(
   clientName: string,
   conseiller: string,
   numeroDossier?: string | null,
+  dossier?: Record<string, any>,
 ) {
   const { default: jsPDF } = await import('jspdf');
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -246,18 +247,91 @@ export async function exportStrategiePdf(
     });
   }
 
+  // ─── CRITÈRES DE RECHERCHE DU BIEN ───────────────────────────────────
+  const formatCriterion = (value: unknown): string => {
+    if (Array.isArray(value)) return value.filter(Boolean).join(', ');
+    if (typeof value === 'number') return fmtEur(value);
+    return typeof value === 'string' ? value.trim() : '';
+  };
+  const ville = formatCriterion(dossier?.ville);
+  const zones = formatCriterion(dossier?.zones_souhaitees);
+  const criteres: Array<[string, string]> = [
+    ['Ville cible', ville],
+    ['Zones souhaitées', zones && zones !== ville ? zones : ''],
+    ['Type de bien souhaité', formatCriterion(dossier?.type_bien_souhaite)],
+    ['Budget', dossier?.budget !== null && dossier?.budget !== undefined ? fmtEur(Number(dossier.budget)) : ''],
+    ['Contraintes géographiques', formatCriterion(dossier?.contraintes_geographiques)],
+  ].filter(([, value]) => Boolean(value));
+
+  if (criteres.length) {
+    y = ensureSpace(doc, y, 18, ctxHeader);
+    y = drawSectionTitle(doc, 'Critères de recherche du bien', y);
+
+    for (const [label, value] of criteres) {
+      doc.setFont(T.body.font, 'normal');
+      doc.setFontSize(T.body.size);
+      const valueLines: string[] = doc.splitTextToSize(value, contentW - 52);
+      const rowH = Math.max(7, valueLines.length * 4.5 + 2);
+      y = ensureSpace(doc, y, rowH, ctxHeader);
+
+      doc.setFont(T.body.font, 'bold');
+      doc.setTextColor(...C.green);
+      doc.text(label, margin, y + 4.5);
+      doc.setFont(T.body.font, 'normal');
+      doc.setTextColor(...C.textDark);
+      doc.text(valueLines, margin + 52, y + 4.5);
+      doc.setDrawColor(...C.border);
+      doc.setLineWidth(0.2);
+      doc.line(margin, y + rowH, margin + contentW, y + rowH);
+      y += rowH;
+    }
+    y += 6;
+  }
+
+  // ─── RISQUES ET POINTS DE VIGILANCE ──────────────────────────────────
+  if (strategie.points_attention?.length) {
+    y = ensureSpace(doc, y, 18, ctxHeader);
+    y = drawSectionTitle(doc, 'Risques et points de vigilance', y);
+
+    for (const point of strategie.points_attention) {
+      doc.setFont(T.body.font, 'normal');
+      doc.setFontSize(T.body.size);
+      const lines: string[] = doc.splitTextToSize(String(point), contentW - 8);
+      const itemH = Math.max(5, lines.length * 4.8);
+      y = ensureSpace(doc, y, itemH + 2, ctxHeader);
+      doc.setFillColor(...C.gold);
+      doc.circle(margin + 1.5, y - 1.2, 0.8, 'F');
+      doc.setTextColor(...C.textDark);
+      doc.text(lines, margin + 5, y);
+      y += itemH + 1;
+    }
+    y += 4;
+  }
+
   // ─── DISCLAIMER ──────────────────────────────────────────────────────
-  y = ensureSpace(doc, y, 22, ctxHeader);
   y += 4;
   const disclaimer = strategie.disclaimer ||
-    'Cette analyse est fournie à titre indicatif par HUNTERS Immobilier dans le cadre d\'un accompagnement personnalisé. Elle ne constitue pas un conseil en investissement au sens juridique du terme.';
+    "Cette stratégie repose sur les informations communiquées par le client et sur les hypothèses de marché retenues à la date de son établissement. Conformément à son obligation de moyens en tant que conseiller en investissement immobilier, HUNTERS Immobilier met en œuvre toute la diligence et l'expertise nécessaires à l'élaboration d'une stratégie fondée sur des critères réalistes et objectivement vérifiables. Elle ne saurait toutefois constituer un engagement de résultat : la réalisation effective des objectifs patrimoniaux, locatifs ou de valorisation dépend de facteurs de marché, économiques et personnels qui échappent au contrôle du cabinet.";
   const dLines: string[] = doc.splitTextToSize(disclaimer, contentW - 8);
-  const dH = 6 + dLines.length * 4;
+  const dH = 8 + dLines.length * 4;
+  y = ensureSpace(doc, y, dH + 4, ctxHeader);
   drawIvoryBox(doc, y, dH);
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(7.5);
   doc.setTextColor(...C.textMuted);
-  doc.text(dLines, margin + 4, y + 5);
+  doc.text(dLines, margin + 4, y + 6);
+  y += dH + 5;
+
+  // ─── VALIDATION PAR DES PROFESSIONNELS PARTENAIRES ───────────────────
+  const validationPartenaires = 'Une stratégie pensée par nos experts, confortée par des professionnels confirmés à chaque étape de sa construction.';
+  const validationLines: string[] = doc.splitTextToSize(validationPartenaires, contentW - 8);
+  const validationH = 7 + validationLines.length * 4.2;
+  y = ensureSpace(doc, y, validationH, ctxHeader);
+  drawIvoryBox(doc, y, validationH);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...C.green);
+  doc.text(validationLines, margin + 4, y + 5.5);
 
   // ─── PIEDS DE PAGE (hors couverture) ─────────────────────────────────
   const total = doc.getNumberOfPages();

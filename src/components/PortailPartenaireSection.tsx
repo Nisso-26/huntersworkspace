@@ -278,6 +278,7 @@ export default function PortailPartenaireSection({ dossier }: Props) {
         <div className="space-y-2">
           {acces.map((a) => {
             const p = partenaires.find((x) => x.id === a.partenaire_id);
+            const accessLabels = scopesForSpecialite(p?.specialite);
             const actif = estActif(a);
             return (
               <div key={a.id} className="flex items-center gap-2 p-2 rounded-md bg-secondary/50 text-xs">
@@ -314,19 +315,24 @@ export default function PortailPartenaireSection({ dossier }: Props) {
             Quitus partenaires
           </p>
           {quitusList.map((q) => (
-            <div key={q.id} className="flex items-center gap-2 p-2 rounded-md bg-secondary/50 text-xs">
-              <span className="flex-1 truncate">
-                {(q.contenu as any)?.partenaire_nom || 'Partenaire'} ·{' '}
-                {(q.contenu as any)?.verdict === 'quitus' ? 'Quitus' : 'Invalidation motivée'}
-              </span>
-              <span className="text-[10px] text-muted-foreground">
-                {new Date(q.date_generation).toLocaleDateString('fr-FR')}
-              </span>
-              <Button type="button" variant="ghost" size="icon" className="h-6 w-6"
-                onClick={() => telechargerQuitus(q.contenu, (q.contenu as any)?.numero_dossier)}>
-                <Download className="w-3 h-3" />
-              </Button>
-            </div>
+            (() => {
+              const labels = scopesForSpecialite((q.contenu as any)?.partenaire_specialite);
+              return (
+                <div key={q.id} className="flex items-center gap-2 p-2 rounded-md bg-secondary/50 text-xs">
+                  <span className="flex-1 truncate">
+                    {(q.contenu as any)?.partenaire_nom || 'Partenaire'} ·{' '}
+                    {(q.contenu as any)?.verdict === 'quitus' ? labels.labelQuitus : labels.labelInvalidation}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {new Date(q.date_generation).toLocaleDateString('fr-FR')}
+                  </span>
+                  <Button type="button" variant="ghost" size="icon" className="h-6 w-6"
+                    onClick={() => telechargerQuitus(q.contenu, (q.contenu as any)?.numero_dossier)}>
+                    <Download className="w-3 h-3" />
+                  </Button>
+                </div>
+              );
+            })()
           ))}
         </div>
       )}
@@ -343,8 +349,8 @@ export default function PortailPartenaireSection({ dossier }: Props) {
           )}
           {derniereDecision?.proposition?.trim() && (() => {
             const decisionAccess = acces.find((a) => a.id === derniereDecision.acces_portail_id);
-            const decisionPartner = partenaires.find((p) => p.id === decisionAccess?.partenaire_id);
-            const decisionProfile = scopesForSpecialite(decisionPartner?.specialite).famille;
+            const decisionProfile = decisionAccess?.scope_lecture.includes('montage')
+              && decisionAccess.scope_lecture.includes('situation_financiere') ? 'cgp' : 'courtier';
             return (
               <div className="border bg-secondary/40 p-3 space-y-2">
                 <p className="text-xs font-semibold text-foreground">

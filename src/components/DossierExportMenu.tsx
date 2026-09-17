@@ -37,7 +37,6 @@ export default function DossierExportMenu({ dossier }: Props) {
         <Button
           size="sm"
           className="gap-2"
-          style={{ backgroundColor: '#004621', color: 'white' }}
           disabled={!!loading}
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}

@@ -795,6 +795,7 @@ export type Database = {
           ip_session: string | null
           justification: string
           proposition: string | null
+          proposition_alternative: string | null
           verdict: string
         }
         Insert: {
@@ -807,6 +808,7 @@ export type Database = {
           ip_session?: string | null
           justification: string
           proposition?: string | null
+          proposition_alternative?: string | null
           verdict: string
         }
         Update: {
@@ -819,6 +821,7 @@ export type Database = {
           ip_session?: string | null
           justification?: string
           proposition?: string | null
+          proposition_alternative?: string | null
           verdict?: string
         }
         Relationships: [
@@ -1117,6 +1120,7 @@ export type Database = {
           id: string
           impot_revenu_paye: number | null
           mandataire_id: string | null
+          montage_financier_propose: string | null
           nationalite: string | null
           niveau_qualification: string | null
           nombre_enfants: number | null
@@ -1196,6 +1200,7 @@ export type Database = {
           id?: string
           impot_revenu_paye?: number | null
           mandataire_id?: string | null
+          montage_financier_propose?: string | null
           nationalite?: string | null
           niveau_qualification?: string | null
           nombre_enfants?: number | null
@@ -1275,6 +1280,7 @@ export type Database = {
           id?: string
           impot_revenu_paye?: number | null
           mandataire_id?: string | null
+          montage_financier_propose?: string | null
           nationalite?: string | null
           niveau_qualification?: string | null
           nombre_enfants?: number | null
@@ -2619,6 +2625,10 @@ export type Database = {
           id: string
         }[]
       }
+      get_partner_portal_decision_context: {
+        Args: { _token: string }
+        Returns: Json
+      }
       get_partner_portal_payload: { Args: { _token: string }; Returns: Json }
       get_portal_payload: { Args: { _token: string }; Returns: Json }
       get_portal_token: {
@@ -2662,6 +2672,16 @@ export type Database = {
             Args: {
               _justification: string
               _proposition?: string
+              _token: string
+              _verdict: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              _api_version: string
+              _justification: string
+              _proposition_alternative: string
               _token: string
               _verdict: string
             }

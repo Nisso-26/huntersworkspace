@@ -3,8 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Dossier } from '@/hooks/use-dossiers';
 import { getWorkflowSteps, type WorkflowStep } from '@/lib/workflow';
 import { cn } from '@/lib/utils';
-import { Check } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface Props {
   dossier: Dossier;
@@ -12,19 +14,19 @@ interface Props {
 
 type StepState = 'todo' | 'in_progress' | 'done';
 
-interface ChecklistState {
-  // map of stepId -> array of bool (checklist items completion)
-  [stepId: number]: boolean[];
-}
-
-const HUNTERS_GREEN = '#004621';
-const HUNTERS_GOLD = '#C8962F';
+const MACRO_STEPS = [
+  { label: 'Conseil', ids: [1, 2, 3, 4] },
+  { label: 'Chasse', ids: [5] },
+  { label: 'Visites', ids: [6] },
+  { label: 'Signature', ids: [7, 8, 9] },
+];
 
 export default function WorkflowProgress({ dossier }: Props) {
   const steps = useMemo(() => getWorkflowSteps(dossier), [dossier]);
   const [openStep, setOpenStep] = useState<number | null>(null);
   const [autoCompletion, setAutoCompletion] = useState<Record<number, boolean>>({});
   const [notified, setNotified] = useState<Record<number, boolean>>({});
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   // Detect auto-completion data
   useEffect(() => {
@@ -103,67 +105,100 @@ export default function WorkflowProgress({ dossier }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoCompletion]);
 
+  const macroSteps = MACRO_STEPS.map(macro => {
+    const groupSteps = steps.filter(step => macro.ids.includes(step.id));
+    const relevantSteps = groupSteps.length ? groupSteps : steps.filter(step => step.id === 9 && macro.label === 'Signature');
+    const completed = relevantSteps.filter(step => stepStates[step.id] === 'done');
+    const active = relevantSteps.some(step => stepStates[step.id] === 'in_progress');
+    const state: StepState = relevantSteps.length > 0 && completed.length === relevantSteps.length ? 'done' : active ? 'in_progress' : 'todo';
+    const advanced = [...completed, ...relevantSteps.filter(step => stepStates[step.id] === 'in_progress')].at(-1) || relevantSteps[0];
+    return { ...macro, state, sublabel: advanced?.label || 'Non applicable' };
+  });
+
   return (
-    <div className="bg-card border rounded-xl p-5">
+    <div className="border border-border bg-card p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-heading font-semibold text-foreground text-sm">Progression du dossier</h3>
+        <div>
+          <p className="text-[11px] font-medium uppercase text-hunters-or">Parcours client</p>
+          <h2 className="mt-1 text-xl">Progression du dossier</h2>
+        </div>
         <span className="text-xs text-muted-foreground">
           Étape {Math.max(1, steps.findIndex(s => stepStates[s.id] !== 'done') + 1 || steps.length)} / {steps.length}
         </span>
       </div>
 
-      {/* Bar */}
-      <div className="relative">
-        <div className="absolute top-4 left-4 right-4 h-0.5 bg-border" />
-        <div className="relative flex justify-between">
-          {steps.map(s => {
-            const state = stepStates[s.id];
-            const color = state === 'done' ? HUNTERS_GREEN : state === 'in_progress' ? HUNTERS_GOLD : '#9CA3AF';
-            const bg = state === 'todo' ? '#F3F4F6' : color;
-            const isOpen = openStep === s.id;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => setOpenStep(isOpen ? null : s.id)}
-                className="flex flex-col items-center gap-1.5 group focus:outline-none flex-1 min-w-0"
-                title={s.label}
-              >
-                <span
-                  className={cn(
-                    'w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold border-2 transition-all',
-                    isOpen && 'ring-2 ring-offset-2 ring-primary/40',
-                  )}
-                  style={{
-                    backgroundColor: bg,
-                    borderColor: color,
-                    color: state === 'todo' ? '#6B7280' : '#fff',
-                  }}
-                >
-                  {state === 'done' ? <Check className="w-4 h-4" /> : s.id}
-                </span>
-                <span className="text-[10px] text-muted-foreground hidden sm:block truncate max-w-[80px]">{s.short}</span>
-              </button>
-            );
-          })}
+      <div className="relative py-3">
+        <div className="absolute left-[12.5%] right-[12.5%] top-7 h-px bg-border" />
+        <div className="relative grid grid-cols-4">
+          {macroSteps.map((macro, index) => (
+            <div key={macro.label} className="flex min-w-0 flex-col items-center px-1 text-center">
+              <span className={cn(
+                'flex h-8 w-8 rotate-45 items-center justify-center border transition-colors',
+                macro.state === 'done' && 'border-primary bg-primary text-primary-foreground',
+                macro.state === 'in_progress' && 'border-hunters-or bg-hunters-or text-primary-foreground',
+                macro.state === 'todo' && 'border-border bg-card text-muted-foreground',
+              )}>
+                <span className="-rotate-45 text-[11px] font-semibold">{macro.state === 'done' ? <Check className="h-4 w-4" /> : index + 1}</span>
+              </span>
+              <span className="mt-3 text-xs font-semibold text-foreground sm:text-sm">{macro.label}</span>
+              <span className="mt-0.5 line-clamp-2 text-[10px] leading-tight text-muted-foreground sm:text-xs">{macro.sublabel}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Checklist for opened step */}
-      {openStep !== null && (() => {
+      <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen} className="mt-3 border-t border-border pt-3">
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" size="sm" className="mx-auto flex text-xs">
+            {detailsOpen ? 'Masquer le détail' : 'Voir le détail des étapes'}
+            <ChevronDown className={cn('h-4 w-4 transition-transform', detailsOpen && 'rotate-180')} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="relative mt-4">
+            <div className="absolute left-4 right-4 top-4 h-px bg-border" />
+            <div className="relative flex justify-between">
+              {steps.map(s => {
+                const state = stepStates[s.id];
+                const isOpen = openStep === s.id;
+                return (
+                  <Button
+                    key={s.id}
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setOpenStep(isOpen ? null : s.id)}
+                    className="group h-auto min-w-0 flex-1 flex-col gap-1.5 px-0 py-0 hover:bg-transparent"
+                    title={s.label}
+                  >
+                    <span className={cn(
+                      'flex h-8 w-8 items-center justify-center rounded-full border-2 text-[11px] font-bold transition-all',
+                      state === 'done' && 'border-primary bg-primary text-primary-foreground',
+                      state === 'in_progress' && 'border-hunters-or bg-hunters-or text-primary-foreground',
+                      state === 'todo' && 'border-border bg-muted text-muted-foreground',
+                      isOpen && 'ring-2 ring-primary/40 ring-offset-2',
+                    )}>
+                      {state === 'done' ? <Check className="h-4 w-4" /> : s.id}
+                    </span>
+                    <span className="hidden max-w-20 truncate text-[10px] text-muted-foreground sm:block">{s.short}</span>
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          {openStep !== null && (() => {
         const step = steps.find(s => s.id === openStep);
         if (!step) return null;
         const state = stepStates[step.id];
         return (
           <div className="mt-5 border-t pt-4">
             <div className="flex items-center gap-2 mb-2">
-              <span
-                className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
-                style={{
-                  backgroundColor: state === 'done' ? HUNTERS_GREEN : state === 'in_progress' ? HUNTERS_GOLD : '#E5E7EB',
-                  color: state === 'todo' ? '#374151' : '#fff',
-                }}
-              >
+              <span className={cn(
+                'px-2 py-0.5 text-[11px] font-bold uppercase',
+                state === 'done' && 'bg-primary text-primary-foreground',
+                state === 'in_progress' && 'bg-hunters-or text-primary-foreground',
+                state === 'todo' && 'bg-muted text-muted-foreground',
+              )}>
                 {state === 'done' ? 'Complété' : state === 'in_progress' ? 'En cours' : 'À faire'}
               </span>
               <p className="text-sm font-semibold text-foreground">{step.label}</p>
@@ -179,9 +214,12 @@ export default function WorkflowProgress({ dossier }: Props) {
                         'mt-0.5 w-4 h-4 rounded border flex items-center justify-center flex-shrink-0',
                         checked ? 'border-transparent' : 'border-border bg-background',
                       )}
-                      style={checked ? { backgroundColor: HUNTERS_GREEN } : undefined}
+                      className={cn(
+                        'mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border',
+                        checked ? 'border-primary bg-primary' : 'border-border bg-background',
+                      )}
                     >
-                      {checked && <Check className="w-3 h-3 text-white" />}
+                      {checked && <Check className="h-3 w-3 text-primary-foreground" />}
                     </span>
                     <span className={cn(checked && 'text-muted-foreground line-through')}>{item}</span>
                   </li>
@@ -190,7 +228,9 @@ export default function WorkflowProgress({ dossier }: Props) {
             </ul>
           </div>
         );
-      })()}
+          })()}
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 }

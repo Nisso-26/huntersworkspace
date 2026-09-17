@@ -14,7 +14,7 @@ interface Props {
   dossiers: Dossier[];
 }
 
-const eventType = (value: string) => value.replaceAll('_', ' ').replace(/^./, char => char.toUpperCase());
+const eventType = (value: string) => value.replace(/_/g, ' ').replace(/^./, char => char.toUpperCase());
 
 export default function DossierContextRail({ dossier, dossiers }: Props) {
   const navigate = useNavigate();

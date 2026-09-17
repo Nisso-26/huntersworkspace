@@ -98,11 +98,12 @@ Deno.serve(async (req) => {
     });
     if (mailError) throw mailError;
 
-    await supabase.from('log_acces_portail').insert({
+    const { error: logError } = await supabase.from('log_acces_portail').insert({
       acces_portail_id: access.id,
       evenement: 'notification_invalidation',
       detail: { proposition_jointe: Boolean(decision.proposition), destinataires: recipients.size },
     });
+    if (logError) throw logError;
     return json({ ok: true, sent: true });
   } catch (error) {
     console.error('[notify-partner-decision]', error);

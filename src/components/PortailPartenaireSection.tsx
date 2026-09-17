@@ -278,7 +278,6 @@ export default function PortailPartenaireSection({ dossier }: Props) {
         <div className="space-y-2">
           {acces.map((a) => {
             const p = partenaires.find((x) => x.id === a.partenaire_id);
-            const accessLabels = scopesForSpecialite(p?.specialite);
             const actif = estActif(a);
             return (
               <div key={a.id} className="flex items-center gap-2 p-2 rounded-md bg-secondary/50 text-xs">

@@ -24,7 +24,7 @@ export interface DecisionPartenaire {
   acces_portail_id: string;
   verdict: 'quitus' | 'invalidation';
   justification: string;
-  proposition: string | null;
+  proposition_alternative: string | null;
   date_decision: string | null;
 }
 
@@ -40,7 +40,9 @@ export interface QuitusRow {
 export function scopesForSpecialite(specialite?: string | null): {
   scope_lecture: string[];
   scope_decision: string[];
-  famille: PartnerProfile;
+  famille: 'montage' | 'financement';
+  profil: PartnerProfile;
+  peutProposer: 'strategie' | 'montage_financier' | null;
   natureValidation: string;
   labelQuitus: string;
   labelInvalidation: string;
@@ -49,7 +51,9 @@ export function scopesForSpecialite(specialite?: string | null): {
   return {
     scope_lecture: [...config.scope_lecture],
     scope_decision: [...config.scope_decision],
-    famille: config.profile,
+    famille: config.famille,
+    profil: config.profile,
+    peutProposer: config.peutProposer,
     natureValidation: config.natureValidation,
     labelQuitus: config.labelQuitus,
     labelInvalidation: config.labelInvalidation,
@@ -174,9 +178,13 @@ export function useDerniereDecision(dossierId?: string) {
 
 // ─── API publique du portail (sans compte) ───────────────────────────────────
 export async function fetchPartnerPortal(token: string) {
-  const { data, error } = await (supabase as any).rpc('get_partner_portal_payload', { _token: token });
+  const [{ data, error }, { data: decisionContext }] = await Promise.all([
+    (supabase as any).rpc('get_partner_portal_payload', { _token: token }),
+    (supabase as any).rpc('get_partner_portal_decision_context', { _token: token }),
+  ]);
   if (error) throw new Error('invalide');
-  return data as any | null;
+  if (!data) return null;
+  return { ...data, dossier: { ...(data.dossier || {}), ...(decisionContext || {}) } } as any;
 }
 
 export async function logPartnerConsultation(token: string, section: string) {
@@ -185,9 +193,13 @@ export async function logPartnerConsultation(token: string, section: string) {
   } catch { /* silencieux */ }
 }
 
-export async function startPartnerDecision(token: string, verdict: string, justification: string, proposition?: string | null) {
+export async function startPartnerDecision(token: string, verdict: string, justification: string, propositionAlternative?: string | null) {
   const { data, error } = await (supabase as any).rpc('start_partner_decision', {
-    _token: token, _verdict: verdict, _justification: justification, _proposition: proposition ?? null,
+    _token: token,
+    _verdict: verdict,
+    _justification: justification,
+    _proposition_alternative: propositionAlternative ?? null,
+    _api_version: 'proposition_alternative_v1',
   });
   if (error) throw new Error(error.message);
   return data as { decision_id: string; code: string };

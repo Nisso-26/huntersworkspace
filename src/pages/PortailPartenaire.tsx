@@ -27,7 +27,7 @@ export default function PortailPartenaire() {
 
   const [verdict, setVerdict] = useState<Verdict | ''>('');
   const [justification, setJustification] = useState('');
-  const [proposition, setProposition] = useState('');
+  const [propositionAlternative, setPropositionAlternative] = useState('');
   const [step, setStep] = useState<'form' | 'confirm' | 'done'>('form');
   const [decisionId, setDecisionId] = useState('');
   const [codeGenere, setCodeGenere] = useState('');
@@ -55,7 +55,8 @@ export default function PortailPartenaire() {
   const montageAutorise = Object.keys(sections).includes('montage');
   const profile = partnerPortalProfile(payload?.partenaire?.specialite);
   const courtierNeedsProposalForQuitus = profile.profile === 'courtier'
-    && (!payload?.dossier?.budget_renseigne || !payload?.dossier?.capacite_emprunt_renseignee);
+    && payload?.dossier?.budget == null
+    && payload?.dossier?.capacite_emprunt_estimee == null;
   const proposalVisible = profile.profile === 'courtier'
     || (profile.profile === 'cgp' && verdict === 'invalidation');
   const proposalRequired = (profile.profile === 'cgp' && verdict === 'invalidation')
@@ -94,12 +95,12 @@ export default function PortailPartenaire() {
   const demarrer = async () => {
     if (!token || !verdict) return toast.error('Choisissez un verdict');
     if (justification.trim().length < 10) return toast.error('Justification obligatoire (10 caractères minimum)');
-    if (proposalRequired && proposition.trim().length < proposalMinLength) {
+    if (proposalRequired && propositionAlternative.trim().length < proposalMinLength) {
       return toast.error(`Proposition obligatoire (${proposalMinLength} caractères minimum)`);
     }
     setBusy(true);
     try {
-      const res = await startPartnerDecision(token, verdict, justification.trim(), proposition.trim() || null);
+      const res = await startPartnerDecision(token, verdict, justification.trim(), propositionAlternative.trim() || null);
       setDecisionId(res.decision_id);
       setCodeGenere(res.code);
       setStep('confirm');
@@ -275,14 +276,14 @@ export default function PortailPartenaire() {
                     </Label>
                     <Textarea
                       rows={5}
-                      value={proposition}
-                      onChange={(e) => setProposition(e.target.value)}
+                      value={propositionAlternative}
+                      onChange={(e) => setPropositionAlternative(e.target.value)}
                       placeholder={profile.profile === 'courtier'
                         ? 'Précisez si possible : montant finançable, durée, taux visé, type de prêt, apport nécessaire, garanties.'
                         : 'Décrivez la stratégie que vous recommandez.'}
                     />
                     <p className="text-[11px] text-muted-foreground">
-                      {proposition.trim().length} caractère(s){proposalRequired ? ` — minimum ${proposalMinLength}` : ' — facultatif'}
+                       {propositionAlternative.trim().length} caractère(s){proposalRequired ? ` — minimum ${proposalMinLength}` : ' — facultatif'}
                     </p>
                   </div>
                 )}
@@ -300,8 +301,8 @@ export default function PortailPartenaire() {
                   <p><span className="text-muted-foreground">Verdict :</span>{' '}
                     <strong>{verdictLabel}</strong></p>
                   <p className="text-muted-foreground">{justification}</p>
-                  {proposition.trim() && (
-                    <p><span className="text-muted-foreground">Proposition :</span> {proposition.trim()}</p>
+                  {propositionAlternative.trim() && (
+                    <p><span className="text-muted-foreground">Proposition :</span> {propositionAlternative.trim()}</p>
                   )}
                   <p className="text-[11px] text-muted-foreground">
                     En confirmant, j'atteste avoir examiné les éléments du dossier {payload?.dossier?.numero_dossier}{' '}

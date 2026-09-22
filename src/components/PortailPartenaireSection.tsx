@@ -152,27 +152,33 @@ export default function PortailPartenaireSection({ dossier }: Props) {
     doc.save(`Quitus_${ref || dossier.numero_dossier || 'dossier'}.pdf`);
   };
 
-  const adopterPropositionCgp = async () => {
-    const proposition = derniereDecision?.proposition?.trim();
+  const adopterProposition = async (profil: 'cgp' | 'courtier') => {
+    const proposition = derniereDecision?.proposition_alternative?.trim();
     if (!proposition || !user) return;
     setBusy(true);
     try {
-      const { error: archiveError } = await (supabase.from('documents_generes') as any).insert({
-        dossier_id: dossier.id,
-        type: 'strategie_archivee_avant_adoption_cgp',
-        numero_dossier: dossier.numero_dossier,
-        conseiller_id: user.id,
-        contenu: dossier.strategie ?? null,
-      });
-      if (archiveError) throw archiveError;
+      if (profil === 'cgp') {
+        const { error: archiveError } = await (supabase.from('documents_generes') as any).insert({
+          dossier_id: dossier.id,
+          type: 'strategie_patrimoniale',
+          numero_dossier: dossier.numero_dossier,
+          conseiller_id: user.id,
+          contenu: dossier.strategie ?? null,
+        });
+        if (archiveError) throw archiveError;
+      }
 
       const { error: updateError } = await supabase
         .from('dossiers')
-        .update({ strategie: proposition } as any)
+        .update(profil === 'cgp'
+          ? { strategie: proposition }
+          : { montage_financier_propose: proposition } as any)
         .eq('id', dossier.id);
       if (updateError) throw updateError;
       await queryClient.invalidateQueries({ queryKey: ['dossiers'] });
-      toast.success('Proposition du CGP adoptée — stratégie précédente archivée');
+      toast.success(profil === 'cgp'
+        ? 'Proposition du CGP adoptée — stratégie précédente archivée'
+        : 'Montage financier du courtier adopté');
     } catch (e: any) {
       toast.error(e.message || "La proposition n'a pas pu être adoptée");
     } finally {
@@ -346,7 +352,7 @@ export default function PortailPartenaireSection({ dossier }: Props) {
           {derniereDecision?.justification && (
             <p className="text-xs text-muted-foreground">{derniereDecision.justification}</p>
           )}
-          {derniereDecision?.proposition?.trim() && (() => {
+          {derniereDecision?.proposition_alternative?.trim() && (() => {
             const decisionAccess = acces.find((a) => a.id === derniereDecision.acces_portail_id);
             const decisionProfile = decisionAccess?.scope_lecture.includes('montage')
               && decisionAccess.scope_lecture.includes('situation_financiere') ? 'cgp' : 'courtier';
@@ -363,13 +369,11 @@ export default function PortailPartenaireSection({ dossier }: Props) {
                 )}
                 <div>
                   <p className="text-[11px] font-semibold text-muted-foreground">Proposition partenaire</p>
-                  <p className="text-xs text-foreground whitespace-pre-wrap">{derniereDecision.proposition}</p>
+                  <p className="text-xs text-foreground whitespace-pre-wrap">{derniereDecision.proposition_alternative}</p>
                 </div>
-                {decisionProfile === 'cgp' && (
-                  <Button size="sm" onClick={adopterPropositionCgp} disabled={busy}>
-                    Adopter cette proposition
-                  </Button>
-                )}
+                <Button size="sm" onClick={() => adopterProposition(decisionProfile)} disabled={busy}>
+                  Adopter cette proposition
+                </Button>
               </div>
             );
           })()}

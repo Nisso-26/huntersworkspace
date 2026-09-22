@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
 
     const { data: decision } = await supabase
       .from('decisions_partenaire')
-      .select('id, verdict, proposition, date_decision')
+      .select('id, verdict, proposition_alternative, date_decision')
       .eq('id', decisionId)
       .eq('acces_portail_id', access.id)
       .maybeSingle();
@@ -79,8 +79,8 @@ Deno.serve(async (req) => {
     if (recipients.size === 0) return json({ ok: true, sent: false });
 
     const numero = dossier?.numero_dossier || 'DOSSIER';
-    const proposalNotice = decision.proposition
-      ? '<p style="margin:0 0 12px;"><strong>Le partenaire a joint une proposition — consultez le dossier pour la voir.</strong></p>'
+    const proposalNotice = decision.proposition_alternative
+      ? '<p style="margin:0 0 12px;"><strong>Une contre-proposition accompagne cette invalidation — consultez le dossier pour l’examiner.</strong></p>'
       : '';
     const { error: mailError } = await supabase.functions.invoke('send-notification', {
       headers: { Authorization: `Bearer ${serviceRoleKey}` },
@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
     const { error: logError } = await supabase.from('log_acces_portail').insert({
       acces_portail_id: access.id,
       evenement: 'notification_invalidation',
-      detail: { proposition_jointe: Boolean(decision.proposition), destinataires: recipients.size },
+      detail: { proposition_jointe: Boolean(decision.proposition_alternative), destinataires: recipients.size },
     });
     if (logError) throw logError;
     return json({ ok: true, sent: true });

@@ -233,6 +233,9 @@ export default function PortailPartenaireSection({ dossier }: Props) {
 
   const invalide = dossier.sous_statut === 'invalide_motive';
   const escalade = dossier.sous_statut === 'conteste_escalade';
+  const decisionAccess = acces.find((a) => a.id === derniereDecision?.acces_portail_id);
+  const decisionProfile: 'cgp' | 'courtier' = decisionAccess?.scope_lecture.includes('montage')
+    && decisionAccess.scope_lecture.includes('situation_financiere') ? 'cgp' : 'courtier';
 
   return (
     <div className="space-y-4">
@@ -342,6 +345,35 @@ export default function PortailPartenaireSection({ dossier }: Props) {
         </div>
       )}
 
+      {derniereDecision?.proposition_alternative?.trim() && (
+        <div className="border-t pt-3">
+          <div className="border bg-secondary/40 p-3 space-y-2">
+            <p className="text-xs font-semibold text-foreground">
+              {decisionProfile === 'cgp' ? 'Proposition de stratégie du CGP' : 'Montage financier proposé'}
+            </p>
+            {decisionProfile === 'cgp' && dossier.strategie && (
+              <div>
+                <p className="text-[11px] font-semibold text-muted-foreground">Stratégie actuelle</p>
+                <p className="text-xs text-foreground whitespace-pre-wrap">{typeof dossier.strategie === 'string' ? dossier.strategie : JSON.stringify(dossier.strategie)}</p>
+              </div>
+            )}
+            {decisionProfile === 'courtier' && dossier.montage_financier_propose && (
+              <div>
+                <p className="text-[11px] font-semibold text-muted-foreground">Montage financier actuel</p>
+                <p className="text-xs text-foreground whitespace-pre-wrap">{dossier.montage_financier_propose}</p>
+              </div>
+            )}
+            <div>
+              <p className="text-[11px] font-semibold text-muted-foreground">Proposition partenaire</p>
+              <p className="text-xs text-foreground whitespace-pre-wrap">{derniereDecision.proposition_alternative}</p>
+            </div>
+            <Button size="sm" onClick={() => adopterProposition(decisionProfile)} disabled={busy}>
+              Adopter cette proposition
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Invalidation : corriger ou contester */}
       {invalide && (
         <div className="border-t pt-3 space-y-2">
@@ -352,31 +384,6 @@ export default function PortailPartenaireSection({ dossier }: Props) {
           {derniereDecision?.justification && (
             <p className="text-xs text-muted-foreground">{derniereDecision.justification}</p>
           )}
-          {derniereDecision?.proposition_alternative?.trim() && (() => {
-            const decisionAccess = acces.find((a) => a.id === derniereDecision.acces_portail_id);
-            const decisionProfile = decisionAccess?.scope_lecture.includes('montage')
-              && decisionAccess.scope_lecture.includes('situation_financiere') ? 'cgp' : 'courtier';
-            return (
-              <div className="border bg-secondary/40 p-3 space-y-2">
-                <p className="text-xs font-semibold text-foreground">
-                  {decisionProfile === 'cgp' ? 'Proposition de stratégie du CGP' : 'Montage financier proposé'}
-                </p>
-                {decisionProfile === 'cgp' && dossier.strategie && (
-                  <div>
-                    <p className="text-[11px] font-semibold text-muted-foreground">Stratégie actuelle</p>
-                    <p className="text-xs text-foreground whitespace-pre-wrap">{typeof dossier.strategie === 'string' ? dossier.strategie : JSON.stringify(dossier.strategie)}</p>
-                  </div>
-                )}
-                <div>
-                  <p className="text-[11px] font-semibold text-muted-foreground">Proposition partenaire</p>
-                  <p className="text-xs text-foreground whitespace-pre-wrap">{derniereDecision.proposition_alternative}</p>
-                </div>
-                <Button size="sm" onClick={() => adopterProposition(decisionProfile)} disabled={busy}>
-                  Adopter cette proposition
-                </Button>
-              </div>
-            );
-          })()}
           <div className="flex gap-2">
             <Button size="sm" variant="outline" className="gap-2" onClick={corriger} disabled={busy}>
               <RefreshCw className="w-3.5 h-3.5" />

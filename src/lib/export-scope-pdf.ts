@@ -88,6 +88,113 @@ export function formatScopedValue(key: string, value: unknown): string {
 
 export type ScopedSections = Record<string, Record<string, unknown>>;
 
+export interface ScopedNarrativeBlock {
+  title: string;
+  text: string;
+}
+
+function valueFromScopedSections(sections: ScopedSections, key: string): unknown {
+  for (const fields of Object.values(sections)) {
+    if (fields && Object.prototype.hasOwnProperty.call(fields, key)) return fields[key];
+  }
+  return undefined;
+}
+
+function hasNarrativeValue(value: unknown): boolean {
+  if (value === null || value === undefined || value === '') return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === 'object') return Object.keys(value as Record<string, unknown>).length > 0;
+  return true;
+}
+
+function asText(value: unknown): string | null {
+  if (!hasNarrativeValue(value)) return null;
+  if (typeof value === 'boolean') return value ? 'oui' : 'non';
+  if (typeof value === 'number') return value.toLocaleString('fr-FR');
+  if (Array.isArray(value)) return value.length ? `${value.length} élément(s) déclaré(s)` : null;
+  if (typeof value === 'object') return 'renseigné';
+  const text = String(value).trim();
+  return text || null;
+}
+
+function moneyText(value: unknown): string | null {
+  if (!hasNarrativeValue(value)) return null;
+  const n = typeof value === 'number' ? value : Number(String(value).replace(/\s/g, '').replace(',', '.'));
+  if (!Number.isFinite(n)) return asText(value);
+  return `${n.toLocaleString('fr-FR')} €`;
+}
+
+function childrenText(value: unknown): string | null {
+  if (!hasNarrativeValue(value)) return null;
+  const n = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(n)) return null;
+  if (n <= 0) return 'sans enfant';
+  return `avec ${n} enfant${n > 1 ? 's' : ''}`;
+}
+
+function deficitText(value: unknown): string | null {
+  const amount = moneyText(value);
+  if (!amount) return null;
+  return `des déficits fonciers existants de ${amount}`;
+}
+
+function joinSentence(parts: string[]): string {
+  const clean = parts.filter(Boolean);
+  if (clean.length === 0) return '';
+  if (clean.length === 1) return `${clean[0]}.`;
+  return `${clean.slice(0, -1).join(', ')} et ${clean[clean.length - 1]}.`;
+}
+
+export function buildScopedNarratives(sections: ScopedSections): ScopedNarrativeBlock[] {
+  const get = (key: string) => valueFromScopedSections(sections, key);
+  const statut = asText(get('statut_professionnel'));
+  const situation = asText(get('situation_familiale'));
+  const enfants = childrenText(get('nombre_enfants'));
+  const budget = moneyText(get('budget'));
+  const ville = asText(get('ville'));
+  const typeBien = asText(get('type_bien_souhaite'));
+  const horizon = asText(get('horizon_investissement'));
+  const risque = asText(get('appetence_risque'));
+  const delai = asText(get('delai_concretisation'));
+
+  const profilParts: string[] = [];
+  if (statut) profilParts.push(`client ${statut}`);
+  if (situation && enfants) profilParts.push(`${situation}, ${enfants}`);
+  else if (situation) profilParts.push(situation);
+  else if (enfants) profilParts.push(enfants);
+  if (typeBien && ville) profilParts.push(`recherche ${typeBien} à ${ville}`);
+  else if (typeBien) profilParts.push(`recherche ${typeBien}`);
+  else if (ville) profilParts.push(`cible ${ville}`);
+  if (budget) profilParts.push(`avec un budget de ${budget}`);
+  if (horizon) profilParts.push(`sur un horizon ${horizon}`);
+  if (risque) profilParts.push(`avec une appétence au risque ${risque}`);
+  if (delai) profilParts.push(`pour une concrétisation ${delai}`);
+
+  const objectif = asText(get('objectif_principal'));
+  const objectifFiscal = asText(get('objectif_fiscal'));
+  const strategie = asText(get('strategie'));
+  const accompagnement = asText(get('type_accompagnement'));
+  const dispositifs = asText(get('dispositifs_fiscaux_en_cours'));
+  const deficits = deficitText(get('deficits_fonciers_existants'));
+
+  const strategieParts: string[] = [];
+  if (objectif) strategieParts.push(`l'objectif principal est ${objectif}`);
+  if (objectifFiscal) strategieParts.push(`l'orientation fiscale recherchée est ${objectifFiscal}`);
+  if (strategie) strategieParts.push(`la stratégie envisagée est ${strategie}`);
+  if (accompagnement) strategieParts.push(`l'accompagnement prévu est ${accompagnement}`);
+  if (dispositifs) strategieParts.push(`les dispositifs fiscaux en cours sont ${dispositifs}`);
+  if (deficits) strategieParts.push(deficits);
+
+  const blocks: ScopedNarrativeBlock[] = [];
+  if (profilParts.length >= 2) {
+    blocks.push({ title: 'Profil du client', text: joinSentence(profilParts) });
+  }
+  if (strategieParts.length >= 1) {
+    blocks.push({ title: "Stratégie d'investissement", text: joinSentence(strategieParts) });
+  }
+  return blocks;
+}
+
 /** Construit les sections scopées à partir d'une ligne `dossiers` (même découpage que le RPC portail). */
 export function sectionsFromDossier(dossier: Record<string, any>, kind: ScopeKind): ScopedSections {
   const pick = (keys: string[]) =>
@@ -175,6 +282,18 @@ export async function buildScopedPdf(opts: {
     doc.setTextColor(...C.textMuted);
     doc.text(sanitizePdfText(`Destinataire : ${opts.partenaire}`), LAYOUT.marginL, y);
     y += SPACING.paragraph + 3;
+  }
+
+  const narratives = buildScopedNarratives(opts.sections);
+  for (const block of narratives) {
+    y = ensureSpace(doc, y, 24, { refDossier: ref, titrePage: meta.type });
+    y = drawSectionTitle(doc, block.title, y);
+    doc.setFont(FONT.body, 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...C.ink);
+    const lines = doc.splitTextToSize(sanitizePdfText(block.text), LAYOUT.textW) as string[];
+    doc.text(lines, LAYOUT.marginL, y);
+    y += lines.length * 5 + SPACING.paragraph + 2;
   }
 
   for (const section of Object.keys(opts.sections)) {

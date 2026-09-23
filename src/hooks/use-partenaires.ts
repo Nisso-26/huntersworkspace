@@ -18,22 +18,15 @@ export interface Partenaire {
 }
 
 export function usePartenaires() {
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['partenaires', user?.id, isAdmin],
+    queryKey: ['partenaires'],
     queryFn: async () => {
-      // Super admin voit tous les prescripteurs
-      // Conseiller voit uniquement ceux qu'il a créés
-      let query = supabase
+      // Référentiel partagé : tout utilisateur authentifié voit tous les partenaires
+      const { data, error } = await supabase
         .from('partenaires' as any)
         .select('*')
         .order('nom');
-
-      if (!isAdmin && user?.id) {
-        query = query.eq('created_by', user.id);
-      }
-
-      const { data, error } = await query;
       if (error) throw error;
 
       // Count dossiers per partenaire

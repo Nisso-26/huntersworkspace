@@ -36,6 +36,13 @@
       "when": 1790156119622,
       "tag": "0004_confirm_partner_alternative_proposal",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790175336140,
+      "tag": "0005_shared_partenaires_select",
+      "breakpoints": true
     }
   ]
 }

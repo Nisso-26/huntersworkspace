@@ -115,7 +115,12 @@ export default function PortailPartenaire() {
     if (!token) return;
     setBusy(true);
     try {
-      const result = await submitPartnerDecision(token, decisionId, codeSaisi.trim().toUpperCase());
+      const result = await submitPartnerDecision(
+        token,
+        decisionId,
+        codeSaisi.trim().toUpperCase(),
+        propositionAlternative.trim() || null,
+      );
       if (verdict === 'invalidation') {
         await supabase.functions.invoke('notify-partner-decision', {
           body: { token, decision_id: decisionId, proposition_jointe: Boolean(result?.proposition_jointe) },

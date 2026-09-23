@@ -2687,15 +2687,27 @@ export type Database = {
             }
             Returns: Json
           }
-      submit_partner_decision: {
-        Args: {
-          _code: string
-          _decision_id: string
-          _ip?: string
-          _token: string
-        }
-        Returns: Json
-      }
+      submit_partner_decision:
+        | {
+            Args: {
+              _code: string
+              _decision_id: string
+              _ip?: string
+              _token: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              _api_version: string
+              _code: string
+              _decision_id: string
+              _ip: string
+              _proposition_alternative: string
+              _token: string
+            }
+            Returns: Json
+          }
     }
     Enums: {
       app_role: "super_admin" | "mandataire" | "decoratrice" | "analyste"

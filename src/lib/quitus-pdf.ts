@@ -15,6 +15,7 @@ export interface QuitusContenu {
   verdict?: string;
   justification?: string;
   proposition?: string | null;
+  proposition_alternative?: string | null;
   perimetre?: string[];
   certification?: string;
   horodatage?: string;
@@ -92,12 +93,13 @@ export function buildQuitusPdf(contenu: QuitusContenu): jsPDF {
   }
   y += 6;
 
-  if (contenu.proposition) {
+  const propositionAlternative = contenu.proposition_alternative || contenu.proposition;
+  if (propositionAlternative) {
     y = drawSectionTitle(doc, 'Proposition du partenaire', y);
     doc.setFont(FONT.body, 'normal');
     doc.setFontSize(9.5);
     doc.setTextColor(...C.ink);
-    for (const l of doc.splitTextToSize(sanitizePdfText(contenu.proposition), LAYOUT.textW) as string[]) {
+    for (const l of doc.splitTextToSize(sanitizePdfText(propositionAlternative), LAYOUT.textW) as string[]) {
       y = ensureSpace(doc, y, 7, { refDossier: ref, titrePage: 'Quitus partenaire' });
       doc.text(l, marginL, y);
       y += 5.5;

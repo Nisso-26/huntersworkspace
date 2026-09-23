@@ -205,9 +205,20 @@ export async function startPartnerDecision(token: string, verdict: string, justi
   return data as { decision_id: string; code: string };
 }
 
-export async function submitPartnerDecision(token: string, decisionId: string, code: string, ip?: string | null) {
+export async function submitPartnerDecision(
+  token: string,
+  decisionId: string,
+  code: string,
+  propositionAlternative?: string | null,
+  ip?: string | null,
+) {
   const { data, error } = await (supabase as any).rpc('submit_partner_decision', {
-    _token: token, _decision_id: decisionId, _code: code, _ip: ip ?? null,
+    _token: token,
+    _decision_id: decisionId,
+    _code: code,
+    _ip: ip ?? null,
+    _proposition_alternative: propositionAlternative ?? null,
+    _api_version: 'proposition_alternative_v1',
   });
   if (error) throw new Error(error.message);
   return data as any;

@@ -757,6 +757,11 @@ function StepZoneActivation({
   zones: ZoneAffectee[];
 }) {
   const ibanLast4 = form.iban ? form.iban.replace(/\s+/g, '').slice(-4) : '----';
+  const missingAcceptances = [
+    !form.accept_zone ? 'Compréhension de la zone prioritaire' : null,
+    !form.accept_prescripteurs ? 'Engagement sur les prescripteurs accrédités' : null,
+    !form.accept_encaissement ? 'Confirmation de l’interdiction d’encaissement direct' : null,
+  ].filter((item): item is string => Boolean(item));
 
   return (
     <div className="space-y-8">
@@ -853,6 +858,20 @@ function StepZoneActivation({
           <span className="text-sm">Je confirme avoir pris connaissance de l'interdiction formelle d'encaissement direct de fonds clients.</span>
         </label>
       </section>
+
+      {missingAcceptances.length > 0 && (
+        <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 flex gap-2 text-sm text-destructive">
+          <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+          <div>
+            <p className="font-medium">Pour activer votre compte, cochez encore :</p>
+            <ul className="mt-1 list-disc pl-5 space-y-0.5">
+              {missingAcceptances.map((label) => (
+                <li key={label}>{label}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* 5.5 — Récapitulatif */}
       <section className="space-y-3">

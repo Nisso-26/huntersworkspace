@@ -16,7 +16,8 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
 const specialiteLabels: Record<string, string> = {
-  notaire: 'Notaire', courtier: 'Courtier', agent_bancaire: 'Agent bancaire',
+  notaire: 'Notaire', courtier: 'Courtier', cgp: 'CGP', avocat: 'Avocat',
+  juriste: 'Juriste', expert_comptable: 'Expert-comptable', agent_bancaire: 'Agent bancaire',
   agent_immobilier: 'Agent immobilier', autre: 'Autre',
 };
 const specialiteOptions = Object.entries(specialiteLabels).map(([k, v]) => ({ label: v, value: k }));

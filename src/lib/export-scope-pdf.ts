@@ -93,6 +93,42 @@ export interface ScopedNarrativeBlock {
   text: string;
 }
 
+export interface ScopedStrategie {
+  synthese: string;
+  profil_investisseur?: string;
+  recommandations: Array<{
+    rang?: number;
+    titre?: string;
+    dispositif?: string;
+    description?: string;
+    budget_acquisition_total?: number;
+    apport_recommande?: number;
+    mensualite_credit_estimee?: number;
+    rendement_brut_estime_pct?: number;
+  }>;
+  plan_action: Array<{ etape?: number; titre?: string; description?: string; delai?: string }>;
+  points_attention?: string[];
+  disclaimer?: string;
+}
+
+export function parseScopedStrategie(value: unknown): ScopedStrategie | string {
+  const rawText = typeof value === 'string' ? value : JSON.stringify(value ?? '');
+  try {
+    const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+    if (
+      parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      && typeof (parsed as Record<string, unknown>).synthese === 'string'
+      && Array.isArray((parsed as Record<string, unknown>).recommandations)
+      && Array.isArray((parsed as Record<string, unknown>).plan_action)
+    ) {
+      return parsed as ScopedStrategie;
+    }
+  } catch {
+    // Les anciennes stratégies peuvent être enregistrées en texte libre.
+  }
+  return rawText;
+}
+
 function valueFromScopedSections(sections: ScopedSections, key: string): unknown {
   for (const fields of Object.values(sections)) {
     if (fields && Object.prototype.hasOwnProperty.call(fields, key)) return fields[key];
@@ -172,7 +208,10 @@ export function buildScopedNarratives(sections: ScopedSections): ScopedNarrative
 
   const objectif = asText(get('objectif_principal'));
   const objectifFiscal = asText(get('objectif_fiscal'));
-  const strategie = asText(get('strategie'));
+  const strategieValue = parseScopedStrategie(get('strategie'));
+  const strategie = typeof strategieValue === 'string'
+    ? asText(strategieValue)
+    : asText(strategieValue.synthese);
   const accompagnement = asText(get('type_accompagnement'));
   const dispositifs = asText(get('dispositifs_fiscaux_en_cours'));
   const deficits = deficitText(get('deficits_fonciers_existants'));
@@ -303,6 +342,115 @@ export async function buildScopedPdf(opts: {
 
     let i = 0;
     for (const key of Object.keys(fields)) {
+      const strategie = key === 'strategie' ? parseScopedStrategie(fields[key]) : null;
+      if (strategie && typeof strategie !== 'string') {
+        const ctx = { refDossier: ref, titrePage: meta.type };
+        const drawParagraph = (label: string, text: string, italic = false) => {
+          if (!text) return;
+          y = ensureSpace(doc, y, 14, ctx);
+          doc.setFont(FONT.body, 'bold');
+          doc.setFontSize(9.5);
+          doc.setTextColor(...C.green);
+          doc.text(sanitizePdfText(label), LAYOUT.marginL, y);
+          y += 5;
+          doc.setFont(FONT.body, italic ? 'italic' : 'normal');
+          doc.setFontSize(italic ? 8 : 9);
+          doc.setTextColor(...(italic ? C.textMuted : C.ink));
+          const lines = doc.splitTextToSize(sanitizePdfText(text), LAYOUT.textW) as string[];
+          for (const line of lines) {
+            y = ensureSpace(doc, y, 5, ctx);
+            doc.text(line, LAYOUT.marginL, y);
+            y += 4.6;
+          }
+          y += 3;
+        };
+        const formatMoney = (value?: number) => typeof value === 'number'
+          ? `${value.toLocaleString('fr-FR')} €`
+          : null;
+
+        drawParagraph('Synthèse', strategie.synthese);
+        if (strategie.profil_investisseur) drawParagraph('Profil investisseur', strategie.profil_investisseur);
+
+        if (strategie.recommandations.length) {
+          y = ensureSpace(doc, y, 14, ctx);
+          doc.setFont(FONT.body, 'bold');
+          doc.setFontSize(9.5);
+          doc.setTextColor(...C.green);
+          doc.text('Recommandations', LAYOUT.marginL, y);
+          y += 6;
+          strategie.recommandations.forEach((rec, index) => {
+            y = ensureSpace(doc, y, 18, ctx);
+            doc.setFillColor(...C.creamLight);
+            doc.rect(LAYOUT.marginL, y - 4, LAYOUT.contentW, 7, 'F');
+            doc.setFont(FONT.body, 'bold');
+            doc.setFontSize(9);
+            doc.setTextColor(...C.ink);
+            doc.text(sanitizePdfText(`${rec.rang ?? index + 1}. ${rec.titre || 'Recommandation'}`), LAYOUT.marginL + 2, y);
+            y += 6;
+            if (rec.dispositif) drawParagraph('Dispositif', rec.dispositif);
+            if (rec.description) drawParagraph('Description', rec.description);
+            const chiffres = [
+              ['Budget total', formatMoney(rec.budget_acquisition_total)],
+              ['Apport recommandé', formatMoney(rec.apport_recommande)],
+              ['Mensualité estimée', formatMoney(rec.mensualite_credit_estimee)],
+              ['Rendement brut estimé', typeof rec.rendement_brut_estime_pct === 'number' ? `${rec.rendement_brut_estime_pct} %` : null],
+            ].filter((entry): entry is [string, string] => Boolean(entry[1]));
+            chiffres.forEach(([label, value]) => {
+              y = ensureSpace(doc, y, 6, ctx);
+              doc.setFont(FONT.body, 'normal');
+              doc.setFontSize(8.5);
+              doc.setTextColor(...C.textMuted);
+              doc.text(sanitizePdfText(label), LAYOUT.marginL + 2, y);
+              doc.setFont(FONT.body, 'bold');
+              doc.setTextColor(...C.ink);
+              doc.text(sanitizePdfText(value), LAYOUT.marginL + 88, y);
+              y += 5;
+            });
+            y += 3;
+          });
+        }
+
+        if (strategie.plan_action.length) {
+          y = ensureSpace(doc, y, 14, ctx);
+          doc.setFont(FONT.body, 'bold');
+          doc.setFontSize(9.5);
+          doc.setTextColor(...C.green);
+          doc.text("Plan d'action", LAYOUT.marginL, y);
+          y += 6;
+          strategie.plan_action.forEach((step, index) => {
+            const text = `${step.etape ?? index + 1}. ${step.titre || 'Étape'}${step.description ? ` — ${step.description}` : ''}${step.delai ? ` (${step.delai})` : ''}`;
+            const lines = doc.splitTextToSize(sanitizePdfText(text), LAYOUT.textW) as string[];
+            y = ensureSpace(doc, y, lines.length * 4.6 + 2, ctx);
+            doc.setFont(FONT.body, 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(...C.ink);
+            doc.text(lines, LAYOUT.marginL, y);
+            y += lines.length * 4.6 + 2;
+          });
+          y += 2;
+        }
+
+        if (strategie.points_attention?.length) {
+          y = ensureSpace(doc, y, 14, ctx);
+          doc.setFont(FONT.body, 'bold');
+          doc.setFontSize(9.5);
+          doc.setTextColor(...C.green);
+          doc.text('Points de vigilance', LAYOUT.marginL, y);
+          y += 6;
+          strategie.points_attention.forEach((point) => {
+            const lines = doc.splitTextToSize(sanitizePdfText(`• ${point}`), LAYOUT.textW) as string[];
+            y = ensureSpace(doc, y, lines.length * 4.6 + 2, ctx);
+            doc.setFont(FONT.body, 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(...C.ink);
+            doc.text(lines, LAYOUT.marginL, y);
+            y += lines.length * 4.6 + 2;
+          });
+        }
+        if (strategie.disclaimer) drawParagraph('Avertissement', strategie.disclaimer, true);
+        i++;
+        continue;
+      }
       y = ensureSpace(doc, y, 8, { refDossier: ref, titrePage: meta.type });
       doc.setFillColor(...(i % 2 === 0 ? C.white : C.creamLight));
       doc.rect(LAYOUT.marginL, y - 4.5, LAYOUT.contentW, 7.2, 'F');

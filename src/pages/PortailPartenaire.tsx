@@ -4,7 +4,7 @@ import {
   fetchPartnerPortal, logPartnerConsultation,
   startPartnerDecision, submitPartnerDecision,
 } from '@/hooks/use-portail-partenaire';
-import { buildScopedNarratives, buildScopedPdf, SECTION_LABELS, FIELD_LABELS, formatScopedValue } from '@/lib/export-scope-pdf';
+import { buildScopedNarratives, buildScopedPdf, parseScopedStrategie, SECTION_LABELS, FIELD_LABELS, formatScopedValue, type ScopedStrategie } from '@/lib/export-scope-pdf';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +18,78 @@ import { partnerPortalProfile } from '@/lib/partner-portal-profile';
 import { supabase } from '@/integrations/supabase/client';
 
 type Verdict = 'quitus' | 'invalidation';
+
+function StructuredStrategie({ strategie }: { strategie: ScopedStrategie }) {
+  const formatMoney = (value?: number) => typeof value === 'number' ? `${value.toLocaleString('fr-FR')} €` : null;
+
+  return (
+    <div className="space-y-5">
+      <div className="space-y-1">
+        <h3 className="text-xs font-semibold text-foreground">Synthèse</h3>
+        <p className="text-sm text-foreground">{strategie.synthese}</p>
+      </div>
+      {strategie.profil_investisseur && (
+        <div className="space-y-1">
+          <h3 className="text-xs font-semibold text-foreground">Profil investisseur</h3>
+          <p className="text-sm text-foreground">{strategie.profil_investisseur}</p>
+        </div>
+      )}
+      {strategie.recommandations.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-xs font-semibold text-foreground">Recommandations</h3>
+          {strategie.recommandations.map((rec, index) => {
+            const chiffres = [
+              ['Budget total', formatMoney(rec.budget_acquisition_total)],
+              ['Apport recommandé', formatMoney(rec.apport_recommande)],
+              ['Mensualité estimée', formatMoney(rec.mensualite_credit_estimee)],
+              ['Rendement brut estimé', typeof rec.rendement_brut_estime_pct === 'number' ? `${rec.rendement_brut_estime_pct} %` : null],
+            ].filter((entry): entry is [string, string] => Boolean(entry[1]));
+            return (
+              <div key={`${rec.rang ?? index}-${rec.titre ?? 'recommandation'}`} className="border-l-2 border-primary pl-3 space-y-2">
+                <p className="text-sm font-semibold text-foreground">{rec.rang ?? index + 1}. {rec.titre || 'Recommandation'}</p>
+                {rec.dispositif && <p className="text-xs font-medium text-muted-foreground">{rec.dispositif}</p>}
+                {rec.description && <p className="text-sm text-foreground">{rec.description}</p>}
+                {chiffres.length > 0 && (
+                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-1">
+                    {chiffres.map(([label, value]) => (
+                      <div key={label} className="flex justify-between gap-3 text-xs">
+                        <dt className="text-muted-foreground">{label}</dt>
+                        <dd className="font-semibold text-foreground text-right">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {strategie.plan_action.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="text-xs font-semibold text-foreground">Plan d'action</h3>
+          <ol className="list-decimal pl-5 space-y-2">
+            {strategie.plan_action.map((step, index) => (
+              <li key={`${step.etape ?? index}-${step.titre ?? 'etape'}`} className="text-sm text-foreground">
+                <span className="font-semibold">{step.titre || 'Étape'}</span>
+                {step.description && <span> — {step.description}</span>}
+                {step.delai && <span className="text-muted-foreground"> ({step.delai})</span>}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+      {strategie.points_attention && strategie.points_attention.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="text-xs font-semibold text-foreground">Points de vigilance</h3>
+          <ul className="list-disc pl-5 space-y-1">
+            {strategie.points_attention.map((point, index) => <li key={index} className="text-sm text-foreground">{point}</li>)}
+          </ul>
+        </div>
+      )}
+      {strategie.disclaimer && <p className="text-xs italic text-muted-foreground">{strategie.disclaimer}</p>}
+    </div>
+  );
+}
 
 export default function PortailPartenaire() {
   const { token } = useParams<{ token: string }>();
@@ -212,12 +284,18 @@ export default function PortailPartenaire() {
               {SECTION_LABELS[s] || s}
             </h2>
             <dl className="divide-y">
-              {Object.entries(sections[s] || {}).map(([k, v]) => (
-                <div key={k} className="flex items-start justify-between gap-4 py-2">
-                  <dt className="text-xs text-muted-foreground">{FIELD_LABELS[k] || k}</dt>
-                  <dd className="text-xs font-semibold text-foreground text-right">{formatScopedValue(k, v)}</dd>
-                </div>
-              ))}
+              {Object.entries(sections[s] || {}).map(([k, v]) => {
+                const strategie = k === 'strategie' ? parseScopedStrategie(v) : null;
+                if (strategie && typeof strategie !== 'string') {
+                  return <div key={k} className="py-2"><StructuredStrategie strategie={strategie} /></div>;
+                }
+                return (
+                  <div key={k} className="flex items-start justify-between gap-4 py-2">
+                    <dt className="text-xs text-muted-foreground">{FIELD_LABELS[k] || k}</dt>
+                    <dd className="text-xs font-semibold text-foreground text-right">{formatScopedValue(k, v)}</dd>
+                  </div>
+                );
+              })}
             </dl>
           </section>
         ))}

@@ -4,7 +4,7 @@ import {
   fetchPartnerPortal, logPartnerConsultation,
   startPartnerDecision, submitPartnerDecision,
 } from '@/hooks/use-portail-partenaire';
-import { buildScopedPdf, SECTION_LABELS, FIELD_LABELS, formatScopedValue } from '@/lib/export-scope-pdf';
+import { buildScopedNarratives, buildScopedPdf, SECTION_LABELS, FIELD_LABELS, formatScopedValue } from '@/lib/export-scope-pdf';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -50,6 +50,7 @@ export default function PortailPartenaire() {
   }, [token]);
 
   const sections: Record<string, Record<string, unknown>> = payload?.sections || {};
+  const narratives = buildScopedNarratives(sections);
   const exclues: string[] = payload?.sections_exclues || [];
   const peutDecider = (payload?.acces?.scope_decision || []).length > 0;
   const montageAutorise = Object.keys(sections).includes('montage');
@@ -195,6 +196,15 @@ export default function PortailPartenaire() {
             </Button>
           </div>
         )}
+
+        {narratives.map((block) => (
+          <section key={block.title} className="rounded-xl border bg-card p-5">
+            <h2 className="text-sm font-heading font-bold text-foreground mb-3">
+              {block.title}
+            </h2>
+            <p className="text-sm text-foreground">{block.text}</p>
+          </section>
+        ))}
 
         {Object.keys(sections).map((s) => (
           <section key={s} className="rounded-xl border bg-card p-5">

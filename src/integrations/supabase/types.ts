@@ -2176,6 +2176,7 @@ export type Database = {
           nom: string
           notes: string | null
           objectif: string | null
+          site_lead_id: string | null
           source: string | null
           statut: string
           telephone: string | null
@@ -2192,6 +2193,7 @@ export type Database = {
           nom: string
           notes?: string | null
           objectif?: string | null
+          site_lead_id?: string | null
           source?: string | null
           statut?: string
           telephone?: string | null
@@ -2208,6 +2210,7 @@ export type Database = {
           nom?: string
           notes?: string | null
           objectif?: string | null
+          site_lead_id?: string | null
           source?: string | null
           statut?: string
           telephone?: string | null

@@ -16,6 +16,9 @@ export type TypeDocumentSignature =
   | 'convention_cadre'
   | 'bon_commande'
   | 'mandat_recherche'
+  | 'conseil_patrimonial'
+  | 'mission_amo'
+  | 'mission_deco'
   | 'contrat_mandataire'
   | 'offre_achat';
 
@@ -24,6 +27,9 @@ export const TYPES_DOCUMENT_SIGNATURE: { value: TypeDocumentSignature; label: st
   { value: 'bon_commande', label: 'Bon de Commande de Mission' },
   { value: 'mandat_recherche', label: 'Mandat de Recherche' },
   { value: 'offre_achat', label: "Offre d'Achat" },
+  { value: 'conseil_patrimonial', label: 'Contrat de Conseil en Investissement Immobilier' },
+  { value: 'mission_amo', label: 'Contrat de Mission AMO' },
+  { value: 'mission_deco', label: 'Contrat de Mission Décoration et Ameublement' },
   { value: 'contrat_mandataire', label: 'Contrat de Mandataire' },
 ];
 

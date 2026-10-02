@@ -8,12 +8,16 @@ import type { ModeleSection } from '@/hooks/use-modeles-documents';
 import type { CompanySettings } from '@/hooks/use-company-settings';
 import type { BaremeHunters, BaremeService } from '@/hooks/use-baremes-hunters';
 import { buildDocumentPdf } from '@/lib/document-pdf';
+import { computeQualification, emptyQualification, type QualificationValues } from '@/components/QualificationClient';
 
 export type SignatureDocType =
   | 'mandat_recherche'
   | 'convention_cadre'
   | 'bon_commande'
   | 'offre_achat'
+  | 'conseil_patrimonial'
+  | 'mission_amo'
+  | 'mission_deco'
   | 'contrat_mandataire';
 
 export interface SignatureFieldDef {
@@ -115,6 +119,30 @@ function partiesBlock(v2: Record<string, string>, roleClient: string, roleCabine
   );
 }
 
+function partiesBlockSansCarteT(f: Record<string, string>, roleClient: string, roleCabinet: string): string {
+  return (
+    `${roleClient}\n` +
+    `Nom et prenom : ${v(f.nom_client)}\n` +
+    `Date de naissance : ${v(f.date_naissance)}\n` +
+    `Adresse : ${v(f.adresse_client)}\n` +
+    `Code postal et ville : ${v(f.cp_ville_client)}\n` +
+    `Telephone : ${v(f.telephone_client)}   —   Email : ${v(f.email_client)}\n\n` +
+    `${roleCabinet}\n` +
+    `HUNTERS Immobilier — Cabinet de conseil en investissement immobilier\n` +
+    `Forme juridique : ${v(f.forme_juridique)}   —   SIRET : ${v(f.siret)}\n` +
+    `Siege social : ${v(f.adresse_siege)}\n` +
+    `Assurance responsabilite civile professionnelle : ${v(f.assurance_rcp)}\n` +
+    `Representee par : Anais SAIZONOU, Fondateur et Directeur\n` +
+    `Mandataire HUNTERS en charge du dossier : ${v(f.conseiller)}`
+  );
+}
+
+const RETRACTATION = "Lorsque le contrat est conclu a distance ou hors etablissement, le Client dispose de 14 jours a compter de sa signature pour se retracter, sans motif ni frais (C. conso., art. L221-18), au moyen du formulaire annexe ou de toute declaration denuee d'ambiguite. [ ] Le Client demande expressement le demarrage de la mission avant la fin du delai de retractation. En cas de retractation apres ce demarrage, il regle un montant proportionnel au service fourni (art. L221-25). Une fois la mission entierement executee, le droit de retractation ne peut plus etre exerce (art. L221-28, 1°).";
+const CONFIDENTIALITE = "Les informations echangees sont strictement confidentielles, pendant le contrat et 3 ans apres son terme. Les donnees personnelles sont traitees pour la seule execution de la mission, conformement au RGPD et a la loi Informatique et Libertes ; le Client exerce ses droits d'acces, de rectification, d'effacement et de portabilite par courrier au siege ou par email.";
+const MEDIATION = (f: Record<string, string>) => `En cas de litige, les Parties recherchent d'abord une solution amiable. A defaut sous 30 jours, le Client peut saisir gratuitement le mediateur de la consommation : ${v(f.mediateur)} (C. conso., art. L612-1). Le contrat est soumis au droit francais.`;
+const FORMULAIRE = (f: Record<string, string>, titre: string) => `A l'attention de HUNTERS Immobilier, ${v(f.adresse_siege)}. Je vous notifie par la presente ma retractation du contrat portant sur la prestation de services ci-dessous. Contrat : ${titre} — Reference : ${v(f.ref_dossier)} — Commande le : ${v(f.date_document)}. Nom du Client : ..................... Adresse : ..................... Date et signature (uniquement en cas de notification sur papier) : .....................`;
+const PAIEMENT_COMMUN = 'par virement sous 8 jours a reception de facture';
+
 export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
   // ───────────────────────── MANDAT DE RECHERCHE EXCLUSIF ────────────────────
   mandat_recherche: {
@@ -181,15 +209,10 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
       {
         id: 'a5', type: 'text', titre: 'Article 5 — Honoraires',
         contenu:
-          "Les honoraires de HUNTERS Immobilier au titre du present mandat sont calcules selon le bareme progressif " +
-          "officiel : forfait 7 800 EUR TTC jusqu'a 200 000 EUR ; 4 % TTC de 200 001 a 500 000 EUR ; 3 % TTC de " +
-          "500 001 a 1 000 000 EUR ; 2 % TTC au-dela. TVA au taux de 20 % incluse.\n" +
-          `Estimation pour le budget retenu (${v(f.budget_max)}) : ${v(f.honoraires_ht)} HT — ${v(f.honoraires_ttc)} TTC.\n` +
+          `Les honoraires de HUNTERS Immobilier sont calcules sur le prix d'acquisition du bien, hors frais de notaire, selon le bareme en vigueur : jusqu'a 250 000 EUR, forfait de 6 500 EUR HT (7 800 EUR TTC) ; de 250 001 a 1 000 000 EUR, 3,5 % HT ; de 1 000 001 a 1 200 000 EUR, 2,75 % HT ; au-dela de 1 200 000 EUR, 2 % HT. TVA au taux de 20 % en sus. Estimation pour le budget retenu (${v(f.budget_max)}) : ${v(f.honoraires_ht)} HT — ${v(f.honoraires_ttc)} TTC.\n` +
           "SUCCES ONLY — Les honoraires ne sont dus qu'en cas d'acquisition effective d'un bien immobilier.\n" +
           "EXIGIBILITE — Les honoraires sont exigibles le jour de la signature de l'acte authentique chez le notaire.\n" +
           "BASE DE CALCUL — Le prix retenu est le prix acte chez le notaire, hors frais de notaire et frais d'agence.\n" +
-          "CLAUSE DE LISSAGE — Aux seuils de 200 000 EUR et 500 000 EUR, les honoraires sont plafonnes selon les " +
-          "zones tampon du bareme.\n" +
           "NON-PAIEMENT — Une penalite de retard egale a 3 fois le taux d'interet legal est applicable de plein droit.",
       },
       {
@@ -290,10 +313,11 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
           "accompagne le Client dans son projet d'investissement immobilier locatif. Elle constitue le cadre " +
           "contractuel unique de la relation entre les Parties, au sein duquel chaque mission specifique est activee " +
           "par un Bon de Commande de Mission signe separement.\n" +
-          "M01 — Conseil strategique en investissement locatif : 1 500 a 3 500 EUR HT selon scoring (BC-M01).\n" +
-          "M02 — Chasse immobiliere : bareme progressif TTC (BC-M02).\n" +
-          "M03 — Conseil et suivi de chantier : sur devis, a partir de 1 800 EUR HT (BC-M03).\n" +
-          "M04 — Decoration et ameublement : sur devis, a partir de 490 EUR HT (BC-M04).\n" +
+          "M01 — Conseil strategique : 1 500, 2 500 ou 3 500 EUR HT selon le score de la grille de qualification HUNTERS (BC-M01).\n" +
+          "M02 — Chasse immobiliere : forfait de 6 500 EUR HT jusqu'a 250 000 EUR ; 3,5 % HT jusqu'a 1 000 000 EUR ; 2,75 % HT jusqu'a 1 200 000 EUR ; 2 % HT au-dela, sur le prix d'acquisition (BC-M02).\n" +
+          "M03 — Assistance a maitrise d'ouvrage : 1 000 EUR + 9 % HT jusqu'a 150 000 EUR de travaux ; 1 500 EUR + 7,5 % HT jusqu'a 250 000 EUR ; 2 000 EUR + 6 % HT au-dela, sur le montant HT des travaux (BC-M03).\n" +
+          "M04 — Decoration et ameublement : 2 500 EUR HT + 15 % jusqu'a 20 000 EUR d'achats ; + 12 % jusqu'a 50 000 EUR ; + 10 % au-dela, sur le montant HT des achats (BC-M04).\n" +
+          "Pack cle en main : somme des missions souscrites, remise de 10 % sur M02, M03 et M04 ; le conseil n'est jamais remise.\n" +
           `Missions envisagees a ce jour pour le Client : ${v(f.missions)}.\n` +
           `Honoraires de conseil (M01) retenus selon scoring : ${v(f.tarif_conseil)}.\n` +
           "Le Client n'est pas tenu de souscrire a l'ensemble des missions. Chaque mission est independante.",
@@ -420,9 +444,7 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
           `Objectif de la mission : ${v(f.objectif)}\n` +
           `Delai d'execution convenu : ${v(f.delai)}\n` +
           `Livrables inclus : ${v(f.livrables)}\n\n` +
-          "Rappel des missions du catalogue : M01 Conseil strategique (1 500 / 2 500 / 3 500 EUR HT selon scoring) · " +
-          "M02 Chasse immobiliere (bareme progressif) · M03 Conseil et suivi de chantier (sur devis) · " +
-          "M04 Decoration et ameublement (sur devis).",
+          "Rappel des missions du catalogue : voir la Convention Cadre, article 1 (baremes M01 a M04 en vigueur).",
       },
       {
         id: 'honoraires', type: 'text', titre: 'Honoraires et conditions de paiement',
@@ -554,8 +576,7 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
       {
         id: 'a7', type: 'text', titre: 'Article 7 — Honoraires HUNTERS Immobilier',
         contenu:
-          "Bareme officiel : prix <= 200 000 EUR forfait 7 800 EUR TTC · 200 001 a 500 000 EUR : 4 % TTC · " +
-          "500 001 a 1 000 000 EUR : 3 % TTC · au-dela de 1 000 000 EUR : 2 % TTC.\n" +
+          "Les honoraires de HUNTERS Immobilier sont calcules sur le prix d'acquisition du bien, hors frais de notaire, selon le bareme en vigueur : jusqu'a 250 000 EUR, forfait de 6 500 EUR HT (7 800 EUR TTC) ; de 250 001 a 1 000 000 EUR, 3,5 % HT ; de 1 000 001 a 1 200 000 EUR, 2,75 % HT ; au-dela de 1 200 000 EUR, 2 % HT. TVA au taux de 20 % en sus.\n" +
           `Honoraires applicables a cette offre : ${v(f.honoraires_ttc)} TTC — ${v(f.honoraires_ht)} HT.\n` +
           "Les honoraires sont exigibles exclusivement a la signature de l'acte authentique de vente devant notaire. " +
           "Aucun honoraire n'est du en cas de non-realisation de la vente, quelle qu'en soit la cause.",
@@ -639,6 +660,8 @@ export interface PrefillSources {
   conseiller?: string | null;
   zones?: string[];
   baremes?: BaremeHunters[];
+  bien?: Record<string, any> | null;
+  chantier?: Record<string, any> | null;
   signataireNom?: string | null;
   signataireEmail?: string | null;
 }
@@ -646,7 +669,7 @@ export interface PrefillSources {
 const SERVICE_LABELS: Record<string, string> = {
   conseil: 'M01 Conseil strategique',
   chasse: 'M02 Chasse immobiliere',
-  amo: 'M03 Conseil et suivi de chantier',
+  amo: 'M03 Assistance a maitrise d\'ouvrage',
   deco: 'M04 Decoration et ameublement',
 };
 

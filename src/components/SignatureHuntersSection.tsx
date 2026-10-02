@@ -124,7 +124,7 @@ export default function SignatureHuntersSection({
     enabled: !!dossierId && open,
     queryFn: async () => {
       const { data: dossier, error } = await supabase
-        .from('dossiers').select('*').eq('id', dossierId!).single();
+        .from('dossiers').select('*').eq('id', dossierId as string).single();
       if (error) throw error;
       let conseiller = '';
       if ((dossier as any)?.mandataire_id) {
@@ -132,7 +132,25 @@ export default function SignatureHuntersSection({
           .from('profiles').select('full_name').eq('id', (dossier as any).mandataire_id).maybeSingle();
         conseiller = (prof as any)?.full_name || '';
       }
-      return { dossier: dossier as any, conseiller };
+      const { data: bien } = await supabase
+        .from('biens')
+        .select('*')
+        .eq('dossier_id', dossierId as string)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      let chantier = null;
+      if (bien?.id) {
+        const { data } = await supabase
+          .from('chantiers')
+          .select('*')
+          .eq('bien_id', bien.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        chantier = data;
+      }
+      return { dossier: dossier as any, conseiller, bien: bien as any, chantier: chantier as any };
     },
   });
   const { data: zones = [] } = useZonesMandataires(source?.dossier?.mandataire_id ?? undefined);
@@ -190,6 +208,8 @@ export default function SignatureHuntersSection({
       conseiller: source?.conseiller ?? null,
       zones: zones.map(z => z.zone_label),
       baremes,
+      bien: source?.bien ?? null,
+      chantier: source?.chantier ?? null,
       signataireNom: form.signataire_nom.trim(),
       signataireEmail: form.signataire_email.trim(),
     }));

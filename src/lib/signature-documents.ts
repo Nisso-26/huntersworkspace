@@ -8,12 +8,16 @@ import type { ModeleSection } from '@/hooks/use-modeles-documents';
 import type { CompanySettings } from '@/hooks/use-company-settings';
 import type { BaremeHunters, BaremeService } from '@/hooks/use-baremes-hunters';
 import { buildDocumentPdf } from '@/lib/document-pdf';
+import { computeQualification, emptyQualification, type QualificationValues } from '@/components/QualificationClient';
 
 export type SignatureDocType =
   | 'mandat_recherche'
   | 'convention_cadre'
   | 'bon_commande'
   | 'offre_achat'
+  | 'conseil_patrimonial'
+  | 'mission_amo'
+  | 'mission_deco'
   | 'contrat_mandataire';
 
 export interface SignatureFieldDef {
@@ -115,6 +119,30 @@ function partiesBlock(v2: Record<string, string>, roleClient: string, roleCabine
   );
 }
 
+function partiesBlockSansCarteT(f: Record<string, string>, roleClient: string, roleCabinet: string): string {
+  return (
+    `${roleClient}\n` +
+    `Nom et prenom : ${v(f.nom_client)}\n` +
+    `Date de naissance : ${v(f.date_naissance)}\n` +
+    `Adresse : ${v(f.adresse_client)}\n` +
+    `Code postal et ville : ${v(f.cp_ville_client)}\n` +
+    `Telephone : ${v(f.telephone_client)}   —   Email : ${v(f.email_client)}\n\n` +
+    `${roleCabinet}\n` +
+    `HUNTERS Immobilier — Cabinet de conseil en investissement immobilier\n` +
+    `Forme juridique : ${v(f.forme_juridique)}   —   SIRET : ${v(f.siret)}\n` +
+    `Siege social : ${v(f.adresse_siege)}\n` +
+    `Assurance responsabilite civile professionnelle : ${v(f.assurance_rcp)}\n` +
+    `Representee par : Anais SAIZONOU, Fondateur et Directeur\n` +
+    `Mandataire HUNTERS en charge du dossier : ${v(f.conseiller)}`
+  );
+}
+
+const RETRACTATION = "Lorsque le contrat est conclu a distance ou hors etablissement, le Client dispose de 14 jours a compter de sa signature pour se retracter, sans motif ni frais (C. conso., art. L221-18), au moyen du formulaire annexe ou de toute declaration denuee d'ambiguite. [ ] Le Client demande expressement le demarrage de la mission avant la fin du delai de retractation. En cas de retractation apres ce demarrage, il regle un montant proportionnel au service fourni (art. L221-25). Une fois la mission entierement executee, le droit de retractation ne peut plus etre exerce (art. L221-28, 1°).";
+const CONFIDENTIALITE = "Les informations echangees sont strictement confidentielles, pendant le contrat et 3 ans apres son terme. Les donnees personnelles sont traitees pour la seule execution de la mission, conformement au RGPD et a la loi Informatique et Libertes ; le Client exerce ses droits d'acces, de rectification, d'effacement et de portabilite par courrier au siege ou par email.";
+const MEDIATION = (f: Record<string, string>) => `En cas de litige, les Parties recherchent d'abord une solution amiable. A defaut sous 30 jours, le Client peut saisir gratuitement le mediateur de la consommation : ${v(f.mediateur)} (C. conso., art. L612-1). Le contrat est soumis au droit francais.`;
+const FORMULAIRE = (f: Record<string, string>, titre: string) => `A l'attention de HUNTERS Immobilier, ${v(f.adresse_siege)}. Je vous notifie par la presente ma retractation du contrat portant sur la prestation de services ci-dessous. Contrat : ${titre} — Reference : ${v(f.ref_dossier)} — Commande le : ${v(f.date_document)}. Nom du Client : ..................... Adresse : ..................... Date et signature (uniquement en cas de notification sur papier) : .....................`;
+const PAIEMENT_COMMUN = 'par virement sous 8 jours a reception de facture';
+
 export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
   // ───────────────────────── MANDAT DE RECHERCHE EXCLUSIF ────────────────────
   mandat_recherche: {
@@ -181,15 +209,10 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
       {
         id: 'a5', type: 'text', titre: 'Article 5 — Honoraires',
         contenu:
-          "Les honoraires de HUNTERS Immobilier au titre du present mandat sont calcules selon le bareme progressif " +
-          "officiel : forfait 7 800 EUR TTC jusqu'a 200 000 EUR ; 4 % TTC de 200 001 a 500 000 EUR ; 3 % TTC de " +
-          "500 001 a 1 000 000 EUR ; 2 % TTC au-dela. TVA au taux de 20 % incluse.\n" +
-          `Estimation pour le budget retenu (${v(f.budget_max)}) : ${v(f.honoraires_ht)} HT — ${v(f.honoraires_ttc)} TTC.\n` +
+          `Les honoraires de HUNTERS Immobilier sont calcules sur le prix d'acquisition du bien, hors frais de notaire, selon le bareme en vigueur : jusqu'a 250 000 EUR, forfait de 6 500 EUR HT (7 800 EUR TTC) ; de 250 001 a 1 000 000 EUR, 3,5 % HT ; de 1 000 001 a 1 200 000 EUR, 2,75 % HT ; au-dela de 1 200 000 EUR, 2 % HT. TVA au taux de 20 % en sus. Estimation pour le budget retenu (${v(f.budget_max)}) : ${v(f.honoraires_ht)} HT — ${v(f.honoraires_ttc)} TTC.\n` +
           "SUCCES ONLY — Les honoraires ne sont dus qu'en cas d'acquisition effective d'un bien immobilier.\n" +
           "EXIGIBILITE — Les honoraires sont exigibles le jour de la signature de l'acte authentique chez le notaire.\n" +
           "BASE DE CALCUL — Le prix retenu est le prix acte chez le notaire, hors frais de notaire et frais d'agence.\n" +
-          "CLAUSE DE LISSAGE — Aux seuils de 200 000 EUR et 500 000 EUR, les honoraires sont plafonnes selon les " +
-          "zones tampon du bareme.\n" +
           "NON-PAIEMENT — Une penalite de retard egale a 3 fois le taux d'interet legal est applicable de plein droit.",
       },
       {
@@ -290,10 +313,11 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
           "accompagne le Client dans son projet d'investissement immobilier locatif. Elle constitue le cadre " +
           "contractuel unique de la relation entre les Parties, au sein duquel chaque mission specifique est activee " +
           "par un Bon de Commande de Mission signe separement.\n" +
-          "M01 — Conseil strategique en investissement locatif : 1 500 a 3 500 EUR HT selon scoring (BC-M01).\n" +
-          "M02 — Chasse immobiliere : bareme progressif TTC (BC-M02).\n" +
-          "M03 — Conseil et suivi de chantier : sur devis, a partir de 1 800 EUR HT (BC-M03).\n" +
-          "M04 — Decoration et ameublement : sur devis, a partir de 490 EUR HT (BC-M04).\n" +
+          "M01 — Conseil strategique : 1 500, 2 500 ou 3 500 EUR HT selon le score de la grille de qualification HUNTERS (BC-M01).\n" +
+          "M02 — Chasse immobiliere : forfait de 6 500 EUR HT jusqu'a 250 000 EUR ; 3,5 % HT jusqu'a 1 000 000 EUR ; 2,75 % HT jusqu'a 1 200 000 EUR ; 2 % HT au-dela, sur le prix d'acquisition (BC-M02).\n" +
+          "M03 — Assistance a maitrise d'ouvrage : 1 000 EUR + 9 % HT jusqu'a 150 000 EUR de travaux ; 1 500 EUR + 7,5 % HT jusqu'a 250 000 EUR ; 2 000 EUR + 6 % HT au-dela, sur le montant HT des travaux (BC-M03).\n" +
+          "M04 — Decoration et ameublement : 2 500 EUR HT + 15 % jusqu'a 20 000 EUR d'achats ; + 12 % jusqu'a 50 000 EUR ; + 10 % au-dela, sur le montant HT des achats (BC-M04).\n" +
+          "Pack cle en main : somme des missions souscrites, remise de 10 % sur M02, M03 et M04 ; le conseil n'est jamais remise.\n" +
           `Missions envisagees a ce jour pour le Client : ${v(f.missions)}.\n` +
           `Honoraires de conseil (M01) retenus selon scoring : ${v(f.tarif_conseil)}.\n` +
           "Le Client n'est pas tenu de souscrire a l'ensemble des missions. Chaque mission est independante.",
@@ -420,9 +444,7 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
           `Objectif de la mission : ${v(f.objectif)}\n` +
           `Delai d'execution convenu : ${v(f.delai)}\n` +
           `Livrables inclus : ${v(f.livrables)}\n\n` +
-          "Rappel des missions du catalogue : M01 Conseil strategique (1 500 / 2 500 / 3 500 EUR HT selon scoring) · " +
-          "M02 Chasse immobiliere (bareme progressif) · M03 Conseil et suivi de chantier (sur devis) · " +
-          "M04 Decoration et ameublement (sur devis).",
+          "Rappel des missions du catalogue : voir la Convention Cadre, article 1 (baremes M01 a M04 en vigueur).",
       },
       {
         id: 'honoraires', type: 'text', titre: 'Honoraires et conditions de paiement',
@@ -554,8 +576,7 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
       {
         id: 'a7', type: 'text', titre: 'Article 7 — Honoraires HUNTERS Immobilier',
         contenu:
-          "Bareme officiel : prix <= 200 000 EUR forfait 7 800 EUR TTC · 200 001 a 500 000 EUR : 4 % TTC · " +
-          "500 001 a 1 000 000 EUR : 3 % TTC · au-dela de 1 000 000 EUR : 2 % TTC.\n" +
+          "Les honoraires de HUNTERS Immobilier sont calcules sur le prix d'acquisition du bien, hors frais de notaire, selon le bareme en vigueur : jusqu'a 250 000 EUR, forfait de 6 500 EUR HT (7 800 EUR TTC) ; de 250 001 a 1 000 000 EUR, 3,5 % HT ; de 1 000 001 a 1 200 000 EUR, 2,75 % HT ; au-dela de 1 200 000 EUR, 2 % HT. TVA au taux de 20 % en sus.\n" +
           `Honoraires applicables a cette offre : ${v(f.honoraires_ttc)} TTC — ${v(f.honoraires_ht)} HT.\n` +
           "Les honoraires sont exigibles exclusivement a la signature de l'acte authentique de vente devant notaire. " +
           "Aucun honoraire n'est du en cas de non-realisation de la vente, quelle qu'en soit la cause.",
@@ -581,6 +602,110 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
       },
       { id: 'sign', type: 'signatures', titre: 'Signatures',
         contenu: `Fait a Tours, le ${v(f.date_document)} — en deux exemplaires originaux` },
+    ],
+  },
+
+  // ───────────────────────── CONSEIL PATRIMONIAL ──────────────────────────────
+  conseil_patrimonial: {
+    titre: 'Contrat de Conseil en Investissement Immobilier',
+    typeDocument: 'Mission Conseil strategique — M01',
+    fields: [
+      ...CLIENT_FIELDS, ...CABINET_FIELDS,
+      { key: 'mediateur', label: 'Mediateur de la consommation', group: 'Cabinet' },
+      { key: 'objectif', label: 'Objectif declare par le Client', type: 'textarea', group: 'Mission' },
+      { key: 'score', label: 'Score de qualification', group: 'Mission' },
+      { key: 'profil', label: 'Profil retenu', group: 'Mission' },
+      { key: 'montant_ht', label: 'Honoraires HT', group: 'Honoraires' },
+      { key: 'montant_ttc', label: 'Honoraires TTC', group: 'Honoraires' },
+    ],
+    sections: (f) => [
+      { id: 'parties', type: 'text', titre: 'Entre les parties', contenu: partiesBlockSansCarteT(f, 'LE CLIENT', 'LE PRESTATAIRE') + '\n\nIl a ete convenu ce qui suit.' },
+      { id: 'a1', type: 'text', titre: 'Article 1 — Objet', contenu: `Le Client confie a HUNTERS Immobilier une mission de conseil strategique en investissement immobilier. La mission consiste a analyser la situation du Client, a definir une strategie d'investissement immobilier adaptee a ses objectifs et a la lui remettre sous la forme d'un rapport ecrit. Objectif declare par le Client : ${v(f.objectif)}.` },
+      { id: 'a2', type: 'text', titre: 'Article 2 — Profil du dossier et honoraires', contenu: `Le profil du dossier resulte de la grille de qualification HUNTERS : detient deja un bien ou plus (2 pts) ; SCI existante ou a creer, holding (2) ; statut fiscal LMP, LMNP, IS ou deficit foncier actif (2) ; expatrie ou non-resident fiscal francais (2) ; budget projet superieur a 500 000 EUR (2) ; dirigeant d'entreprise, marchand de biens ou profession liberale (1) ; projet d'acquisition de deux biens ou plus (1) ; montage de credit complexe (1). Score de 0 a 2 : Standard — 1 500 EUR HT ; de 3 a 5 : Complexe — 2 500 EUR HT ; 6 et plus : Expert — 3 500 EUR HT. Score obtenu : ${v(f.score)} — profil retenu : ${v(f.profil)}. Honoraires : ${v(f.montant_ht)} HT, soit ${v(f.montant_ttc)} TTC. Paiement : 50 % a la signature, 50 % a la remise du rapport, ${PAIEMENT_COMMUN}. Les honoraires de conseil ne font l'objet d'aucune remise, y compris dans le cadre d'un pack de missions.` },
+      { id: 'a3', type: 'text', titre: 'Article 3 — Contenu de la mission', contenu: "1. Entretien de decouverte : situation familiale, professionnelle, patrimoniale et fiscale ; objectifs, horizon et tolerance au risque. 2. Analyse : capacite d'investissement, apport mobilisable, capacite d'emprunt estimee, effort d'epargne acceptable. 3. Strategie : type de bien, secteur geographique, mode d'exploitation (location nue, meublee, colocation, courte duree), orientations generales sur le mode de detention (nom propre, SCI), plan de financement previsionnel. 4. Simulations : rentabilite brute et nette, cash-flow, effort d'epargne, sur la base de la legislation en vigueur a la date du rapport. 5. Remise du rapport et entretien de restitution, puis reponses aux questions du Client pendant 30 jours." },
+      { id: 'a4', type: 'text', titre: 'Article 4 — Delai', contenu: "Le rapport est remis dans un delai maximum de 15 jours a compter de la reception de l'acompte et de l'ensemble des pieces demandees : deux derniers avis d'imposition, trois derniers bulletins de salaire ou bilans, justificatifs d'epargne, tableaux d'amortissement des credits en cours." },
+      { id: 'a5', type: 'text', titre: 'Article 5 — Limites de la mission', contenu: "HUNTERS Immobilier n'exerce pas l'activite de conseiller en investissements financiers (CMF, art. L541-1) : aucun conseil n'est donne sur des instruments financiers, parts de SCPI ou contrats d'assurance-vie. HUNTERS Immobilier n'est pas intermediaire en operations de banque (CMF, art. L519-1) : le plan de financement est indicatif et le Client peut etre oriente vers un courtier ou un etablissement bancaire. Les orientations juridiques et fiscales sont donnees a titre accessoire a la mission de conseil immobilier (loi n° 71-1130 du 31 decembre 1971, art. 54 et 60) ; tout montage (creation de societe, option fiscale, demembrement) est valide par un notaire, un avocat ou un expert-comptable avant mise en oeuvre. HUNTERS Immobilier n'etablit aucune declaration fiscale pour le compte du Client." },
+      { id: 'a6', type: 'text', titre: 'Article 6 — Obligations de HUNTERS Immobilier', contenu: "HUNTERS Immobilier execute la mission avec diligence, agit dans le seul interet du Client, l'informe de tout conflit d'interets eventuel et respecte la confidentialite des informations recues." },
+      { id: 'a7', type: 'text', titre: 'Article 7 — Obligations du Client', contenu: "Le Client fournit des informations exactes, completes et a jour, et signale sans delai tout changement de situation. Les recommandations reposent sur ces informations : HUNTERS Immobilier ne repond pas des consequences d'informations inexactes ou incompletes." },
+      { id: 'a8', type: 'text', titre: 'Article 8 — Responsabilite', contenu: "HUNTERS Immobilier est tenu d'une obligation de moyens. Le Client prend seul ses decisions d'investissement. Aucun rendement, aucune plus-value et aucun accord de financement ne sont garantis ; les simulations sont indicatives et dependent de l'evolution du marche, des taux et de la legislation." },
+      { id: 'a9', type: 'text', titre: 'Article 9 — Droit de retractation', contenu: RETRACTATION },
+      { id: 'a10', type: 'text', titre: 'Article 10 — Resiliation', contenu: "Le Client peut mettre fin a la mission avant la remise du rapport par lettre recommandee avec accuse de reception ; les prestations deja realisees restent dues au prorata. HUNTERS Immobilier peut resilier en cas de non-paiement ou de non-transmission des pieces, apres mise en demeure restee sans effet pendant 8 jours." },
+      { id: 'a11', type: 'text', titre: 'Article 11 — Confidentialite et donnees personnelles', contenu: CONFIDENTIALITE },
+      { id: 'a12', type: 'text', titre: 'Article 12 — Mediation et droit applicable', contenu: MEDIATION(f) },
+      { id: 'formulaire', type: 'text', titre: 'Annexe — Formulaire de retractation', contenu: FORMULAIRE(f, 'Contrat de Conseil en Investissement Immobilier') },
+      { id: 'sign', type: 'signatures', titre: 'Signatures', contenu: `Fait a Tours, le ${v(f.date_document)} — en deux exemplaires originaux` },
+    ],
+  },
+
+  // ───────────────────────── MISSION AMO ──────────────────────────────────────
+  mission_amo: {
+    titre: 'Contrat de Mission AMO',
+    typeDocument: "Mission Assistance a maitrise d'ouvrage — M03",
+    fields: [
+      ...CLIENT_FIELDS, ...CABINET_FIELDS,
+      { key: 'mediateur', label: 'Mediateur de la consommation', group: 'Cabinet' },
+      { key: 'bien_adresse', label: 'Adresse du bien', group: 'Mission' },
+      { key: 'nature_travaux', label: 'Nature des travaux', type: 'textarea', group: 'Mission' },
+      { key: 'budget_travaux', label: 'Budget travaux HT', group: 'Mission' },
+      { key: 'date_debut', label: 'Demarrage previsionnel', group: 'Mission' },
+      { key: 'duree_chantier', label: 'Duree previsionnelle du chantier', group: 'Mission' },
+      { key: 'frequence_visites', label: 'Frequence des visites', group: 'Mission' },
+      { key: 'montant_ht', label: 'Honoraires HT', group: 'Honoraires' },
+      { key: 'montant_ttc', label: 'Honoraires TTC', group: 'Honoraires' },
+    ],
+    sections: (f) => [
+      { id: 'parties', type: 'text', titre: 'Entre les parties', contenu: partiesBlockSansCarteT(f, "LE MAITRE D'OUVRAGE (le Client)", "L'ASSISTANT A MAITRISE D'OUVRAGE (HUNTERS Immobilier)") + '\n\nIl a ete convenu ce qui suit.' },
+      { id: 'a1', type: 'text', titre: 'Article 1 — Objet', contenu: `Le Client confie a HUNTERS Immobilier une mission d'assistance a maitrise d'ouvrage pour la preparation, la consultation des entreprises, le suivi et la reception des travaux realises sur le bien suivant. Adresse : ${v(f.bien_adresse)}. Nature des travaux : ${v(f.nature_travaux)}. Budget previsionnel des travaux : ${v(f.budget_travaux)} HT. Demarrage previsionnel : ${v(f.date_debut)} — Duree previsionnelle du chantier : ${v(f.duree_chantier)}.` },
+      { id: 'a2', type: 'text', titre: 'Article 2 — Nature de la mission', contenu: "Le Client est et reste maitre d'ouvrage : il choisit les entreprises, signe directement les devis et marches et paie directement les entreprises. HUNTERS Immobilier l'assiste et le conseille ; il ne recoit aucune delegation de maitrise d'ouvrage. HUNTERS Immobilier n'est ni maitre d'oeuvre, ni architecte, ni entrepreneur, ni contractant general. Il n'assure ni la conception, ni la direction de l'execution des travaux, ni la coordination securite et protection de la sante, et n'execute aucun travail. Lorsque le projet exige un maitre d'oeuvre ou un architecte, notamment au-dela de 150 m² de surface de plancher soumis a permis de construire (C. urb., art. R431-2), le Client le missionne directement." },
+      { id: 'a3', type: 'text', titre: 'Article 3 — Contenu de la mission', contenu: `1. Programme et budget : visite technique, definition des besoins, enveloppe previsionnelle, reperage des autorisations d'urbanisme et des diagnostics necessaires. 2. Consultation des entreprises : recherche d'entreprises, au moins deux devis comparables par lot principal, controle des attestations d'assurance decennale et de responsabilite civile et de l'immatriculation, tableau comparatif et recommandation ecrite. 3. Suivi du chantier : planning, visite de chantier ${v(f.frequence_visites)}, compte rendu ecrit apres chaque visite, controle de l'avancement par rapport aux devis, avis sur chaque situation de travaux avant paiement, alerte sur toute derive de cout ou de delai ; tout travail supplementaire fait l'objet d'un devis signe par le Client. 4. Reception : preparation et assistance aux operations de reception (C. civ., art. 1792-6), redaction des reserves au proces-verbal, suivi de leur levee, conseil sur la retenue de garantie de 5 % (loi n° 71-584 du 16 juillet 1971). 5. Dossier de fin de chantier : devis, factures, attestations d'assurance, proces-verbal de reception et notices remis au Client, avec rappel des garanties de parfait achevement (1 an), biennale (2 ans) et decennale (10 ans).` },
+      { id: 'a4', type: 'text', titre: 'Article 4 — Honoraires', contenu: `Les honoraires sont calcules sur le montant HT des travaux selon le bareme HUNTERS en vigueur : jusqu'a 150 000 EUR, 1 000 EUR + 9 % HT ; de 150 001 a 250 000 EUR, 1 500 EUR + 7,5 % HT ; au-dela, 2 000 EUR + 6 % HT. Honoraires previsionnels sur le budget de ${v(f.budget_travaux)} HT : ${v(f.montant_ht)} HT, soit ${v(f.montant_ttc)} TTC. Ils sont regularises sur le montant HT definitif des devis acceptes et des avenants ou, s'il est different, sur le montant HT de la facturation definitive des entreprises. Paiement : 30 % a la signature, 40 % a mi-chantier, 30 % a la reception, ${PAIEMENT_COMMUN}.` },
+      { id: 'a5', type: 'text', titre: 'Article 5 — Fonds et independance', contenu: "HUNTERS Immobilier ne recoit ni ne detient aucun fonds destine aux entreprises. Il ne percoit aucune commission, remuneration ou avantage de leur part. S'il propose une entreprise liee au groupe HUNTERS, il en informe le Client par ecrit avant toute consultation, et le choix final revient au Client." },
+      { id: 'a6', type: 'text', titre: 'Article 6 — Assurances', contenu: "Le Client est informe de son obligation de souscrire une assurance dommages-ouvrage avant l'ouverture du chantier lorsque les travaux relevent de la garantie decennale (C. assur., art. L242-1). HUNTERS Immobilier verifie que chaque entreprise retenue justifie d'une assurance decennale en cours de validite (art. L241-1) et justifie lui-meme d'une assurance de responsabilite civile professionnelle couvrant l'activite d'assistance a maitrise d'ouvrage." },
+      { id: 'a7', type: 'text', titre: 'Article 7 — Obligations du Client', contenu: "Le Client donne acces au bien, se prononce sur les choix qui lui sont soumis dans un delai de 5 jours ouvres, obtient les autorisations d'urbanisme necessaires, paie les entreprises a bonne date et ne donne aucune instruction directe aux entreprises contraire aux recommandations sans en informer HUNTERS Immobilier." },
+      { id: 'a8', type: 'text', titre: 'Article 8 — Responsabilite', contenu: "HUNTERS Immobilier est tenu d'une obligation de moyens. Il repond de ses propres fautes dans l'execution de sa mission. Il ne repond ni des defauts d'execution, retards ou defaillances des entreprises, qui en restent seules responsables envers le Client, ni des decisions prises par le Client contre ses recommandations ecrites." },
+      { id: 'a9', type: 'text', titre: 'Article 9 — Duree', contenu: "La mission court de la signature jusqu'a la levee des reserves, et au plus tard 3 mois apres la reception. Si la duree du chantier depasse de plus de 50 % la duree previsionnelle pour une cause non imputable a HUNTERS Immobilier, la poursuite de la mission fait l'objet d'un avenant." },
+      { id: 'a10', type: 'text', titre: 'Article 10 — Resiliation', contenu: "Le Client peut resilier a tout moment par lettre recommandee avec accuse de reception ; les honoraires des phases realisees restent dus, la phase en cours au prorata. HUNTERS Immobilier peut resilier en cas de manquement grave du Client, apres mise en demeure restee sans effet pendant 8 jours." },
+      { id: 'a11', type: 'text', titre: 'Article 11 — Droit de retractation', contenu: RETRACTATION },
+      { id: 'a12', type: 'text', titre: 'Article 12 — Confidentialite et donnees personnelles', contenu: CONFIDENTIALITE },
+      { id: 'a13', type: 'text', titre: 'Article 13 — Mediation et droit applicable', contenu: MEDIATION(f) },
+      { id: 'formulaire', type: 'text', titre: 'Annexe — Formulaire de retractation', contenu: FORMULAIRE(f, 'Contrat de Mission AMO') },
+      { id: 'sign', type: 'signatures', titre: 'Signatures', contenu: `Fait a Tours, le ${v(f.date_document)} — en deux exemplaires originaux` },
+    ],
+  },
+
+  // ───────────────────────── MISSION DECORATION ───────────────────────────────
+  mission_deco: {
+    titre: 'Contrat de Mission Decoration et Ameublement',
+    typeDocument: 'Mission Decoration et ameublement — M04',
+    fields: [
+      ...CLIENT_FIELDS, ...CABINET_FIELDS,
+      { key: 'mediateur', label: 'Mediateur de la consommation', group: 'Cabinet' },
+      { key: 'bien_adresse', label: 'Adresse du bien', group: 'Mission' },
+      { key: 'pieces', label: 'Pieces concernees', group: 'Mission' },
+      { key: 'usage', label: 'Usage du bien', group: 'Mission' },
+      { key: 'budget_deco', label: 'Budget decoration et ameublement HT', group: 'Mission' },
+      { key: 'style', label: 'Style et orientations', type: 'textarea', group: 'Mission' },
+      { key: 'montant_ht', label: 'Honoraires HT', group: 'Honoraires' },
+      { key: 'montant_ttc', label: 'Honoraires TTC', group: 'Honoraires' },
+    ],
+    sections: (f) => [
+      { id: 'parties', type: 'text', titre: 'Entre les parties', contenu: partiesBlockSansCarteT(f, 'LE CLIENT', 'LE PRESTATAIRE') + '\n\nIl a ete convenu ce qui suit.' },
+      { id: 'a1', type: 'text', titre: 'Article 1 — Objet', contenu: `Le Client confie a HUNTERS Immobilier la conception et la mise en oeuvre d'un projet de decoration et d'ameublement pour le bien suivant. Adresse : ${v(f.bien_adresse)}. Pieces concernees : ${v(f.pieces)}. Usage du bien : ${v(f.usage)}. Budget decoration et ameublement : ${v(f.budget_deco)} HT. Style et orientations : ${v(f.style)}.` },
+      { id: 'a2', type: 'text', titre: 'Article 2 — Contenu de la mission', contenu: "1. Brief : visite, prise de mesures, recueil des gouts, contraintes et usages. 2. Conception : planche d'ambiance, plan d'amenagement, palette de couleurs et de matieres, liste d'achats chiffree (mobilier, luminaires, textiles, decoration) ; deux series de modifications sont incluses, au-dela sur devis. 3. Achats et logistique : apres validation ecrite de la liste d'achats, les commandes sont passees au nom du Client, qui paie directement les fournisseurs ; HUNTERS Immobilier suit les commandes et les livraisons. 4. Installation et mise en scene : reception des livraisons, coordination du montage, mise en place et stylisme final, photographies de fin de mission remises au Client. Pour une location meublee, la liste d'achats couvre au minimum les elements exiges par le decret n° 2015-981 du 31 juillet 2015." },
+      { id: 'a3', type: 'text', titre: 'Article 3 — Exclusions', contenu: "Les travaux (peinture, electricite, plomberie, menuiserie, sols) ne sont pas compris : ils relevent d'une mission AMO ou d'entreprises choisies par le Client. Les frais de livraison, de montage et d'enlevement factures par les fournisseurs restent a la charge du Client." },
+      { id: 'a4', type: 'text', titre: 'Article 4 — Honoraires', contenu: `Les honoraires se composent d'un forfait de conception de 2 500 EUR HT et d'une part variable calculee sur le montant HT des achats de mobilier, de decoration et de fournitures, hors travaux : jusqu'a 20 000 EUR, + 15 % ; de 20 001 a 50 000 EUR, + 12 % ; au-dela, + 10 %. Honoraires previsionnels sur le budget de ${v(f.budget_deco)} HT : ${v(f.montant_ht)} HT, soit ${v(f.montant_ttc)} TTC. Ils sont regularises sur le montant HT des achats reellement factures. Paiement : 50 % a la signature, solde a l'installation, ${PAIEMENT_COMMUN}.` },
+      { id: 'a5', type: 'text', titre: 'Article 5 — Transparence des achats', contenu: "Les fournisseurs facturent directement le Client, sans majoration de prix. Les remises professionnelles obtenues par HUNTERS Immobilier beneficient integralement au Client. HUNTERS Immobilier ne percoit aucune commission des fournisseurs et n'avance ni ne detient aucun fonds pour le compte du Client." },
+      { id: 'a6', type: 'text', titre: 'Article 6 — Delais', contenu: "Le calendrier remis apres validation de la conception est indicatif. Les delais de fabrication et de livraison dependent des fournisseurs ; HUNTERS Immobilier informe le Client de tout retard et propose, si possible, une alternative." },
+      { id: 'a7', type: 'text', titre: 'Article 7 — Garanties des produits', contenu: "Les garanties legales de conformite (C. conso., art. L217-3 et suivants) et des vices caches (C. civ., art. 1641 et suivants) s'exercent contre les fournisseurs. HUNTERS Immobilier assiste le Client dans ses reclamations." },
+      { id: 'a8', type: 'text', titre: 'Article 8 — Propriete intellectuelle', contenu: "Les planches, plans et selections realises restent la creation de HUNTERS Immobilier (CPI, art. L111-1). Le Client dispose d'un droit d'usage pour le seul bien concerne, sans reproduction a des fins commerciales." },
+      { id: 'a9', type: 'text', titre: 'Article 9 — Photographies et communication', contenu: "Le Client autorise HUNTERS Immobilier a utiliser les photographies du bien amenage pour sa communication (site internet, reseaux sociaux, supports commerciaux), sans mention de son nom ni de l'adresse du bien : [ ] J'accepte   [ ] Je refuse. Cette autorisation peut etre retiree a tout moment pour l'avenir, par ecrit." },
+      { id: 'a10', type: 'text', titre: 'Article 10 — Responsabilite', contenu: "HUNTERS Immobilier est tenu d'une obligation de moyens et repond de ses propres fautes. Il ne repond pas des defauts, retards ou defaillances des fournisseurs et transporteurs, ni des consequences d'un choix maintenu par le Client contre ses recommandations ecrites." },
+      { id: 'a11', type: 'text', titre: 'Article 11 — Resiliation', contenu: "Le Client peut resilier par lettre recommandee avec accuse de reception : le forfait de conception est du si la conception a ete remise, et la part variable au prorata des achats deja engages. HUNTERS Immobilier peut resilier en cas de manquement grave du Client, apres mise en demeure restee sans effet pendant 8 jours." },
+      { id: 'a12', type: 'text', titre: 'Article 12 — Droit de retractation', contenu: RETRACTATION },
+      { id: 'a13', type: 'text', titre: 'Article 13 — Confidentialite et donnees personnelles', contenu: CONFIDENTIALITE },
+      { id: 'a14', type: 'text', titre: 'Article 14 — Mediation et droit applicable', contenu: MEDIATION(f) },
+      { id: 'formulaire', type: 'text', titre: 'Annexe — Formulaire de retractation', contenu: FORMULAIRE(f, 'Contrat de Mission Decoration et Ameublement') },
+      { id: 'sign', type: 'signatures', titre: 'Signatures', contenu: `Fait a Tours, le ${v(f.date_document)} — en deux exemplaires originaux` },
     ],
   },
 
@@ -639,6 +764,8 @@ export interface PrefillSources {
   conseiller?: string | null;
   zones?: string[];
   baremes?: BaremeHunters[];
+  bien?: Record<string, any> | null;
+  chantier?: Record<string, any> | null;
   signataireNom?: string | null;
   signataireEmail?: string | null;
 }
@@ -646,7 +773,7 @@ export interface PrefillSources {
 const SERVICE_LABELS: Record<string, string> = {
   conseil: 'M01 Conseil strategique',
   chasse: 'M02 Chasse immobiliere',
-  amo: 'M03 Conseil et suivi de chantier',
+  amo: 'M03 Assistance a maitrise d\'ouvrage',
   deco: 'M04 Decoration et ameublement',
 };
 

@@ -57,6 +57,13 @@
       "when": 1791202675845,
       "tag": "0007_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791208913940,
+      "tag": "0008_fiches_biens_bilan",
+      "breakpoints": true
     }
   ]
 }

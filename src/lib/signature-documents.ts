@@ -887,6 +887,58 @@ export function prefillSignatureDoc(
     };
   }
 
+  const mediateur = (c as any).mediateur || '';
+  const bien = src.bien || {};
+  const chantier = src.chantier || {};
+  const adresseBien = [bien.adresse, [bien.code_postal, bien.ville].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+  const honor = (service: BaremeService, b: number) => {
+    if (!b) return { montant_ht: '', montant_ttc: '' };
+    const m = computeMontantBareme(pickTranche(src.baremes || [], service, b), b);
+    return m ? { montant_ht: fmtEur(m), montant_ttc: fmtEur(m * (1 + tvaRate / 100)) } : { montant_ht: '', montant_ttc: '' };
+  };
+
+  if (type === 'conseil_patrimonial') {
+    const q = computeQualification({ ...emptyQualification(), ...((d.criteres_qualification as Partial<QualificationValues>) || {}) } as QualificationValues);
+    const mHt = Number(d.tarif_conseil_ht) || 0;
+    return {
+      ...base, mediateur,
+      objectif: d.objectif_principal || '',
+      score: d.criteres_qualification ? String(q.score) : '',
+      profil: d.criteres_qualification ? q.niveau : '',
+      montant_ht: mHt ? fmtEur(mHt) : '',
+      montant_ttc: mHt ? fmtEur(mHt * (1 + tvaRate / 100)) : '',
+    };
+  }
+
+  if (type === 'mission_amo') {
+    const bt = Number(chantier.budget_alloue) || Number(bien.budget_travaux) || 0;
+    let duree = '';
+    if (chantier.date_debut_prevue && chantier.date_fin_prevue) {
+      const a = new Date(chantier.date_debut_prevue), b = new Date(chantier.date_fin_prevue);
+      const mois = Math.max(1, Math.round((b.getTime() - a.getTime()) / (30.44 * 86400000)));
+      duree = `${mois} mois`;
+    }
+    return {
+      ...base, mediateur,
+      bien_adresse: adresseBien,
+      nature_travaux: '',
+      budget_travaux: bt ? fmtEur(bt) : '',
+      date_debut: chantier.date_debut_prevue ? new Date(chantier.date_debut_prevue).toLocaleDateString('fr-FR') : '',
+      duree_chantier: duree,
+      frequence_visites: 'hebdomadaire',
+      ...honor('amo', bt),
+    };
+  }
+
+  if (type === 'mission_deco') {
+    return {
+      ...base, mediateur,
+      bien_adresse: adresseBien,
+      pieces: '', usage: '', budget_deco: '', style: '',
+      montant_ht: '', montant_ttc: '',
+    };
+  }
+
   return {
     ...base,
     secteurs: zone,

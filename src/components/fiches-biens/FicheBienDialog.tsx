@@ -116,6 +116,7 @@ export default function FicheBienDialog({ open, onOpenChange, dossier, fiche }: 
         return;
       }
       if (!res.ok || !res.fiche) throw new Error(res.erreur || 'Extraction impossible');
+      setBloque(false);
       const merged = mergeExtraction({ ...form, description_source: res.description_source ?? '' }, res.fiche);
       setForm(merged);
       const saved = await update.mutateAsync({ id: f.id, ...fromForm(merged), description_source: res.description_source ?? null });
@@ -157,7 +158,7 @@ export default function FicheBienDialog({ open, onOpenChange, dossier, fiche }: 
     toast.success('Fiche enregistrée');
   };
 
-  const step1 = !current || (loading && !current.description_source);
+  const step1 = !current || bloque || (loading && mode !== 'manuel');
 
   const F = ({ k, label, type = 'text', span }: { k: string; label: string; type?: string; span?: boolean }) => (
     <div className={`space-y-1 ${span ? 'sm:col-span-2' : ''}`}>
@@ -263,12 +264,12 @@ export default function FicheBienDialog({ open, onOpenChange, dossier, fiche }: 
                 <AccordionTrigger>Le bien</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <F k="titre" label="Titre" span />
-                    <F k="ville" label="Ville" /><F k="code_postal" label="Code postal" />
-                    <F k="quartier" label="Quartier" /><F k="prix_affiche" label="Prix affiché (€)" type="number" />
-                    <F k="surface_habitable" label="Surface habitable (m²)" type="number" /><F k="surface_terrain" label="Surface terrain (m²)" type="number" />
-                    <F k="nb_pieces" label="Pièces" type="number" /><F k="nb_chambres" label="Chambres" type="number" />
-                    <F k="etage" label="Étage" />
+                    {F({ k: "titre", label: "Titre", span: true })}
+                    {F({ k: "ville", label: "Ville" })}{F({ k: "code_postal", label: "Code postal" })}
+                    {F({ k: "quartier", label: "Quartier" })}{F({ k: "prix_affiche", label: "Prix affiché (€)", type: "number" })}
+                    {F({ k: "surface_habitable", label: "Surface habitable (m²)", type: "number" })}{F({ k: "surface_terrain", label: "Surface terrain (m²)", type: "number" })}
+                    {F({ k: "nb_pieces", label: "Pièces", type: "number" })}{F({ k: "nb_chambres", label: "Chambres", type: "number" })}
+                    {F({ k: "etage", label: "Étage" })}
                     <div className="space-y-1">
                       <Label className="text-xs">Ascenseur</Label>
                       <Select value={form.ascenseur == null ? '__none__' : form.ascenseur ? 'oui' : 'non'} onValueChange={v => set('ascenseur')(v === '__none__' ? null : v === 'oui')}>
@@ -276,14 +277,14 @@ export default function FicheBienDialog({ open, onOpenChange, dossier, fiche }: 
                         <SelectContent><SelectItem value="__none__">Non renseigné</SelectItem><SelectItem value="oui">Oui</SelectItem><SelectItem value="non">Non</SelectItem></SelectContent>
                       </Select>
                     </div>
-                    <F k="niveaux" label="Niveaux" type="number" /><F k="exposition" label="Exposition" />
-                    <F k="chauffage" label="Chauffage" /><F k="annee_construction" label="Année de construction" type="number" />
-                    <F k="exterieur" label="Extérieur (balcon, terrasse, jardin)" /><F k="stationnement" label="Stationnement (garage, parking)" />
-                    <F k="annexes" label="Annexes (cave, grenier…)" /><F k="sanitaires" label="Sanitaires" />
-                    <ClasseSel k="dpe_classe" label="DPE — classe" /><F k="dpe_kwh" label="DPE — kWh/m²/an" type="number" />
-                    <ClasseSel k="ges_classe" label="GES — classe" /><div />
-                    <F k="cout_energie_min" label="Coût énergie min (€/an)" type="number" /><F k="cout_energie_max" label="Coût énergie max (€/an)" type="number" />
-                    <F k="charges_copro_annuelles" label="Charges de copropriété (€/an)" type="number" /><F k="taxe_fonciere" label="Taxe foncière (€/an)" type="number" />
+                    {F({ k: "niveaux", label: "Niveaux", type: "number" })}{F({ k: "exposition", label: "Exposition" })}
+                    {F({ k: "chauffage", label: "Chauffage" })}{F({ k: "annee_construction", label: "Année de construction", type: "number" })}
+                    {F({ k: "exterieur", label: "Extérieur (balcon, terrasse, jardin)" })}{F({ k: "stationnement", label: "Stationnement (garage, parking)" })}
+                    {F({ k: "annexes", label: "Annexes (cave, grenier…)" })}{F({ k: "sanitaires", label: "Sanitaires" })}
+                    {ClasseSel({ k: "dpe_classe", label: "DPE — classe" })}{F({ k: "dpe_kwh", label: "DPE — kWh/m²/an", type: "number" })}
+                    {ClasseSel({ k: "ges_classe", label: "GES — classe" })}<div />
+                    {F({ k: "cout_energie_min", label: "Coût énergie min (€/an)", type: "number" })}{F({ k: "cout_energie_max", label: "Coût énergie max (€/an)", type: "number" })}
+                    {F({ k: "charges_copro_annuelles", label: "Charges de copropriété (€/an)", type: "number" })}{F({ k: "taxe_fonciere", label: "Taxe foncière (€/an)", type: "number" })}
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -301,10 +302,10 @@ export default function FicheBienDialog({ open, onOpenChange, dossier, fiche }: 
                     <Textarea rows={7} value={form.lecture_bien} onChange={e => set('lecture_bien')(e.target.value)} />
                     <p className="text-[11px] text-muted-foreground">{String(form.lecture_bien || '').trim().split(/\s+/).filter(Boolean).length} mots (120 à 160 conseillés)</p>
                   </div>
-                  <F k="phrase_cle" label="Phrase clé" />
+                  {F({ k: "phrase_cle", label: "Phrase clé" })}
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <ListEdit k="points_forts" label="Points forts" />
-                    <ListEdit k="points_vigilance" label="Points de vigilance" />
+                    {ListEdit({ k: "points_forts", label: "Points forts" })}
+                    {ListEdit({ k: "points_vigilance", label: "Points de vigilance" })}
                   </div>
                   <div className="flex items-start gap-2 border-t pt-3">
                     <Checkbox id="interet" checked={form.interet_constate} onCheckedChange={v => set('interet_constate')(!!v)} />
@@ -337,8 +338,8 @@ export default function FicheBienDialog({ open, onOpenChange, dossier, fiche }: 
                   </div>
                   {form.type_projet === 'achat_revente' && (
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <F k="duree_detention_mois" label="Durée de détention (mois)" type="number" />
-                      <F k="prix_revente_vise" label="Prix de revente visé (€)" type="number" />
+                      {F({ k: "duree_detention_mois", label: "Durée de détention (mois)", type: "number" })}
+                      {F({ k: "prix_revente_vise", label: "Prix de revente visé (€)", type: "number" })}
                     </div>
                   )}
                 </AccordionContent>

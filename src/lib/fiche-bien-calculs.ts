@@ -59,7 +59,7 @@ export interface FicheCalc {
   duree_detention_mois: number | null;
   prix_revente_vise: number | null;
   dpe_classe: string | null;
-  ville?: string | null; titre?: string | null; exterieur?: string | null;
+  ville?: string | null; titre?: string | null; exterieur?: string | null; type_bien?: string | null;
 }
 
 export interface Ctx { baremes: BaremeHunters[]; tva: number; tarifConseilHt: number }
@@ -213,7 +213,10 @@ export function calculerBilan(f: FicheCalc, h: Hypotheses, dossier: any, ctx: Ct
   const scenarios = h.remises.map(r => {
     const p = prixAchat * (1 - r / 100);
     const c = coutTotal(p, f, h, ctx);
-    return { remise_pct: r, prix_achat: p, notaire: c.notaire, cout_total: c.total, ecart: h.enveloppe - c.total, resultat: resultatType(p, c, f, h, dossier) };
+    const marges_revente = f.type_projet === 'achat_revente'
+      ? h.revente_variations.map(v => (resultatType(p, c, f, h, dossier, n(f.prix_revente_vise) * (1 + v / 100)) as any).marge_brute as number)
+      : null;
+    return { remise_pct: r, prix_achat: p, notaire: c.notaire, cout_total: c.total, ecart: h.enveloppe - c.total, resultat: resultatType(p, c, f, h, dossier), marges_revente };
   });
   const resultat = resultatType(prixAchat, ct, f, h, dossier);
   const reventes = f.type_projet === 'achat_revente'
@@ -231,7 +234,7 @@ export function calculerBilan(f: FicheCalc, h: Hypotheses, dossier: any, ctx: Ct
     type_projet: f.type_projet, prix_achat: prixAchat, notaire: ct.notaire, travaux: ct.travaux,
     honoraires: ct.hono, frais_divers: ct.frais_divers, cout_total: ct.total,
     enveloppe: h.enveloppe, apport: h.apport, ecart, prix_plafond: prixPlafond(f, h, ctx),
-    marche, scenarios, resultat, reventes, alertes, calcule_le: new Date().toISOString(),
+    marche, scenarios, resultat, reventes, hypotheses_revente: h.revente_variations, alertes, calcule_le: new Date().toISOString(),
   };
 }
 export type Bilan = ReturnType<typeof calculerBilan>;
@@ -248,7 +251,7 @@ export function evaluerCriteres(f: FicheCalc, dossier: any, bilan: Bilan | null,
   const zones = norm(dossier?.contraintes_geographiques);
   auto.push({ key: 'ville', label: 'Ville', statut: !zones || !f.ville ? 'non_renseigne' : zones.includes(norm(f.ville)) ? 'respecte' : 'non_respecte' });
   const tb = norm(dossier?.type_bien_souhaite);
-  auto.push({ key: 'type_bien', label: 'Type de bien', statut: !tb ? 'non_renseigne' : f.titre && norm(f.titre).includes(tb) ? 'respecte' : 'non_renseigne' });
+  auto.push({ key: 'type_bien', label: 'Type de bien', statut: !tb || !f.type_bien ? 'non_renseigne' : tb.includes(norm(f.type_bien)) ? 'respecte' : 'non_respecte' });
   const smin = n(dossier?.surface_min);
   auto.push({ key: 'surface', label: 'Surface', statut: !smin || !f.surface_habitable ? 'non_renseigne' : n(f.surface_habitable) >= smin ? 'respecte' : 'non_respecte' });
   const dmin = String(dossier?.dpe_min || '').toUpperCase();

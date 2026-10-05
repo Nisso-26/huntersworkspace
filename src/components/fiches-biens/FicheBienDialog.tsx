@@ -185,7 +185,7 @@ export default function FicheBienDialog({ open, onOpenChange, dossier, fiche }: 
 
   const enregistrer = async () => {
     if (!current) return;
-    const saved = await update.mutateAsync({ id: current.id, ...fromForm(form) });
+    const saved = await update.mutateAsync({ id: current.id, ...fromForm(form), hypotheses, bilan, criteres_eval: crit } as any);
     setCurrent(saved);
     toast.success('Fiche enregistrée');
   };
@@ -374,6 +374,13 @@ export default function FicheBienDialog({ open, onOpenChange, dossier, fiche }: 
                       {F({ k: "prix_revente_vise", label: "Prix de revente visé (€)", type: "number" })}
                     </div>
                   )}
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="bilan" className="px-3">
+                <AccordionTrigger>Bilan financier</AccordionTrigger>
+                <AccordionContent>
+                  <FicheBilanSection typeProjet={form.type_projet} h={hypotheses} setH={h => setHyp(h)} bilan={bilan} criteres={criteres} crit={crit} setCrit={setCrit} />
                 </AccordionContent>
               </AccordionItem>
 

@@ -17,6 +17,7 @@ import { useBaremesHunters } from '@/hooks/use-baremes-hunters';
 import { useZonesMandataires } from '@/hooks/use-zones-mandataires';
 import {
   SIGNATURE_DOC_SPECS,
+  pickTranche, computeMontantBareme, tvaRateFromSettings, fmtEur,
   prefillSignatureDoc,
   buildSignatureDocumentPdf,
   type SignatureDocType,

@@ -274,6 +274,9 @@ export default function FicheClientFields({ values, onChange }: Props) {
               { value: 'colocation', label: 'Colocation' },
               { value: 'commercial', label: 'Bail commercial' },
             ]} />
+            <TextField label="Surface minimale (m²)" value={values.surface_min} onChange={set('surface_min')} type="number" />
+            <SelectField label="DPE minimum" value={values.dpe_min} onChange={set('dpe_min')} options={['A','B','C','D','E','F','G'].map(c => ({ value: c, label: c }))} />
+            <TextField label="Extérieur souhaité" value={values.exterieur_souhaite} onChange={set('exterieur_souhaite')} placeholder="Balcon, terrasse, jardin…" />
             <SelectField label="Aversion à la gestion" value={values.aversion_gestion} onChange={set('aversion_gestion')} options={[
               { value: 'delegue_tout', label: 'Délègue tout' },
               { value: 'gere_en_partie', label: 'Gère en partie' },

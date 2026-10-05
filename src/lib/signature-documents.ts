@@ -887,7 +887,7 @@ export function prefillSignatureDoc(
     };
   }
 
-  const mediateur = (c as any).mediateur || '';
+  const mediateur = c.mediateur || '';
   const bien = src.bien || {};
   const chantier = src.chantier || {};
   const adresseBien = [bien.adresse, [bien.code_postal, bien.ville].filter(Boolean).join(' ')].filter(Boolean).join(', ');

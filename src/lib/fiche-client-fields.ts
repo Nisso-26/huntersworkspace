@@ -18,6 +18,7 @@ export const NUMERIC_FIELDS = [
   'passif_total',
   'taux_endettement_actuel',
   'capacite_emprunt_estimee',
+  'surface_min',
 ] as const;
 
 export const INTEGER_FIELDS = ['nombre_enfants', 'tmi', 'duree_credit_souhaitee'] as const;
@@ -50,6 +51,8 @@ export const TEXT_FIELDS = [
   'delai_concretisation',
   'contraintes_particulieres',
   'source_recommandation',
+  'dpe_min',
+  'exterieur_souhaite',
 ] as const;
 
 export type FicheValues = Record<string, any>;

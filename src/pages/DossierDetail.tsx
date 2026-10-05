@@ -25,7 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { ArrowLeft, Save, Trash2, User, TrendingUp, FileText, PenTool, Globe, Receipt, FileSignature, Lock } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, User, TrendingUp, FileText, PenTool, Globe, Receipt, FileSignature, Lock, Home } from 'lucide-react';
 import DevisGenerator from '@/components/DevisGenerator';
 import ValidationBanner from '@/components/ValidationBanner';
 import { useMandataires } from '@/hooks/use-mandataires';
@@ -33,6 +33,7 @@ import WorkflowProgress from '@/components/WorkflowProgress';
 import AccompagnementSection from '@/components/AccompagnementSection';
 import DossierExportMenu from '@/components/DossierExportMenu';
 import FacturationSection from '@/components/FacturationSection';
+import FichesBiensSection from '@/components/fiches-biens/FichesBiensSection';
 import FicheClientFields from '@/components/FicheClientFields';
 import DossierClientSummary from '@/components/DossierClientSummary';
 import DossierContextRail from '@/components/DossierContextRail';
@@ -224,7 +225,7 @@ export default function DossierDetail() {
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
         {/* Onglets */}
         <Tabs defaultValue="infos" className="min-w-0">
-          <TabsList className="flex w-full justify-start overflow-x-auto lg:grid lg:grid-cols-7">
+          <TabsList className="flex w-full justify-start overflow-x-auto lg:grid lg:grid-cols-8">
             <TabsTrigger value="infos" className="shrink-0 gap-1.5 text-xs">
               <User className="w-3.5 h-3.5" />Infos
             </TabsTrigger>
@@ -233,6 +234,9 @@ export default function DossierDetail() {
             </TabsTrigger>
             <TabsTrigger value="devis" className="shrink-0 gap-1.5 text-xs" disabled={(dossier as any).validation_directeur_requise}>
               {(dossier as any).validation_directeur_requise ? <Lock className="w-3.5 h-3.5" /> : <FileSignature className="w-3.5 h-3.5" />}Devis
+            </TabsTrigger>
+            <TabsTrigger value="fiches" className="shrink-0 gap-1.5 text-xs">
+              <Home className="w-3.5 h-3.5" />Fiches biens
             </TabsTrigger>
             <TabsTrigger value="facturation" className="shrink-0 gap-1.5 text-xs">
               <Receipt className="w-3.5 h-3.5" />Facturation
@@ -377,6 +381,13 @@ export default function DossierDetail() {
             )}
           </TabsContent>
 
+          {/* Fiches biens */}
+          <TabsContent value="fiches" className="mt-4">
+            <div className="bg-card border rounded-xl p-6">
+              <FichesBiensSection dossier={dossier} />
+            </div>
+          </TabsContent>
+
           {/* Facturation */}
           <TabsContent value="facturation" className="mt-4">
             <FacturationSection dossier={dossier} />
@@ -403,7 +414,7 @@ export default function DossierDetail() {
                 clientName={form.client_name}
                 clientEmail={form.email}
                 numeroDossier={dossier.numero_dossier}
-                typesDisponibles={['mandat_recherche', 'convention_cadre', 'bon_commande', 'offre_achat']}
+                typesDisponibles={['mandat_recherche', 'convention_cadre', 'bon_commande', 'offre_achat', 'conseil_patrimonial', 'mission_amo', 'mission_deco']}
               />
             </div>
 

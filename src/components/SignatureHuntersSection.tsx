@@ -17,6 +17,7 @@ import { useBaremesHunters } from '@/hooks/use-baremes-hunters';
 import { useZonesMandataires } from '@/hooks/use-zones-mandataires';
 import {
   SIGNATURE_DOC_SPECS,
+  pickTranche, computeMontantBareme, tvaRateFromSettings, fmtEur,
   prefillSignatureDoc,
   buildSignatureDocumentPdf,
   type SignatureDocType,
@@ -109,6 +110,20 @@ export default function SignatureHuntersSection({
   const [step, setStep] = useState<'form' | 'preview' | 'confirm'>('form');
   const [file, setFile] = useState<File | null>(null);
   const [fields, setFields] = useState<Record<string, string>>({});
+  // Mission deco : honoraires recalcules depuis le bareme quand le budget est saisi
+  const updateField = (key: string, value: string) => {
+    setFields(v => {
+      const next = { ...v, [key]: value };
+      if (form.type_document === 'mission_deco' && key === 'budget_deco') {
+        const budget = Number(value.replace(/[^\d,.]/g, '').replace(/\s/g, '').replace(',', '.')) || 0;
+        const m = budget ? computeMontantBareme(pickTranche(baremes, 'deco', budget), budget) : 0;
+        const tva = tvaRateFromSettings(company ?? null);
+        next.montant_ht = m ? fmtEur(m) : '';
+        next.montant_ttc = m ? fmtEur(m * (1 + tva / 100)) : '';
+      }
+      return next;
+    });
+  };
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [form, setForm] = useState({
@@ -385,7 +400,7 @@ export default function SignatureHuntersSection({
                           ) : (
                             <Input
                               value={fields[f.key] ?? ''}
-                              onChange={e => setFields(v => ({ ...v, [f.key]: e.target.value }))}
+                              onChange={e => updateField(f.key, e.target.value)}
                               className={`h-8 text-sm ${!(fields[f.key] ?? '').trim() ? 'border-destructive/40' : ''}`}
                               placeholder="À compléter"
                             />

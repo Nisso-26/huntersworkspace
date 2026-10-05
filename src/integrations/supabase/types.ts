@@ -546,6 +546,7 @@ export type Database = {
           id: string
           logo_url: string | null
           mandats_objectif_trimestre: number
+          mediateur: string | null
           mentions_legales: string | null
           numero_tva_intra: string | null
           periode_essai_jours: number | null
@@ -598,6 +599,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           mandats_objectif_trimestre?: number
+          mediateur?: string | null
           mentions_legales?: string | null
           numero_tva_intra?: string | null
           periode_essai_jours?: number | null
@@ -650,6 +652,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           mandats_objectif_trimestre?: number
+          mediateur?: string | null
           mentions_legales?: string | null
           numero_tva_intra?: string | null
           periode_essai_jours?: number | null
@@ -1105,11 +1108,13 @@ export type Database = {
           deja_rencontre_banque: boolean | null
           delai_concretisation: string | null
           dispositifs_fiscaux_en_cours: string | null
+          dpe_min: string | null
           duree_credit_souhaitee: number | null
           email: string | null
           epargne_disponible: number | null
           epargne_financiere: Json | null
           etape: number | null
+          exterieur_souhaite: string | null
           grille_controle: Json | null
           grille_modifications: Json | null
           grille_statut: string | null
@@ -1149,6 +1154,7 @@ export type Database = {
           status: string
           statut_professionnel: string | null
           strategie: string | null
+          surface_min: number | null
           tarif_conseil_ht: number | null
           taux_endettement_actuel: number | null
           tmi: number | null
@@ -1185,11 +1191,13 @@ export type Database = {
           deja_rencontre_banque?: boolean | null
           delai_concretisation?: string | null
           dispositifs_fiscaux_en_cours?: string | null
+          dpe_min?: string | null
           duree_credit_souhaitee?: number | null
           email?: string | null
           epargne_disponible?: number | null
           epargne_financiere?: Json | null
           etape?: number | null
+          exterieur_souhaite?: string | null
           grille_controle?: Json | null
           grille_modifications?: Json | null
           grille_statut?: string | null
@@ -1229,6 +1237,7 @@ export type Database = {
           status?: string
           statut_professionnel?: string | null
           strategie?: string | null
+          surface_min?: number | null
           tarif_conseil_ht?: number | null
           taux_endettement_actuel?: number | null
           tmi?: number | null
@@ -1265,11 +1274,13 @@ export type Database = {
           deja_rencontre_banque?: boolean | null
           delai_concretisation?: string | null
           dispositifs_fiscaux_en_cours?: string | null
+          dpe_min?: string | null
           duree_credit_souhaitee?: number | null
           email?: string | null
           epargne_disponible?: number | null
           epargne_financiere?: Json | null
           etape?: number | null
+          exterieur_souhaite?: string | null
           grille_controle?: Json | null
           grille_modifications?: Json | null
           grille_statut?: string | null
@@ -1309,6 +1320,7 @@ export type Database = {
           status?: string
           statut_professionnel?: string | null
           strategie?: string | null
+          surface_min?: number | null
           tarif_conseil_ht?: number | null
           taux_endettement_actuel?: number | null
           tmi?: number | null
@@ -1543,6 +1555,206 @@ export type Database = {
             columns: ["dossier_id"]
             isOneToOne: false
             referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fiches_biens: {
+        Row: {
+          annee_construction: number | null
+          annexes: string | null
+          ascenseur: boolean | null
+          bien_id: string | null
+          charges_copro_annuelles: number | null
+          chauffage: string | null
+          code_postal: string | null
+          cout_energie_max: number | null
+          cout_energie_min: number | null
+          created_at: string
+          description_source: string | null
+          dossier_id: string
+          dpe_classe: string | null
+          dpe_kwh: number | null
+          duree_detention_mois: number | null
+          etage: string | null
+          exposition: string | null
+          exterieur: string | null
+          ges_classe: string | null
+          id: string
+          interet_constate: boolean
+          lecture_bien: string | null
+          mandataire_id: string
+          nb_chambres: number | null
+          nb_pieces: number | null
+          niveaux: number | null
+          phrase_cle: string | null
+          points_forts: string[]
+          points_vigilance: string[]
+          prix_affiche: number | null
+          prix_revente_vise: number | null
+          projet_texte: string | null
+          quartier: string | null
+          sanitaires: string | null
+          source_url: string | null
+          stationnement: string | null
+          statut: string
+          surface_habitable: number | null
+          surface_terrain: number | null
+          taxe_fonciere: number | null
+          titre: string | null
+          travaux: Json
+          type_projet: string
+          updated_at: string
+          ville: string | null
+        }
+        Insert: {
+          annee_construction?: number | null
+          annexes?: string | null
+          ascenseur?: boolean | null
+          bien_id?: string | null
+          charges_copro_annuelles?: number | null
+          chauffage?: string | null
+          code_postal?: string | null
+          cout_energie_max?: number | null
+          cout_energie_min?: number | null
+          created_at?: string
+          description_source?: string | null
+          dossier_id: string
+          dpe_classe?: string | null
+          dpe_kwh?: number | null
+          duree_detention_mois?: number | null
+          etage?: string | null
+          exposition?: string | null
+          exterieur?: string | null
+          ges_classe?: string | null
+          id?: string
+          interet_constate?: boolean
+          lecture_bien?: string | null
+          mandataire_id: string
+          nb_chambres?: number | null
+          nb_pieces?: number | null
+          niveaux?: number | null
+          phrase_cle?: string | null
+          points_forts?: string[]
+          points_vigilance?: string[]
+          prix_affiche?: number | null
+          prix_revente_vise?: number | null
+          projet_texte?: string | null
+          quartier?: string | null
+          sanitaires?: string | null
+          source_url?: string | null
+          stationnement?: string | null
+          statut?: string
+          surface_habitable?: number | null
+          surface_terrain?: number | null
+          taxe_fonciere?: number | null
+          titre?: string | null
+          travaux?: Json
+          type_projet?: string
+          updated_at?: string
+          ville?: string | null
+        }
+        Update: {
+          annee_construction?: number | null
+          annexes?: string | null
+          ascenseur?: boolean | null
+          bien_id?: string | null
+          charges_copro_annuelles?: number | null
+          chauffage?: string | null
+          code_postal?: string | null
+          cout_energie_max?: number | null
+          cout_energie_min?: number | null
+          created_at?: string
+          description_source?: string | null
+          dossier_id?: string
+          dpe_classe?: string | null
+          dpe_kwh?: number | null
+          duree_detention_mois?: number | null
+          etage?: string | null
+          exposition?: string | null
+          exterieur?: string | null
+          ges_classe?: string | null
+          id?: string
+          interet_constate?: boolean
+          lecture_bien?: string | null
+          mandataire_id?: string
+          nb_chambres?: number | null
+          nb_pieces?: number | null
+          niveaux?: number | null
+          phrase_cle?: string | null
+          points_forts?: string[]
+          points_vigilance?: string[]
+          prix_affiche?: number | null
+          prix_revente_vise?: number | null
+          projet_texte?: string | null
+          quartier?: string | null
+          sanitaires?: string | null
+          source_url?: string | null
+          stationnement?: string | null
+          statut?: string
+          surface_habitable?: number | null
+          surface_terrain?: number | null
+          taxe_fonciere?: number | null
+          titre?: string | null
+          travaux?: Json
+          type_projet?: string
+          updated_at?: string
+          ville?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fiches_biens_bien_id_fkey"
+            columns: ["bien_id"]
+            isOneToOne: false
+            referencedRelation: "biens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fiches_biens_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fiches_biens_photos: {
+        Row: {
+          created_at: string
+          fiche_id: string
+          id: string
+          legende: string | null
+          ordre: number
+          origine: string
+          role: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          fiche_id: string
+          id?: string
+          legende?: string | null
+          ordre?: number
+          origine?: string
+          role?: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          fiche_id?: string
+          id?: string
+          legende?: string | null
+          ordre?: number
+          origine?: string
+          role?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fiches_biens_photos_fiche_id_fkey"
+            columns: ["fiche_id"]
+            isOneToOne: false
+            referencedRelation: "fiches_biens"
             referencedColumns: ["id"]
           },
         ]

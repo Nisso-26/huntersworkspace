@@ -6,3 +6,4 @@
 - [x] Vérifier le typecheck et le déploiement.
 - [x] Fiche bien : lot 1
 - [x] Fiche bien : lot 2
+- [x] Fiche bien : lot 3

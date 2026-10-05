@@ -41,7 +41,11 @@ export default function FichesBiensSection({ dossier }: { dossier: any }) {
                   </p>
                 </div>
               </button>
-              <span className="border px-2 py-0.5 text-[11px]">{STATUT_FICHE_LABELS[f.statut]}</span>
+              <div className="text-right">
+                <span className="border px-2 py-0.5 text-[11px]">{STATUT_FICHE_LABELS[f.statut]}</span>
+                {(f as any).envoyee_at && <p className="mt-1 text-[11px] text-muted-foreground">Envoyée le {new Date((f as any).envoyee_at).toLocaleDateString('fr-FR')}</p>}
+                {(f as any).derniere_consultation_at && <p className="text-[11px] text-muted-foreground">Consultée le {new Date((f as any).derniere_consultation_at).toLocaleDateString('fr-FR')}</p>}
+              </div>
               <Button variant="ghost" size="icon" className="text-destructive" aria-label="Supprimer la fiche"
                 onClick={() => confirm('Supprimer cette fiche ?') && del.mutate({ id: f.id, dossier_id: f.dossier_id })}>
                 <Trash2 className="h-4 w-4" />

@@ -1573,11 +1573,13 @@ export type Database = {
           cout_energie_min: number | null
           created_at: string
           criteres_eval: Json
+          derniere_consultation_at: string | null
           description_source: string | null
           dossier_id: string
           dpe_classe: string | null
           dpe_kwh: number | null
           duree_detention_mois: number | null
+          envoyee_at: string | null
           etage: string | null
           exposition: string | null
           exterieur: string | null
@@ -1595,8 +1597,11 @@ export type Database = {
           points_vigilance: string[]
           prix_affiche: number | null
           prix_revente_vise: number | null
+          prochaines_etapes: Json | null
           projet_texte: string | null
           quartier: string | null
+          recommandation: string | null
+          risques: Json
           sanitaires: string | null
           source_url: string | null
           stationnement: string | null
@@ -1605,7 +1610,10 @@ export type Database = {
           surface_terrain: number | null
           taxe_fonciere: number | null
           titre: string | null
+          token_expires_at: string | null
+          token_public: string | null
           travaux: Json
+          type_bien: string | null
           type_projet: string
           updated_at: string
           ville: string | null
@@ -1623,11 +1631,13 @@ export type Database = {
           cout_energie_min?: number | null
           created_at?: string
           criteres_eval?: Json
+          derniere_consultation_at?: string | null
           description_source?: string | null
           dossier_id: string
           dpe_classe?: string | null
           dpe_kwh?: number | null
           duree_detention_mois?: number | null
+          envoyee_at?: string | null
           etage?: string | null
           exposition?: string | null
           exterieur?: string | null
@@ -1645,8 +1655,11 @@ export type Database = {
           points_vigilance?: string[]
           prix_affiche?: number | null
           prix_revente_vise?: number | null
+          prochaines_etapes?: Json | null
           projet_texte?: string | null
           quartier?: string | null
+          recommandation?: string | null
+          risques?: Json
           sanitaires?: string | null
           source_url?: string | null
           stationnement?: string | null
@@ -1655,7 +1668,10 @@ export type Database = {
           surface_terrain?: number | null
           taxe_fonciere?: number | null
           titre?: string | null
+          token_expires_at?: string | null
+          token_public?: string | null
           travaux?: Json
+          type_bien?: string | null
           type_projet?: string
           updated_at?: string
           ville?: string | null
@@ -1673,11 +1689,13 @@ export type Database = {
           cout_energie_min?: number | null
           created_at?: string
           criteres_eval?: Json
+          derniere_consultation_at?: string | null
           description_source?: string | null
           dossier_id?: string
           dpe_classe?: string | null
           dpe_kwh?: number | null
           duree_detention_mois?: number | null
+          envoyee_at?: string | null
           etage?: string | null
           exposition?: string | null
           exterieur?: string | null
@@ -1695,8 +1713,11 @@ export type Database = {
           points_vigilance?: string[]
           prix_affiche?: number | null
           prix_revente_vise?: number | null
+          prochaines_etapes?: Json | null
           projet_texte?: string | null
           quartier?: string | null
+          recommandation?: string | null
+          risques?: Json
           sanitaires?: string | null
           source_url?: string | null
           stationnement?: string | null
@@ -1705,7 +1726,10 @@ export type Database = {
           surface_terrain?: number | null
           taxe_fonciere?: number | null
           titre?: string | null
+          token_expires_at?: string | null
+          token_public?: string | null
           travaux?: Json
+          type_bien?: string | null
           type_projet?: string
           updated_at?: string
           ville?: string | null

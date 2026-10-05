@@ -64,6 +64,13 @@
       "when": 1791208913940,
       "tag": "0008_fiches_biens_bilan",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791209813834,
+      "tag": "0009_fiches_biens_rendu_client",
+      "breakpoints": true
     }
   ]
 }

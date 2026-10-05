@@ -21,7 +21,10 @@ interface Props {
 }
 
 export default function FicheBilanSection({ typeProjet, h, setH, bilan, criteres, crit, setCrit }: Props) {
-  const up = (patch: Partial<Hypotheses>) => setH({ ...h, ...patch });
+  const up = (patch: Partial<Hypotheses>) => setH({
+    ...h, ...patch,
+    ...(patch.etat && patch.etat !== h.etat ? { notaire_pct: patch.etat === 'neuf' ? 2.5 : 7.5, notaire_montant: null } : {}),
+  });
   const N = (k: keyof Hypotheses, label: string, hint?: string) => (
     <div className="space-y-1">
       <Label className="text-xs">{label}</Label>

@@ -22,6 +22,23 @@ function timingSafeEqual(a: string, b: string): boolean {
 
 function parseBudget(text: string): number {
   try {
+    const t = (text || '').trim();
+    if (!t) return 0;
+    const range = t.split(/\s+(?:—|–|-|à|a)\s+|\s*[—–]\s*/i);
+    if (range.length === 2 && /\d/.test(range[0]) && /\d/.test(range[1])) {
+      const a = parseSingleBudget(range[0]), b = parseSingleBudget(range[1]);
+      if (a && b) return (a + b) / 2;
+    }
+    if (/^moins\s+de\b/i.test(t)) return parseSingleBudget(t) / 2;
+    if (/^plus\s+de\b/i.test(t)) return parseSingleBudget(t);
+    return parseSingleBudget(t);
+  } catch {
+    return 0;
+  }
+}
+
+function parseSingleBudget(text: string): number {
+  try {
     const m = text.match(/\d[\d\s\u00a0\u202f.,]*/);
     if (!m) return 0;
     let raw = m[0].replace(/[\s\u00a0\u202f]/g, '').replace(/[.,]\d{1,2}$/, '').replace(/[.,]/g, '');

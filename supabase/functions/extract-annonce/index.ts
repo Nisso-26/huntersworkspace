@@ -54,6 +54,7 @@ function extractImages(html: string, base: string): string[] {
 }
 
 const FIELDS = `{
+  "type_bien": "appartement"|"maison"|"terrain"|"immeuble"|"local"|null,
   "titre": string|null, "ville": string|null, "code_postal": string|null, "quartier": string|null,
   "prix_affiche": number|null, "surface_habitable": number|null, "surface_terrain": number|null,
   "nb_pieces": integer|null, "nb_chambres": integer|null, "etage": string|null, "ascenseur": boolean|null,
@@ -139,6 +140,7 @@ Deno.serve(async (req) => {
       if (!m) throw new Error("Réponse IA invalide");
       data = JSON.parse(m[0]);
     }
+    if (!["appartement", "maison", "terrain", "immeuble", "local"].includes(String(data.type_bien))) data.type_bien = null;
     data.points_forts = (Array.isArray(data.points_forts) ? data.points_forts : []).slice(0, 4);
     data.points_vigilance = (Array.isArray(data.points_vigilance) ? data.points_vigilance : []).slice(0, 4);
 

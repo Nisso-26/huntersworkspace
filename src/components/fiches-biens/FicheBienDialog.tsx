@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { Link2, FileText, PenLine, Loader2, RefreshCw, Plus, Trash2, Lock } from 'lucide-react';
 import FichePhotosManager from './FichePhotosManager';
 import FicheBilanSection from './FicheBilanSection';
+import FicheDecisionEnvoi from './FicheDecisionEnvoi';
+import { etapesDefaut } from './FicheBienDocument';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,7 +28,7 @@ import {
 const NUM = ['prix_affiche', 'surface_habitable', 'surface_terrain', 'dpe_kwh', 'cout_energie_min', 'cout_energie_max',
   'charges_copro_annuelles', 'taxe_fonciere', 'prix_revente_vise'] as const;
 const INT = ['nb_pieces', 'nb_chambres', 'niveaux', 'annee_construction', 'duree_detention_mois'] as const;
-const TXT = ['titre', 'ville', 'code_postal', 'quartier', 'etage', 'exposition', 'chauffage', 'exterieur', 'stationnement',
+const TXT = ['type_bien', 'recommandation', 'titre', 'ville', 'code_postal', 'quartier', 'etage', 'exposition', 'chauffage', 'exterieur', 'stationnement',
   'annexes', 'sanitaires', 'dpe_classe', 'ges_classe', 'lecture_bien', 'phrase_cle', 'projet_texte'] as const;
 const CLASSES = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 
@@ -44,6 +46,8 @@ function toForm(f: Partial<FicheBien>): Form {
   o.statut = f.statut ?? 'brouillon';
   o.interet_constate = !!f.interet_constate;
   o.description_source = f.description_source ?? '';
+  o.prochaines_etapes = Array.isArray((f as any).prochaines_etapes) && (f as any).prochaines_etapes.length ? (f as any).prochaines_etapes : etapesDefaut(o.type_projet);
+  o.risques = Array.isArray((f as any).risques) ? (f as any).risques : [];
   return o;
 }
 
@@ -60,6 +64,8 @@ function fromForm(o: Form): Partial<FicheBien> {
   out.type_projet = o.type_projet;
   out.statut = o.statut;
   out.interet_constate = !!o.interet_constate;
+  out.prochaines_etapes = (o.prochaines_etapes || []).slice(0, 3).map((e: any) => ({ titre: String(e.titre || '').trim(), texte: String(e.texte || '').trim() }));
+  out.risques = (o.risques || []).filter((r: any) => String(r.risque || '').trim());
   return out;
 }
 
@@ -188,6 +194,7 @@ export default function FicheBienDialog({ open, onOpenChange, dossier, fiche }: 
     const saved = await update.mutateAsync({ id: current.id, ...fromForm(form), hypotheses, bilan, criteres_eval: crit } as any);
     setCurrent(saved);
     toast.success('Fiche enregistrée');
+    return saved;
   };
 
   const step1 = !current || bloque || (loading && mode !== 'manuel');
@@ -296,7 +303,17 @@ export default function FicheBienDialog({ open, onOpenChange, dossier, fiche }: 
                 <AccordionTrigger>Le bien</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {F({ k: "titre", label: "Titre", span: true })}
+                    <div className="space-y-1">
+                      <Label className="text-xs">Type de bien</Label>
+                      <Select value={form.type_bien || '__none__'} onValueChange={v => set('type_bien')(v === '__none__' ? '' : v)}>
+                        <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">Non renseigné</SelectItem>
+                          {[['appartement', 'Appartement'], ['maison', 'Maison'], ['terrain', 'Terrain'], ['immeuble', 'Immeuble'], ['local', 'Local']].map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {F({ k: "titre", label: "Titre" })}
                     {F({ k: "ville", label: "Ville" })}{F({ k: "code_postal", label: "Code postal" })}
                     {F({ k: "quartier", label: "Quartier" })}{F({ k: "prix_affiche", label: "Prix affiché (€)", type: "number" })}
                     {F({ k: "surface_habitable", label: "Surface habitable (m²)", type: "number" })}{F({ k: "surface_terrain", label: "Surface terrain (m²)", type: "number" })}
@@ -381,6 +398,14 @@ export default function FicheBienDialog({ open, onOpenChange, dossier, fiche }: 
                 <AccordionTrigger>Bilan financier</AccordionTrigger>
                 <AccordionContent>
                   <FicheBilanSection typeProjet={form.type_projet} h={hypotheses} setH={h => setHyp(h)} bilan={bilan} criteres={criteres} crit={crit} setCrit={setCrit} />
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="decision" className="px-3">
+                <AccordionTrigger>Décision et envoi</AccordionTrigger>
+                <AccordionContent>
+                  {current && <FicheDecisionEnvoi form={form} set={set} fiche={current} dossier={dossier} enregistrer={enregistrer} setCurrent={setCurrent}
+                    ficheRendu={{ ...current, ...fromForm(form), bilan, criteres_eval: crit, source_url: undefined, description_source: undefined }} />}
                 </AccordionContent>
               </AccordionItem>
 

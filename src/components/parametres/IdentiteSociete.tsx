@@ -86,6 +86,7 @@ export default function IdentiteSociete() {
         </div>
         <div className="space-y-2"><Label>Assureur RCP</Label><Input value={form.assureur_rcp || ''} onChange={e => set('assureur_rcp', e.target.value)} /></div>
         <div className="space-y-2"><Label>N° Police RCP</Label><Input value={form.assureur_police || ''} onChange={e => set('assureur_police', e.target.value)} /></div>
+        <div className="space-y-2 sm:col-span-2"><Label>Médiateur de la consommation (nom et site)</Label><Input value={form.mediateur || ''} onChange={e => set('mediateur', e.target.value)} placeholder="ex : CM2C — www.cm2c.net" /></div>
       </div>
 
       <div className="space-y-4">

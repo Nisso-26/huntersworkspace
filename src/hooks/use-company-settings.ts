@@ -13,6 +13,7 @@ export interface CompanySettings {
   carte_t_expiration: string | null;
   assureur_rcp: string;
   assureur_police: string;
+  mediateur: string | null;
   adresse_siege: string;
   telephone: string;
   email_contact: string;

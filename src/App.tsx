@@ -32,6 +32,7 @@ const Login = lazy(() => import("./pages/Login"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const FichePublique = lazy(() => import("./pages/FichePublique"));
 const ClientPortal = lazy(() => import("./pages/ClientPortal"));
 const SignerDocument = lazy(() => import("./pages/SignerDocument"));
 const PortailPartenaire = lazy(() => import("./pages/PortailPartenaire"));
@@ -77,6 +78,7 @@ const App = () => (
               <Route path="/ressources" element={<ProtectedRoute><Ressources /></ProtectedRoute>} />
               <Route path="/parametres" element={<ProtectedRoute><Parametres /></ProtectedRoute>} />
               <Route path="/client/:token" element={<ClientPortal />} />
+              <Route path="/fiche/:token" element={<FichePublique />} />
               <Route path="/signer/:token" element={<SignerDocument />} />
               <Route path="/portail-partenaire/:token" element={<PortailPartenaire />} />
               <Route path="*" element={<NotFound />} />

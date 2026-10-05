@@ -50,6 +50,13 @@
       "when": 1790320371753,
       "tag": "0006_prospects_site_lead_id",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791202675845,
+      "tag": "0007_migration",
+      "breakpoints": true
     }
   ]
 }

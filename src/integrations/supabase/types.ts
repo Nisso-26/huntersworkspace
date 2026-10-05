@@ -1565,12 +1565,14 @@ export type Database = {
           annexes: string | null
           ascenseur: boolean | null
           bien_id: string | null
+          bilan: Json | null
           charges_copro_annuelles: number | null
           chauffage: string | null
           code_postal: string | null
           cout_energie_max: number | null
           cout_energie_min: number | null
           created_at: string
+          criteres_eval: Json
           description_source: string | null
           dossier_id: string
           dpe_classe: string | null
@@ -1580,6 +1582,7 @@ export type Database = {
           exposition: string | null
           exterieur: string | null
           ges_classe: string | null
+          hypotheses: Json
           id: string
           interet_constate: boolean
           lecture_bien: string | null
@@ -1612,12 +1615,14 @@ export type Database = {
           annexes?: string | null
           ascenseur?: boolean | null
           bien_id?: string | null
+          bilan?: Json | null
           charges_copro_annuelles?: number | null
           chauffage?: string | null
           code_postal?: string | null
           cout_energie_max?: number | null
           cout_energie_min?: number | null
           created_at?: string
+          criteres_eval?: Json
           description_source?: string | null
           dossier_id: string
           dpe_classe?: string | null
@@ -1627,6 +1632,7 @@ export type Database = {
           exposition?: string | null
           exterieur?: string | null
           ges_classe?: string | null
+          hypotheses?: Json
           id?: string
           interet_constate?: boolean
           lecture_bien?: string | null
@@ -1659,12 +1665,14 @@ export type Database = {
           annexes?: string | null
           ascenseur?: boolean | null
           bien_id?: string | null
+          bilan?: Json | null
           charges_copro_annuelles?: number | null
           chauffage?: string | null
           code_postal?: string | null
           cout_energie_max?: number | null
           cout_energie_min?: number | null
           created_at?: string
+          criteres_eval?: Json
           description_source?: string | null
           dossier_id?: string
           dpe_classe?: string | null
@@ -1674,6 +1682,7 @@ export type Database = {
           exposition?: string | null
           exterieur?: string | null
           ges_classe?: string | null
+          hypotheses?: Json
           id?: string
           interet_constate?: boolean
           lecture_bien?: string | null

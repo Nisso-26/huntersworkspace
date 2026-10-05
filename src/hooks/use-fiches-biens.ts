@@ -37,6 +37,7 @@ export interface FicheBien {
   lecture_bien: string | null; phrase_cle: string | null; points_forts: string[]; points_vigilance: string[];
   projet_texte: string | null; travaux: Travail[]; duree_detention_mois: number | null; prix_revente_vise: number | null;
   interet_constate: boolean;
+  hypotheses?: Record<string, any>; bilan?: Record<string, any> | null; criteres_eval?: Record<string, any>;
 }
 
 export interface FichePhoto {

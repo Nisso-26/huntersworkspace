@@ -14,11 +14,7 @@ interface Props {
   dossierClient: string;
 }
 
-function pmt(rate: number, nper: number, pv: number): number {
-  if (rate === 0) return pv / nper;
-  const r = rate / 12;
-  return (pv * r * Math.pow(1 + r, nper)) / (Math.pow(1 + r, nper) - 1);
-}
+import { pmt } from '@/lib/fiche-bien-calculs';
 
 export default function SimulateurTab({ prixRevient, loyerMensuel, reference, adresse, dossierClient }: Props) {
   const [apport, setApport] = useState(0);

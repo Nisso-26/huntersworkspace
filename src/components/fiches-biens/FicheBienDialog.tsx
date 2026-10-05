@@ -10,6 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Link2, FileText, PenLine, Loader2, RefreshCw, Plus, Trash2, Lock } from 'lucide-react';
 import FichePhotosManager from './FichePhotosManager';
+import FicheBilanSection from './FicheBilanSection';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useBaremesHunters } from '@/hooks/use-baremes-hunters';
+import { useCompanySettings } from '@/hooks/use-company-settings';
+import { tvaRateFromSettings } from '@/lib/signature-documents';
+import { calculerBilan, evaluerCriteres, hypothesesParDefaut, type CriteresEval, type FicheCalc, type Hypotheses } from '@/lib/fiche-bien-calculs';
 import {
   extraireAnnonce, typeProjetDepuisDossier, useCreateFicheBien, useUpdateFicheBien,
   TYPE_PROJET_LABELS, STATUT_FICHE_LABELS, type FicheBien, type TypeProjet, type StatutFiche, type Travail,
@@ -83,13 +91,37 @@ export default function FicheBienDialog({ open, onOpenChange, dossier, fiche }: 
   const [loading, setLoading] = useState(false);
   const [regen, setRegen] = useState(false);
   const [form, setForm] = useState<Form>(toForm({ type_projet: typeProjetDepuisDossier(dossier) }));
+  const [hyp, setHyp] = useState<Partial<Hypotheses>>({});
+  const [crit, setCrit] = useState<CriteresEval>({});
+  const { data: baremes = [] } = useBaremesHunters();
+  const { data: company } = useCompanySettings();
+  const { data: loyerBien } = useQuery({
+    queryKey: ['bien-loyer', current?.bien_id],
+    enabled: !!current?.bien_id,
+    queryFn: async () => {
+      const { data } = await supabase.from('biens').select('loyer_mensuel_cible').eq('id', current!.bien_id!).maybeSingle();
+      return data?.loyer_mensuel_cible ?? null;
+    },
+  });
 
   useEffect(() => {
     if (!open) return;
     setCurrent(fiche);
     setForm(toForm(fiche ?? { type_projet: typeProjetDepuisDossier(dossier) }));
+    setHyp(((fiche as any)?.hypotheses as Partial<Hypotheses>) ?? {});
+    setCrit(((fiche as any)?.criteres_eval as CriteresEval) ?? {});
     setMode('url'); setUrl(''); setTexte(''); setBloque(false);
   }, [open, fiche?.id]);
+
+  const ficheCalc = fromForm(form) as unknown as FicheCalc;
+  const hypotheses: Hypotheses = useMemo(
+    () => ({ ...hypothesesParDefaut(dossier, ficheCalc, loyerBien), ...hyp } as Hypotheses),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hyp, dossier, loyerBien, form.prix_affiche],
+  );
+  const ctx = { baremes, tva: tvaRateFromSettings(company), tarifConseilHt: Number(dossier?.tarif_conseil_ht) || 0 };
+  const bilan = calculerBilan(ficheCalc, hypotheses, dossier, ctx);
+  const criteres = evaluerCriteres(ficheCalc, dossier, bilan, crit);
 
   const set = (k: string) => (v: any) => setForm(f => ({ ...f, [k]: v }));
 
@@ -153,7 +185,7 @@ export default function FicheBienDialog({ open, onOpenChange, dossier, fiche }: 
 
   const enregistrer = async () => {
     if (!current) return;
-    const saved = await update.mutateAsync({ id: current.id, ...fromForm(form) });
+    const saved = await update.mutateAsync({ id: current.id, ...fromForm(form), hypotheses, bilan, criteres_eval: crit } as any);
     setCurrent(saved);
     toast.success('Fiche enregistrée');
   };
@@ -342,6 +374,13 @@ export default function FicheBienDialog({ open, onOpenChange, dossier, fiche }: 
                       {F({ k: "prix_revente_vise", label: "Prix de revente visé (€)", type: "number" })}
                     </div>
                   )}
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="bilan" className="px-3">
+                <AccordionTrigger>Bilan financier</AccordionTrigger>
+                <AccordionContent>
+                  <FicheBilanSection typeProjet={form.type_projet} h={hypotheses} setH={h => setHyp(h)} bilan={bilan} criteres={criteres} crit={crit} setCrit={setCrit} />
                 </AccordionContent>
               </AccordionItem>
 

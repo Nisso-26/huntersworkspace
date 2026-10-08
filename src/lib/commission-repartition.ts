@@ -10,6 +10,22 @@ export interface DossierRepartition {
   honoraires?: number | null;
   tarif_conseil_ht?: number | null;
   services_souscrits?: Record<string, boolean> | null | any;
+  /** Bases issues des devis acceptés (travaux pour l'AMO, achats pour la déco) */
+  base_amo?: number | null;
+  base_deco?: number | null;
+}
+
+/** Bases AMO / Déco tirées des lignes des devis acceptés d'un dossier. */
+export function basesDepuisDevis(devis: { statut: string; contenu: any }[]): { base_amo: number | null; base_deco: number | null } {
+  let amo = 0, deco = 0;
+  for (const d of devis) {
+    if (d.statut !== 'accepte') continue;
+    for (const l of (d.contenu?.lignes || []) as any[]) {
+      if (l.service === 'amo') amo += Number(l.base) || 0;
+      if (l.service === 'deco') deco += Number(l.base) || 0;
+    }
+  }
+  return { base_amo: amo || null, base_deco: deco || null };
 }
 
 /**
@@ -31,10 +47,10 @@ export function servicesMontants(
     out.push({ service: 'chasse', montant_ht: montantBareme(baremes, 'chasse', budget) });
   }
   if (services.amo) {
-    out.push({ service: 'amo', montant_ht: montantBareme(baremes, 'amo', 0) });
+    out.push({ service: 'amo', montant_ht: montantBareme(baremes, 'amo', Number(dossier.base_amo) || 0) });
   }
   if (services.deco) {
-    out.push({ service: 'deco', montant_ht: montantBareme(baremes, 'deco', 0) });
+    out.push({ service: 'deco', montant_ht: montantBareme(baremes, 'deco', Number(dossier.base_deco) || 0) });
   }
   return out.filter((l) => l.montant_ht > 0);
 }

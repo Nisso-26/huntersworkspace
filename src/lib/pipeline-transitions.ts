@@ -55,12 +55,13 @@ export interface CommissionLine extends ServiceMontant {
 export function computeCommissionsParService(
   lignes: ServiceMontant[],
   settings: Record<string, any> | null | undefined,
-  niveau: string | null | undefined
+  niveau: string | null | undefined | Partial<Record<CommissionService, string>>
 ): CommissionLine[] {
+  const niv = (svc: CommissionService) => (typeof niveau === 'object' && niveau ? niveau[svc] : niveau as string);
   return lignes
     .filter((l) => Number(l.montant_ht) > 0)
     .map((l) => {
-      const taux = commissionRateForService(settings, l.service, niveau);
+      const taux = commissionRateForService(settings, l.service, niv(l.service));
       return { ...l, taux, montant: computeCommission(Number(l.montant_ht), taux) };
     });
 }

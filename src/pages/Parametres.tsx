@@ -23,7 +23,6 @@ const JournalAudit = lazy(() => import('@/components/parametres/JournalAudit'));
 // Sections mandataire (lecture de ses propres données)
 const ZonesTab = lazy(() => import('@/components/mandataires/ZonesTab'));
 const ConformiteTab = lazy(() => import('@/components/mandataires/ConformiteTab'));
-const ObjectifsTab = lazy(() => import('@/components/mandataires/ObjectifsTab'));
 
 const SectionFallback = () => (
   <div className="space-y-3">
@@ -51,12 +50,10 @@ export default function Parametres() {
             <TabsList className="flex-wrap h-auto">
               <TabsTrigger value="zone"><MapPin className="w-4 h-4 mr-1" />Ma zone</TabsTrigger>
               <TabsTrigger value="conformite"><ShieldCheck className="w-4 h-4 mr-1" />Ma conformité</TabsTrigger>
-              <TabsTrigger value="objectifs"><Target className="w-4 h-4 mr-1" />Mes objectifs</TabsTrigger>
             </TabsList>
             <Suspense fallback={<SectionFallback />}>
               <TabsContent value="zone"><ZonesTab mandataireId={user.id} /></TabsContent>
               <TabsContent value="conformite"><ConformiteTab mandataireId={user.id} readonly /></TabsContent>
-              <TabsContent value="objectifs"><ObjectifsTab mandataireId={user.id} canEdit /></TabsContent>
             </Suspense>
           </Tabs>
         )}

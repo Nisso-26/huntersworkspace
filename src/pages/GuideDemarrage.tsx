@@ -56,14 +56,6 @@ const modules: ModuleGuide[] = [
     astuce: "Une attestation expirée ou une formation en retard empêche de recevoir de nouveaux dossiers.",
   },
   {
-    icon: Target,
-    titre: 'Objectifs',
-    href: '/mandataires',
-    role: "Vos trois objectifs sur trois mois : chiffre d'affaires, mandats signés, conseils lancés.",
-    usage: "Les barres se remplissent automatiquement avec votre activité, vous n'avez rien à saisir. Le trimestre se clôture tout seul.",
-    astuce: "Un trimestre raté n'a pas de conséquence immédiate ; c'est la répétition sur plusieurs trimestres qui suspend l'envoi de nouveaux contacts.",
-  },
-  {
     icon: BookOpen,
     titre: 'Ressources',
     href: '/ressources',

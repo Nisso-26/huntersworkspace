@@ -4,6 +4,7 @@ import {
   commissionRateForService,
   computeCommission,
   isValidPipelineStatus,
+  computeCommissionsParService,
 } from './pipeline-transitions';
 
 describe('shouldTriggerHonoraires', () => {
@@ -65,5 +66,15 @@ describe('isValidPipelineStatus', () => {
   it('rejette les statuts inconnus', () => {
     expect(isValidPipelineStatus('inconnu')).toBe(false);
     expect(isValidPipelineStatus('')).toBe(false);
+  });
+});
+
+describe('computeCommissionsParService', () => {
+  it('applique un niveau propre à chaque service', () => {
+    const r = computeCommissionsParService(
+      [{ service: 'chasse', montant_ht: 1000 }, { service: 'amo', montant_ht: 1000 }],
+      null, { chasse: 'N2', amo: 'N1' },
+    );
+    expect(r.map(c => c.taux)).toEqual([60, 20]);
   });
 });

@@ -6,6 +6,7 @@ import {
   isValidPipelineStatus,
 } from './pipeline-transitions';
 import { fetchAllPaginated } from './supabase-pagination';
+import { servicesMontants, basesDepuisDevis } from './commission-repartition';
 
 /**
  * Tests d'intégration sur le parcours critique :
@@ -38,14 +39,14 @@ describe('Parcours critique : Nouveau dossier → Acte signé', () => {
 describe('Calcul financier complet à l\'acte signé', () => {
   const honoraires = 12000; // 12k€ d'honoraires sur un dossier type
 
-  it('mandataire N1 : commission conseil 30%', () => {
+  it('service conseil en N1 : commission 30%', () => {
     const taux = commissionRateForService(null, 'conseil', 'N1');
     const commission = computeCommission(honoraires, taux);
     expect(taux).toBe(30);
     expect(commission).toBe(3600);
   });
 
-  it('mandataire N2 : commission conseil 40%', () => {
+  it('service conseil passé en N2 (seuil annuel) : commission 40%', () => {
     const taux = commissionRateForService(null, 'conseil', 'N2');
     const commission = computeCommission(honoraires, taux);
     expect(taux).toBe(40);
@@ -98,5 +99,21 @@ describe('Pagination Supabase (>1000 lignes)', () => {
         error: new Error('PGRST: connection lost'),
       })),
     ).rejects.toThrow('connection lost');
+  });
+});
+
+describe('Ventilation par service d\'un pack', () => {
+  const baremes: any[] = [
+    { service: 'amo', tranche_min: 0, tranche_max: null, type: 'pourcentage', valeur: 9, valeur_fixe: 1000 },
+    { service: 'deco', tranche_min: 0, tranche_max: null, type: 'pourcentage', valeur: 10, valeur_fixe: 1500 },
+  ];
+  it('valorise AMO et Déco sur les bases des devis acceptés', () => {
+    const bases = basesDepuisDevis([{ statut: 'accepte', contenu: { lignes: [{ service: 'amo', base: 100000 }, { service: 'deco', base: 10000 }] } }]);
+    const l = servicesMontants({ services_souscrits: { conseil: false, amo: true, deco: true }, ...bases }, baremes);
+    expect(l).toEqual([{ service: 'amo', montant_ht: 10000 }, { service: 'deco', montant_ht: 2500 }]);
+  });
+  it('sans devis accepté : part fixe seule (comportement historique)', () => {
+    const l = servicesMontants({ services_souscrits: { conseil: false, amo: true } }, baremes);
+    expect(l).toEqual([{ service: 'amo', montant_ht: 1000 }]);
   });
 });

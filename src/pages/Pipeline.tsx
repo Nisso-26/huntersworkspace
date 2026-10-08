@@ -33,7 +33,8 @@ import {
   computeCommissionsParService,
   isValidPipelineStatus,
 } from '@/lib/pipeline-transitions';
-import { servicesMontants } from '@/lib/commission-repartition';
+import { servicesMontants, basesDepuisDevis } from '@/lib/commission-repartition';
+import { compteursParService, niveauParService, seuilsN2 } from '@/lib/niveau-service';
 import { useBaremesHunters, type BaremeHunters } from '@/hooks/use-baremes-hunters';
 import { useCompanySettings } from '@/hooks/use-company-settings';
 

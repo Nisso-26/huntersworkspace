@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
       .limit(1)
       .single();
 
-    const montantHT = Number(settings?.tarif_abonnement_defaut ?? 125);
+    const montantHT = Number(settings?.tarif_abonnement_defaut ?? 149);
     const tvaTaux = Number(settings?.tva_taux_defaut ?? 20);
     const montantTTC = Math.round(montantHT * (1 + tvaTaux / 100) * 100) / 100;
 

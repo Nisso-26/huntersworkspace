@@ -18,7 +18,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ConformiteTab from '@/components/mandataires/ConformiteTab';
-import ObjectifsTab from '@/components/mandataires/ObjectifsTab';
+import { useNiveauxServices } from '@/hooks/use-niveaux-services';
+import { useCompanySettings } from '@/hooks/use-company-settings';
+import { SERVICES, SERVICE_LABEL } from '@/lib/niveau-service';
 import ZonesTab from '@/components/mandataires/ZonesTab';
 import ZonesOverview from '@/components/mandataires/ZonesOverview';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,20 +44,17 @@ const statusOptions = [
   { label: 'Suspendu', value: 'suspendu' },
   { label: 'Résilié', value: 'résilie' },
 ];
-const niveauOptions = [
-  { label: 'N1', value: 'N1' },
-  { label: 'N2', value: 'N2' },
-];
 
 function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandataireProfile; mandataires: MandataireProfile[]; onUpdate: (data: any) => void }) {
   const { isAdmin } = useAuth();
   const leverSuspension = useLeverSuspension();
+  const { data: company } = useCompanySettings();
+  const { parMandataire, seuils } = useNiveauxServices([m.id]);
+  const niv = parMandataire.get(m.id);
   const [form, setForm] = useState({
-    niveau: m.niveau || 'N1',
-    parrain_id: m.parrain_id || '',
     zone: m.zone || '',
     pack_status: m.pack_status || 'actif',
-    pack_montant: String(m.pack_montant || 99),
+    pack_montant: String(m.pack_montant || company?.tarif_abonnement_defaut || 149),
     iban: m.iban || '',
     status: m.status || 'actif',
   });
@@ -63,8 +62,6 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
   const handleSave = () => {
     onUpdate({
       id: m.id,
-      niveau: form.niveau,
-      parrain_id: form.parrain_id || null,
       zone: form.zone,
       pack_status: m.suspendu ? 'suspendu' : form.pack_status,
       pack_montant: Number(form.pack_montant),
@@ -92,7 +89,7 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
         </DialogTitle>
       </DialogHeader>
       <Tabs defaultValue="profil">
-        <TabsList><TabsTrigger value="profil">Profil</TabsTrigger><TabsTrigger value="zones">Zones</TabsTrigger><TabsTrigger value="conformite">Conformité</TabsTrigger><TabsTrigger value="objectifs">Objectifs</TabsTrigger></TabsList>
+        <TabsList><TabsTrigger value="profil">Profil</TabsTrigger><TabsTrigger value="zones">Zones</TabsTrigger><TabsTrigger value="conformite">Conformité</TabsTrigger></TabsList>
         <TabsContent value="profil" className="mt-4">
       <div className="space-y-6">
         {/* KPIs */}
@@ -127,15 +124,13 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
 
         {/* Form */}
         <div className="grid grid-cols-2 gap-4 border-t pt-4">
-          <div className="space-y-2">
-            <Label>Niveau</Label>
-            <Select value={form.niveau} onValueChange={v => setForm(f => ({ ...f, niveau: v }))}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="N1">N1</SelectItem>
-                <SelectItem value="N2">N2</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="space-y-1 col-span-2">
+            <Label>Niveau par service (honoraires HT encaissés {new Date().getFullYear()})</Label>
+            {SERVICES.map(sv => (
+              <p key={sv} className="text-sm">
+                {SERVICE_LABEL[sv]} : {Math.round(niv?.compteurs[sv] ?? 0).toLocaleString('fr-FR')} / {seuils[sv].toLocaleString('fr-FR')} € — <strong>{niv?.niveaux[sv] ?? 'N1'}</strong>
+              </p>
+            ))}
           </div>
           <div className="space-y-2">
             <Label>Statut</Label>
@@ -143,18 +138,6 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {statusOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Parrain</Label>
-            <Select value={form.parrain_id || '__none__'} onValueChange={v => setForm(f => ({ ...f, parrain_id: v === '__none__' ? '' : v }))}>
-              <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">Aucun</SelectItem>
-                {mandataires.filter(x => x.id !== m.id).map(x => (
-                  <SelectItem key={x.id} value={x.id}>{x.full_name}</SelectItem>
-                ))}
               </SelectContent>
             </Select>
           </div>
@@ -237,9 +220,6 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
         <TabsContent value="conformite" className="mt-4">
           <ConformiteTab mandataireId={m.id} />
         </TabsContent>
-        <TabsContent value="objectifs" className="mt-4">
-          <ObjectifsTab mandataireId={m.id} canEdit={isAdmin} />
-        </TabsContent>
       </Tabs>
     </DialogContent>
   );
@@ -248,6 +228,7 @@ function MandataireDetailDialog({ m, mandataires, onUpdate }: { m: MandatairePro
 export default function Mandataires() {
   const { data: mandataires = [], isLoading } = useMandataires();
   const updateProfile = useUpdateProfile();
+  const niveaux = useNiveauxServices(mandataires.map(x => x.id));
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
@@ -261,9 +242,9 @@ export default function Mandataires() {
 
   const handleExport = () => {
     exportToCSV(
-      ['Nom', 'Email', 'Zone', 'Niveau', 'Statut', 'Pack', 'CA Total', 'Commissions dues', 'Dossiers actifs'],
+      ['Nom', 'Email', 'Zone', 'Services en N2', 'Statut', 'Pack', 'CA Total', 'Commissions dues', 'Dossiers actifs'],
       filtered.map(m => [
-        m.full_name || '', m.email || '', m.zone || '', m.niveau || 'N1',
+        m.full_name || '', m.email || '', m.zone || '', String(SERVICES.filter(sv => niveaux.parMandataire.get(m.id)?.niveaux[sv] === 'N2').length),
         statusLabel[m.status || 'actif'], m.pack_status || 'actif',
         m.ca_total.toLocaleString('fr-FR'), m.commissions_dues.toLocaleString('fr-FR'),
         String(m.dossiers_count),
@@ -327,7 +308,7 @@ export default function Mandataires() {
                           <div className="flex items-center gap-2 mt-0.5">
                             <MapPin className="w-3 h-3 text-muted-foreground" />
                             <span className="text-xs text-muted-foreground">{m.zone || 'Non définie'}</span>
-                            <span className="text-xs font-medium text-accent">{m.niveau || 'N1'}</span>
+                            <span className="text-xs font-medium text-accent">{SERVICES.filter(sv => niveaux.parMandataire.get(m.id)?.niveaux[sv] === 'N2').length} service(s) en N2</span>
                           </div>
                         </div>
                       </div>

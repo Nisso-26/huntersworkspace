@@ -22,6 +22,7 @@ import { buildDocumentPdf } from '@/lib/document-pdf';
 import { fmtPdfEur } from '@/lib/pdf-utils';
 import type { ModeleDocument, ModeleSection } from '@/hooks/use-modeles-documents';
 import type { Dossier } from '@/hooks/use-dossiers';
+import { seuilsN2 } from '@/lib/niveau-service';
 
 const SERVICE_LABELS: Record<string, string> = {
   conseil: 'Conseil en investissement',

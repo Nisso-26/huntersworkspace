@@ -554,6 +554,10 @@ export type Database = {
           raison_sociale: string | null
           rcs: string | null
           remise_pack_pct: number | null
+          seuil_n2_amo: number
+          seuil_n2_chasse: number
+          seuil_n2_conseil: number
+          seuil_n2_deco: number
           seuil_passage_n2: number | null
           siret: string | null
           site_web: string | null
@@ -607,6 +611,10 @@ export type Database = {
           raison_sociale?: string | null
           rcs?: string | null
           remise_pack_pct?: number | null
+          seuil_n2_amo?: number
+          seuil_n2_chasse?: number
+          seuil_n2_conseil?: number
+          seuil_n2_deco?: number
           seuil_passage_n2?: number | null
           siret?: string | null
           site_web?: string | null
@@ -660,6 +668,10 @@ export type Database = {
           raison_sociale?: string | null
           rcs?: string | null
           remise_pack_pct?: number | null
+          seuil_n2_amo?: number
+          seuil_n2_chasse?: number
+          seuil_n2_conseil?: number
+          seuil_n2_deco?: number
           seuil_passage_n2?: number | null
           siret?: string | null
           site_web?: string | null
@@ -2813,35 +2825,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      cloturer_trimestres_objectifs: { Args: never; Returns: undefined }
-      compute_objectif_trimestre:
-        | { Args: never; Returns: Json }
-        | {
-            Args: { _annee: number; _mandataire_id: string; _trimestre: number }
-            Returns: {
-              annee: number
-              ca_objectif: number
-              ca_realise: number
-              conseils_objectif: number
-              conseils_realises: number
-              created_at: string
-              id: string
-              leads_bloques: boolean
-              mandataire_id: string
-              mandats_objectif: number
-              mandats_realises: number
-              statut: string
-              trimestre: number
-              trimestres_rates_consecutifs: number
-              updated_at: string
-            }
-            SetofOptions: {
-              from: "*"
-              to: "objectifs_trimestriels"
-              isOneToOne: true
-              isSetofReturn: false
-            }
-          }
       decide_validation_dossier: {
         Args: { _motif?: string; _statut: string; _validation_id: string }
         Returns: undefined

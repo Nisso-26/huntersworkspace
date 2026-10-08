@@ -71,6 +71,13 @@
       "when": 1791209813834,
       "tag": "0009_fiches_biens_rendu_client",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791457435899,
+      "tag": "0010_suppression_objectifs_seuils_n2_par_service",
+      "breakpoints": true
     }
   ]
 }

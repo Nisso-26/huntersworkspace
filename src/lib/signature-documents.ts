@@ -316,7 +316,7 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
           "M01 — Conseil strategique : 1 500, 2 500 ou 3 500 EUR HT selon le score de la grille de qualification HUNTERS (BC-M01).\n" +
           "M02 — Chasse immobiliere : forfait de 6 500 EUR HT jusqu'a 250 000 EUR ; 3,5 % HT jusqu'a 1 000 000 EUR ; 2,75 % HT jusqu'a 1 200 000 EUR ; 2 % HT au-dela, sur le prix d'acquisition (BC-M02).\n" +
           "M03 — Assistance a maitrise d'ouvrage : 1 000 EUR + 9 % HT jusqu'a 150 000 EUR de travaux ; 1 500 EUR + 7,5 % HT jusqu'a 250 000 EUR ; 2 000 EUR + 6 % HT au-dela, sur le montant HT des travaux (BC-M03).\n" +
-          "M04 — Decoration et ameublement : 2 500 EUR HT + 15 % jusqu'a 20 000 EUR d'achats ; + 12 % jusqu'a 50 000 EUR ; + 10 % au-dela, sur le montant HT des achats (BC-M04).\n" +
+          "M04 — Decoration et ameublement : 1 500 EUR HT + 10 % jusqu'a 20 000 EUR d'achats ; 2 000 EUR HT + 8 % de 20 001 a 50 000 EUR ; 3 000 EUR HT + 6 % au-dela. Le pourcentage s'applique sur la totalite du montant HT des achats de mobilier et de decoration, hors travaux (BC-M04).\n" +
           "Pack cle en main : somme des missions souscrites, remise de 10 % sur M02, M03 et M04 ; le conseil n'est jamais remise.\n" +
           `Missions envisagees a ce jour pour le Client : ${v(f.missions)}.\n` +
           `Honoraires de conseil (M01) retenus selon scoring : ${v(f.tarif_conseil)}.\n` +
@@ -693,7 +693,7 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
       { id: 'a1', type: 'text', titre: 'Article 1 — Objet', contenu: `Le Client confie a HUNTERS Immobilier la conception et la mise en oeuvre d'un projet de decoration et d'ameublement pour le bien suivant. Adresse : ${v(f.bien_adresse)}. Pieces concernees : ${v(f.pieces)}. Usage du bien : ${v(f.usage)}. Budget decoration et ameublement : ${v(f.budget_deco)} HT. Style et orientations : ${v(f.style)}.` },
       { id: 'a2', type: 'text', titre: 'Article 2 — Contenu de la mission', contenu: "1. Brief : visite, prise de mesures, recueil des gouts, contraintes et usages. 2. Conception : planche d'ambiance, plan d'amenagement, palette de couleurs et de matieres, liste d'achats chiffree (mobilier, luminaires, textiles, decoration) ; deux series de modifications sont incluses, au-dela sur devis. 3. Achats et logistique : apres validation ecrite de la liste d'achats, les commandes sont passees au nom du Client, qui paie directement les fournisseurs ; HUNTERS Immobilier suit les commandes et les livraisons. 4. Installation et mise en scene : reception des livraisons, coordination du montage, mise en place et stylisme final, photographies de fin de mission remises au Client. Pour une location meublee, la liste d'achats couvre au minimum les elements exiges par le decret n° 2015-981 du 31 juillet 2015." },
       { id: 'a3', type: 'text', titre: 'Article 3 — Exclusions', contenu: "Les travaux (peinture, electricite, plomberie, menuiserie, sols) ne sont pas compris : ils relevent d'une mission AMO ou d'entreprises choisies par le Client. Les frais de livraison, de montage et d'enlevement factures par les fournisseurs restent a la charge du Client." },
-      { id: 'a4', type: 'text', titre: 'Article 4 — Honoraires', contenu: `Les honoraires se composent d'un forfait de conception de 2 500 EUR HT et d'une part variable calculee sur le montant HT des achats de mobilier, de decoration et de fournitures, hors travaux : jusqu'a 20 000 EUR, + 15 % ; de 20 001 a 50 000 EUR, + 12 % ; au-dela, + 10 %. Honoraires previsionnels sur le budget de ${v(f.budget_deco)} HT : ${v(f.montant_ht)} HT, soit ${v(f.montant_ttc)} TTC. Ils sont regularises sur le montant HT des achats reellement factures. Paiement : 50 % a la signature, solde a l'installation, ${PAIEMENT_COMMUN}.` },
+      { id: 'a4', type: 'text', titre: 'Article 4 — Honoraires', contenu: `Les honoraires se composent d'une part fixe et d'une part variable calculee sur la totalite du montant HT des achats de mobilier, de decoration et de fournitures, hors travaux : jusqu'a 20 000 EUR, 1 500 EUR HT + 10 % ; de 20 001 a 50 000 EUR, 2 000 EUR HT + 8 % ; au-dela de 50 000 EUR, 3 000 EUR HT + 6 %. Honoraires previsionnels sur le budget de ${v(f.budget_deco)} HT : ${v(f.montant_ht)} HT, soit ${v(f.montant_ttc)} TTC. Ils sont regularises sur le montant HT des achats reellement factures. Paiement : 50 % a la signature, solde a l'installation, ${PAIEMENT_COMMUN}.` },
       { id: 'a5', type: 'text', titre: 'Article 5 — Transparence des achats', contenu: "Les fournisseurs facturent directement le Client, sans majoration de prix. Les remises professionnelles obtenues par HUNTERS Immobilier beneficient integralement au Client. HUNTERS Immobilier ne percoit aucune commission des fournisseurs et n'avance ni ne detient aucun fonds pour le compte du Client." },
       { id: 'a6', type: 'text', titre: 'Article 6 — Delais', contenu: "Le calendrier remis apres validation de la conception est indicatif. Les delais de fabrication et de livraison dependent des fournisseurs ; HUNTERS Immobilier informe le Client de tout retard et propose, si possible, une alternative." },
       { id: 'a7', type: 'text', titre: 'Article 7 — Garanties des produits', contenu: "Les garanties legales de conformite (C. conso., art. L217-3 et suivants) et des vices caches (C. civ., art. 1641 et suivants) s'exercent contre les fournisseurs. HUNTERS Immobilier assiste le Client dans ses reclamations." },
@@ -722,7 +722,6 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
       { key: 'date_naissance', label: 'Date de naissance', group: 'Mandataire' },
       ...CABINET_FIELDS,
       { key: 'secteurs', label: 'Zone prioritaire attribuée', group: 'Collaboration' },
-      { key: 'niveau', label: 'Niveau (N1 / N2)', group: 'Collaboration' },
       { key: 'pack', label: 'Pack mensuel', group: 'Collaboration' },
     ],
     sections: (f) => [
@@ -741,7 +740,7 @@ export const SIGNATURE_DOC_SPECS: Record<SignatureDocType, SignatureDocSpec> = {
         id: 'a2', type: 'text', titre: 'Article 2 — Zone et niveau',
         contenu:
           `Zone prioritaire attribuee : ${v(f.secteurs)}\n` +
-          `Niveau de commissionnement : ${v(f.niveau)}\n` +
+          "Niveau de commissionnement : N1 sur tous les services, passage en N2 par service selon les seuils annuels du cabinet\n" +
           `Pack mensuel : ${v(f.pack)}`,
       },
       {

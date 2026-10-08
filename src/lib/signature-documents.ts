@@ -941,7 +941,6 @@ export function prefillSignatureDoc(
   return {
     ...base,
     secteurs: zone,
-    niveau: d.niveau || '',
     pack: '',
   };
 }

@@ -1,4 +1,4 @@
-// Génère les factures pack mensuelles (125€ HT par défaut) le 1er du mois
+// Génère les factures pack mensuelles (149 € HT par défaut, dues dès le 1er mois, sans franchise) le 1er du mois
 // pour tous les mandataires actifs avec pack_status='actif'.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 

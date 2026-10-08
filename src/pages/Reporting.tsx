@@ -15,7 +15,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 import { useBaremesHunters } from '@/hooks/use-baremes-hunters';
 import { useCompanySettings } from '@/hooks/use-company-settings';
 import { computeCommissionsParService } from '@/lib/pipeline-transitions';
-import { repartitionHonoraires } from '@/lib/commission-repartition';
+import { repartitionHonoraires, basesDepuisDevis } from '@/lib/commission-repartition';
+import { compteursParService, niveauParService, seuilsN2 } from '@/lib/niveau-service';
 
 // Statuts hors activité commerciale courante (inclut « cloture », gagné ou perdu)
 const INACTIVE_STATUSES: string[] = ['nouveau', 'signe', 'cloture'];

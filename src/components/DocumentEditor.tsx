@@ -49,9 +49,6 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
   const mandataire = mandataires.find((m) => m.id === dossier.mandataire_id);
   const conseiller = mandataire?.full_name || '';
   const conseillerNiveau = mandataire?.niveau === 'N2' ? 'N2' : 'N1';
-  const caTrimestrielRecommande = conseillerNiveau === 'N2'
-    ? company?.ca_objectif_n2_trimestre
-    : company?.ca_objectif_n1_trimestre;
   const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 
   // Variables texte enrichies (client, mandataire, cabinet, scoring, services, objectifs)
@@ -105,12 +102,9 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
                             .join(', '),
 
     // ── CIBLES RECOMMANDÉES ──
-    objectif_ca:          caTrimestrielRecommande == null ? '' : `${caTrimestrielRecommande.toLocaleString('fr-FR')} € HT / trimestre`,
-    objectif_mandats:     company?.mandats_objectif_trimestre == null ? '' : `${company.mandats_objectif_trimestre} mandats signés / trimestre`,
-    objectif_conseil:     company?.conseils_objectif_mois == null ? '' : `${company.conseils_objectif_mois} rapport de conseil / mois`,
     pack_mensuel:         company?.tarif_abonnement_defaut == null ? '' : `${company.tarif_abonnement_defaut.toLocaleString('fr-FR')} € HT / mois`,
-    seuil_n2:             company?.seuil_passage_n2 == null ? '' : `${company.seuil_passage_n2.toLocaleString('fr-FR')} € CA HT cumulé`,
-  }), [dossier, mandataire, company, conseiller, conseillerNiveau, caTrimestrielRecommande, today]);
+    seuil_n2:             (() => { const t = seuilsN2(company as any); const f = (n: number) => `${n.toLocaleString('fr-FR')} €`; return `Conseil ${f(t.conseil)} · Chasse ${f(t.chasse)} · AMO ${f(t.amo)} · Déco ${f(t.deco)} HT encaissés / an`; })(),
+  }), [dossier, mandataire, company, conseiller, conseillerNiveau, today]);
 
   const sections = (modele.contenu_template?.sections || []) as ModeleSection[];
 
@@ -132,13 +126,10 @@ export default function DocumentEditor({ open, onOpenChange, modele, dossier, on
   useEffect(() => {
     setVariables((prev) => ({
       ...prev,
-      objectif_ca: String(baseVariables.objectif_ca ?? ''),
-      objectif_mandats: String(baseVariables.objectif_mandats ?? ''),
-      objectif_conseil: String(baseVariables.objectif_conseil ?? ''),
       pack_mensuel: String(baseVariables.pack_mensuel ?? ''),
       seuil_n2: String(baseVariables.seuil_n2 ?? ''),
     }));
-  }, [baseVariables.objectif_ca, baseVariables.objectif_mandats, baseVariables.objectif_conseil, baseVariables.pack_mensuel, baseVariables.seuil_n2]);
+  }, [baseVariables.pack_mensuel, baseVariables.seuil_n2]);
   const [financierSaisies, setFinancierSaisies] = useState<Record<string, Record<string, number>>>({});
   const [textOverrides, setTextOverrides] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);

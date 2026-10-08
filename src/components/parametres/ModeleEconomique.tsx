@@ -27,7 +27,7 @@ const DEFAULTS: Record<string, number> = {
   commission_chasse_n1: 55, commission_chasse_n2: 60,
   commission_amo_n1: 20, commission_amo_n2: 25,
   commission_deco_n1: 15, commission_deco_n2: 20,
-  seuil_passage_n2: 100000,
+  seuil_n2_conseil: 10000, seuil_n2_chasse: 40000, seuil_n2_amo: 20000, seuil_n2_deco: 12000,
 };
 
 export default function ModeleEconomique() {
@@ -58,11 +58,10 @@ export default function ModeleEconomique() {
         commission_amo_n2: form.commission_amo_n2,
         commission_deco_n1: form.commission_deco_n1,
         commission_deco_n2: form.commission_deco_n2,
-        seuil_passage_n2: form.seuil_passage_n2,
-        ca_objectif_n1_trimestre: form.ca_objectif_n1_trimestre,
-        ca_objectif_n2_trimestre: form.ca_objectif_n2_trimestre,
-        mandats_objectif_trimestre: form.mandats_objectif_trimestre ?? 2,
-        conseils_objectif_mois: form.conseils_objectif_mois ?? 1,
+        seuil_n2_conseil: val('seuil_n2_conseil'),
+        seuil_n2_chasse: val('seuil_n2_chasse'),
+        seuil_n2_amo: val('seuil_n2_amo'),
+        seuil_n2_deco: val('seuil_n2_deco'),
       } as any,
     });
     setConfirmOpen(false);
@@ -82,7 +81,7 @@ export default function ModeleEconomique() {
           <Label>Tarif pack mensuel HT (€)</Label>
           <Input type="number" value={form.tarif_abonnement_defaut ?? 149} onChange={e => set('tarif_abonnement_defaut', Number(e.target.value))} />
           <p className="text-xs text-muted-foreground">
-            Exigible dès le 1er mois suivant la signature — sans franchise <strong>(Contrat V5)</strong>.
+            Exigible dès le 1er mois suivant la signature — sans franchise.
             TVA 20 % → <strong>{((Number(form.tarif_abonnement_defaut ?? 149)) * 1.2).toFixed(2)} € TTC</strong>.
           </p>
         </div>
@@ -131,37 +130,18 @@ export default function ModeleEconomique() {
             ))}
           </TableBody>
         </Table>
-        <div className="text-xs text-muted-foreground space-y-1">
-          <p>• <strong>Passage N2</strong> : automatique dès <strong>{Number(form.seuil_passage_n2 ?? 100000).toLocaleString('fr-FR')} €</strong> de CA HT cumulé encaissé par HUNTERS — non rétroactif.</p>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {([['seuil_n2_conseil', 'Seuil N2 Conseil'], ['seuil_n2_chasse', 'Seuil N2 Chasse'], ['seuil_n2_amo', 'Seuil N2 AMO'], ['seuil_n2_deco', 'Seuil N2 Déco']] as const).map(([k, l]) => (
+            <div key={k} className="space-y-1">
+              <Label className="text-xs">{l} (€ HT / an)</Label>
+              <Input type="number" disabled={!isAdmin} value={val(k)} onChange={e => set(k, Number(e.target.value))} />
+            </div>
+          ))}
         </div>
-      </div>
-
-      <div className="space-y-3 pt-4 border-t">
-        <h3 className="font-heading font-semibold">Cibles recommandées aux mandataires</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>CA trimestriel recommandé N1 (€)</Label>
-            <Input type="number" disabled={!isAdmin} value={form.ca_objectif_n1_trimestre ?? ''} onChange={e => set('ca_objectif_n1_trimestre', Number(e.target.value))} />
-          </div>
-          <div className="space-y-2">
-            <Label>CA trimestriel recommandé N2 (€)</Label>
-            <Input type="number" disabled={!isAdmin} value={form.ca_objectif_n2_trimestre ?? ''} onChange={e => set('ca_objectif_n2_trimestre', Number(e.target.value))} />
-          </div>
-          <div className="space-y-2">
-            <Label>Mandats objectif / trimestre</Label>
-            <Input type="number" disabled={!isAdmin} value={form.mandats_objectif_trimestre ?? 2} onChange={e => set('mandats_objectif_trimestre', Number(e.target.value))} />
-          </div>
-          <div className="space-y-2">
-            <Label>Conseils objectif / mois</Label>
-            <Input type="number" disabled={!isAdmin} value={form.conseils_objectif_mois ?? 1} onChange={e => set('conseils_objectif_mois', Number(e.target.value))} />
-          </div>
-        </div>
-        <p className="text-xs italic text-muted-foreground">
-          Révisable annuellement. Trimestre atteint uniquement si CA + mandats + conseils sont tous au vert simultanément.
+        <p className="text-xs text-muted-foreground">
+          Passage en N2 par service, automatique dès que les honoraires HT encaissés de l'année franchissent le seuil ; applicable aux dossiers suivants ; remise à zéro au 1er janvier. Aucun objectif n'est imposé.
         </p>
       </div>
-
-
 
       {isAdmin && (
         <Button onClick={handleSave} disabled={updateMut.isPending}><Save className="w-4 h-4 mr-2" />Enregistrer</Button>

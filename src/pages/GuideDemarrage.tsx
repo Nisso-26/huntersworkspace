@@ -2,7 +2,7 @@ import AppLayout from '@/components/AppLayout';
 import { Link } from 'react-router-dom';
 import {
   Compass, FileText, Calculator, TrendingUp, PenLine, ShieldCheck,
-  Target, BookOpen, ArrowRight, LifeBuoy,
+  BookOpen, ArrowRight, LifeBuoy,
 } from 'lucide-react';
 
 interface ModuleGuide {

@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Bell, Building2, Receipt, Network, FileText, History, UserPlus,
-  MapPin, ShieldCheck, Target,
+  MapPin, ShieldCheck,
 } from 'lucide-react';
 
 // Section profil chargée en eager (visible pour tous les rôles)

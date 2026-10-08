@@ -15,7 +15,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 import { useBaremesHunters } from '@/hooks/use-baremes-hunters';
 import { useCompanySettings } from '@/hooks/use-company-settings';
 import { computeCommissionsParService } from '@/lib/pipeline-transitions';
-import { repartitionHonoraires } from '@/lib/commission-repartition';
+import { repartitionHonoraires, basesDepuisDevis } from '@/lib/commission-repartition';
+import { compteursParService, niveauParService, seuilsN2 } from '@/lib/niveau-service';
 
 // Statuts hors activité commerciale courante (inclut « cloture », gagné ou perdu)
 const INACTIVE_STATUSES: string[] = ['nouveau', 'signe', 'cloture'];
@@ -50,18 +51,34 @@ export default function Reporting() {
   const { data: factures = [], isLoading: fLoad } = useFactures();
   const { data: baremes = [] } = useBaremesHunters();
   const { data: company } = useCompanySettings();
+  const dossMap = useMemo(() => new Map(dossiers.map(d => [d.id, d as any])), [dossiers]);
+  const { data: devisAcc = [] } = useQuery({
+    queryKey: ['devis_acceptes_reporting'],
+    queryFn: async () => fetchAllPaginated<any>((from, to) =>
+      (supabase.from('devis') as any).select('dossier_id,statut,contenu').eq('statut', 'accepte').range(from, to)),
+  });
+  const basesDevis = useMemo(() => {
+    const by = new Map<string, any[]>();
+    for (const d of devisAcc as any[]) by.set(d.dossier_id, [...(by.get(d.dossier_id) || []), d]);
+    return new Map([...by].map(([k, v]) => [k, basesDepuisDevis(v)]));
+  }, [devisAcc]);
 
   // Commission réelle d'un dossier signé : répartition des honoraires par
   // service puis application du taux propre à chaque service (N1/N2).
   const commissionDossier = useCallback(
-    (dossier: any, niveau: string) => {
-      const lignes = repartitionHonoraires(dossier, baremes);
+    (dossier: any) => {
+      // Niveau par service via la règle unique (compteur encaissé avant le dossier)
+      const annee = new Date(dossier.updated_at).getFullYear();
+      const niveau = dossier.mandataire_id
+        ? niveauParService(compteursParService(dossier.mandataire_id, annee, factures as any, dossMap, baremes, { exclureDossierId: dossier.id, avant: new Date(dossier.updated_at) }), seuilsN2(company as any))
+        : 'N1';
+      const lignes = repartitionHonoraires({ ...dossier, ...(basesDevis.get(dossier.id) || {}) }, baremes);
       return computeCommissionsParService(lignes, company as any, niveau).reduce(
         (s, c) => s + c.montant,
         0
       );
     },
-    [baremes, company]
+    [baremes, company, factures, dossMap, basesDevis]
   );
 
   const { data: jalons = [] } = useQuery({
@@ -90,11 +107,7 @@ export default function Reporting() {
     const tauxConv = dossiers.length > 0 ? (signes.length / dossiers.length) * 100 : 0;
 
     // Commissions du mois : barème réel par service (company_settings)
-    const niveauMap = new Map(mandataires.map(m => [m.id, m.niveau || 'N1']));
-    const commMois = signesMois.reduce((s, d) => {
-      const niveau = (d.mandataire_id ? niveauMap.get(d.mandataire_id) : 'N1') || 'N1';
-      return s + commissionDossier(d, niveau);
-    }, 0);
+    const commMois = signesMois.reduce((s, d) => s + commissionDossier(d), 0);
 
     // Packs mensuels (factures type "pack" sur le mois en cours)
     const packsMois = factures.filter(f => f.type === 'pack' && new Date(f.date_emission) >= monthStart);
@@ -118,8 +131,7 @@ export default function Reporting() {
       const signes = mDoss.filter(d => d.status === 'signe');
       const ca = signes.reduce((s, d) => s + (Number(d.honoraires) || 0), 0);
       const signesMois = signes.filter(d => new Date(d.updated_at) >= monthStart);
-      const niveau = m.niveau || 'N1';
-      const commMois = signesMois.reduce((s, d) => s + commissionDossier(d, niveau), 0);
+      const commMois = signesMois.reduce((s, d) => s + commissionDossier(d), 0);
       const lastUpdate = mDoss.reduce((max, d) => {
         const t = new Date(d.updated_at).getTime();
         return t > max ? t : max;

@@ -2,7 +2,7 @@ import AppLayout from '@/components/AppLayout';
 import { Link } from 'react-router-dom';
 import {
   Compass, FileText, Calculator, TrendingUp, PenLine, ShieldCheck,
-  Target, BookOpen, ArrowRight, LifeBuoy,
+  BookOpen, ArrowRight, LifeBuoy,
 } from 'lucide-react';
 
 interface ModuleGuide {
@@ -54,14 +54,6 @@ const modules: ModuleGuide[] = [
     role: "Vos obligations légales de conseiller : les heures de formation annuelles et votre attestation d'habilitation.",
     usage: "Vous y suivez vos heures validées et la date de fin de votre attestation. Il suffit de tenir ces deux informations à jour.",
     astuce: "Une attestation expirée ou une formation en retard empêche de recevoir de nouveaux dossiers.",
-  },
-  {
-    icon: Target,
-    titre: 'Objectifs',
-    href: '/mandataires',
-    role: "Vos trois objectifs sur trois mois : chiffre d'affaires, mandats signés, conseils lancés.",
-    usage: "Les barres se remplissent automatiquement avec votre activité, vous n'avez rien à saisir. Le trimestre se clôture tout seul.",
-    astuce: "Un trimestre raté n'a pas de conséquence immédiate ; c'est la répétition sur plusieurs trimestres qui suspend l'envoi de nouveaux contacts.",
   },
   {
     icon: BookOpen,

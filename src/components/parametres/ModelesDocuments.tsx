@@ -85,11 +85,8 @@ const VARIABLE_GROUPS: { label: string; icon: React.ElementType; color: string; 
     icon: FileCheck,
     color: 'text-rose-600 bg-rose-50',
     vars: [
-      { key: '{{objectif_ca}}', desc: 'CA trimestriel recommandé N1 ou N2' },
-      { key: '{{objectif_mandats}}', desc: 'Cible trimestrielle recommandée de mandats' },
-      { key: '{{objectif_conseil}}', desc: 'Cible mensuelle recommandée de conseils' },
       { key: '{{pack_mensuel}}', desc: '149 € HT / mois' },
-      { key: '{{seuil_n2}}', desc: '100 000 € CA HT cumulé' },
+      { key: '{{seuil_n2}}', desc: 'Conseil 10 000 € · Chasse 40 000 € · AMO 20 000 € · Déco 12 000 € HT encaissés / an' },
     ],
   },
 ];

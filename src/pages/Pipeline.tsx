@@ -33,7 +33,8 @@ import {
   computeCommissionsParService,
   isValidPipelineStatus,
 } from '@/lib/pipeline-transitions';
-import { servicesMontants } from '@/lib/commission-repartition';
+import { servicesMontants, basesDepuisDevis } from '@/lib/commission-repartition';
+import { compteursParService, niveauParService, seuilsN2 } from '@/lib/niveau-service';
 import { useBaremesHunters, type BaremeHunters } from '@/hooks/use-baremes-hunters';
 import { useCompanySettings } from '@/hooks/use-company-settings';
 
@@ -215,16 +216,20 @@ export default function Pipeline() {
           } as any);
 
           if (dossier.mandataire_id) {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('niveau')
-              .eq('id', dossier.mandataire_id)
-              .single();
-
-            const niveau = (profile as any)?.niveau ?? 'N1';
+            // Niveau par service, figé maintenant : compteur encaissé de l'année AVANT ce dossier
+            const annee = new Date().getFullYear();
+            const [{ data: facts }, { data: devisAcc }] = await Promise.all([
+              supabase.from('factures').select('mandataire_id,dossier_id,montant,statut,type,date_paiement,lignes')
+                .eq('mandataire_id', dossier.mandataire_id).gte('date_paiement', `${annee}-01-01`),
+              supabase.from('devis').select('statut,contenu').eq('dossier_id', dossier.id).eq('statut', 'accepte'),
+            ]);
+            const dossierBases = { ...dossier, ...basesDepuisDevis((devisAcc || []) as any) };
+            const dossMap = new Map(dossiers.map(d => [d.id, d as any]));
+            const compteurs = compteursParService(dossier.mandataire_id, annee, (facts || []) as any, dossMap, baremes, { exclureDossierId: dossier.id });
+            const niveau = niveauParService(compteurs, seuilsN2(company as any));
 
             // Commission calculée service par service (taux réels company_settings)
-            let lignes = servicesMontants(dossier, baremes);
+            let lignes = servicesMontants(dossierBases, baremes);
             if (lignes.length === 0) {
               // Aucun service chiffrable : repli sur les honoraires globaux (taux conseil)
               lignes = [{ service: 'conseil', montant_ht: Number(dossier.honoraires) || 0 }];
@@ -251,7 +256,7 @@ export default function Pipeline() {
         toast.error(err?.message || 'Erreur lors du changement de statut');
       }
     },
-    [updateMut, qc, baremes, company]
+    [updateMut, qc, baremes, company, dossiers]
   );
 
   // Le passage en « Clôturé » exige de qualifier l'issue : Gagné ou Perdu

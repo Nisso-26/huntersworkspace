@@ -15,8 +15,6 @@ export interface MandataireProfile {
   dossiers_count: number;
   ca_total: number;
   niveau: string | null;
-  parrain_id: string | null;
-  parrain_name: string | null;
   date_entree: string | null;
   pack_status: string | null;
   pack_montant: number;
@@ -89,7 +87,6 @@ export function useMandataires() {
         .in('mandataire_id', userIds);
       const facturesPack = (facturesRaw ?? []) as FactureAbonnementRow[];
 
-      const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
 
       return (profiles ?? []).map((p) => {
         const mandDossiers = dossiers.filter((d) => d.mandataire_id === p.id);
@@ -107,7 +104,6 @@ export function useMandataires() {
         const commVersees = mandCommissions
           .filter((c) => c.statut === 'versee' && c.type === 'commission')
           .reduce((s, c) => s + Number(c.montant), 0);
-        const parrainProfile = p.parrain_id ? profileMap.get(p.parrain_id) : null;
 
         const mandFactures = facturesPack.filter((f) => f.mandataire_id === p.id);
         const packRelanceEtape = mandFactures.reduce((max, f) => Math.max(max, Number(f.relance_etape) || 0), 0);
@@ -125,8 +121,6 @@ export function useMandataires() {
           created_at: p.created_at,
           role: 'mandataire',
           niveau: p.niveau ?? 'N1',
-          parrain_id: p.parrain_id ?? null,
-          parrain_name: parrainProfile?.full_name ?? null,
           date_entree: p.date_entree ?? null,
           pack_status: p.pack_status ?? 'actif',
           pack_montant: Number(p.pack_montant) || 149,
@@ -154,7 +148,6 @@ export type ProfileUpdate = Partial<{
   status: string;
   avatar_url: string;
   niveau: string;
-  parrain_id: string | null;
   date_entree: string;
   pack_status: string;
   pack_montant: number;
